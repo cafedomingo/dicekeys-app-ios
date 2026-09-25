@@ -1,6 +1,6 @@
 # dicekeys-app-ios
 
-Fork of [dicekeys/dicekeys-app-ios](https://github.com/dicekeys/dicekeys-app-ios). See [docs/MODERNIZATION.md](docs/MODERNIZATION.md) for the plan to bring it onto current Xcode and drop CocoaPods.
+Fork of [dicekeys/dicekeys-app-ios](https://github.com/dicekeys/dicekeys-app-ios), brought onto current Xcode, iOS 26 and Swift 6, with no CocoaPods and no external packages. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 Requires Xcode 26.6 or later; the deployment target is iOS 26. On an Apple silicon Mac the same app runs as "Designed for iPad".
 
@@ -20,7 +20,7 @@ and a device, then Product → Run.
 There is no CocoaPods, no git submodule, no Objective-C and no third-party binary.
 libsodium and the DiceKeys seeded-crypto C++ library are vendored as source in
 `Packages/DiceKeysCore`; the DiceKey scanner is pure Swift. See
-[docs/MODERNIZATION.md](docs/MODERNIZATION.md) and [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 ## Testing the app
 
