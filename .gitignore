@@ -239,3 +239,6 @@ Config/*.local.xcconfig
 *.p12
 *.mobileprovision
 *.cer
+
+# App Store Connect API key settings for scripts/testflight.sh (see .env.example).
+.env

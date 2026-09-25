@@ -17,7 +17,9 @@
 #        - Xcode signed in to that account (Xcode > Settings > Accounts > "+"), or
 #        - an App Store Connect API key, via the three environment variables
 #          ASC_KEY_PATH (the .p8 file), ASC_KEY_ID and ASC_ISSUER_ID. Preferred for
-#          automation; create one under Users and Access > Integrations.
+#          automation; create one under Users and Access > Integrations. Put them in a
+#          .env file in the repository root (git-ignored; see .env.example) and this
+#          script loads it. Keep the .p8 itself outside the repository.
 #   3. Config/Signing.local.xcconfig with your DEVELOPMENT_TEAM (see Config/Signing.xcconfig).
 #   4. An app record in App Store Connect for the bundle id in Config/Signing.xcconfig,
 #      registered to that team.
@@ -26,6 +28,13 @@
 # it. External testers additionally need App Review.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+
+if [[ -f .env ]]; then
+    set -a
+    # shellcheck source=/dev/null
+    source .env
+    set +a
+fi
 
 # `xcode-select` may point at the Command Line Tools, which ship no xcodebuild.
 if [[ -z "${DEVELOPER_DIR:-}" && ! -x "$(xcode-select -p 2>/dev/null)/usr/bin/xcodebuild" ]]; then
