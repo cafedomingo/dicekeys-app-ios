@@ -51,6 +51,49 @@ not prompted twice. Keys already saved without access control need migrating (re
 authenticating, re-save, delete the old item). It needs a device with Face ID or Touch ID
 to test.
 
+## Simpler recipes
+
+**Why it exists.** Recipes still carry the original app's API shape: site templates are
+`allow` lists of hosts (`{"allow":[{"host":"*.1password.com"}]}`), which only mattered when
+other apps could request secrets for approved sites. This app has no such API, so a recipe
+only needs a `purpose` (an app or service name) and a sequence number for when one purpose
+needs several secrets. The recipe screen exposes the internal JSON and the list is padded
+with site templates most people will not use.
+
+**What is left.** Rebuild recipe creation around "purpose + sequence number", with raw JSON
+at most as an advanced option, and trim the built-in list. The recipe JSON is hashed into
+the secret, so a new recipe for the same service produces a *different* secret: anyone
+already using a secret from an `allow`-style template must still be able to reproduce it,
+either by keeping those templates available as legacy recipes or through the raw JSON
+option. Recipes stay compatible with other DiceKeys apps only where the JSON is identical.
+
+## Dark mode
+
+**Why it exists.** The app follows the system appearance (nothing forces light mode), but
+most screens were drawn for a white background: hard-coded white and black fills, the
+DiceKey and sticker illustrations, and the navy funnel behind derived values. In dark mode
+they range from off-palette to unreadable. The privacy cover is the only screen designed
+for both.
+
+**What is left.** Audit every hard-coded color for a semantic or asset-catalog equivalent
+with a dark variant, decide how the physical-object illustrations (white dice, white
+sticker sheets) should look on a dark background, and check each screen in both
+appearances.
+
+## The QR code sheet
+
+**Why it exists.** The sheet that shows a derived value as a QR code first asks which
+device will scan it, then shows a long paragraph of warning text; it reads as a
+questionnaire rather than a way to move a secret to another device. The iOS warning says
+that tapping the Camera app's banner for a scanned code starts a web search that sends the
+secret to the search engine. Whether current iOS still offers a web search for a
+plain-text QR code, and whether it is the default action, has not been checked on a
+device; test with a throwaway value before rewriting the warning.
+
+**What is left.** Redesign the sheet around the QR code itself, with any warning short and
+specific to what current iOS actually does, and consider whether AirDrop or the share
+sheet is a better path for the common case of moving a secret between one's own devices.
+
 ## Localization
 
 Every user-facing string is a literal. A String Catalog is the modern form, the project
