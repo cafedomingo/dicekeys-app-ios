@@ -1,25 +1,26 @@
 # dicekeys-app-ios
 
+Fork of [dicekeys/dicekeys-app-ios](https://github.com/dicekeys/dicekeys-app-ios). See [docs/MODERNIZATION.md](docs/MODERNIZATION.md) for the plan to bring it onto current Xcode and drop CocoaPods.
+
+Requires Xcode 26.6 or later; the deployment target is iOS 26. On an Apple silicon Mac the same app runs as "Designed for iPad".
+
 # How to launch the project
 
-1. Clone the project:
+Requirements: Xcode 26.6 or later and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
-`git clone --recurse-submodules https://github.com/dicekeys/dicekeys-app-ios` 
+```
+brew install xcodegen
+xcodegen generate
+open DiceKeys.xcodeproj
+```
 
-or init submodules manually:
+Put your Apple Developer team id in `Config/Signing.xcconfig`, select the `DiceKeys` scheme
+and a device, then Product → Run.
 
-`git submodule update --init --recursive`
-
-2. Install pods (use latest CocoaPods version, tested with 1.10.0)
-
-`pod install`
-
-3. Open `DiceKeys/DiceKeys.xcworkspace`
-
-4. Select `DiceKeys` → `iOS Device` scheme
-
-5. Select `Product` → `Run` in menu (or press `⌘` + `R`)
-
+There is no CocoaPods, no git submodule, no Objective-C and no third-party binary.
+libsodium and the DiceKeys seeded-crypto C++ library are vendored as source in
+`Packages/DiceKeysCore`; the DiceKey scanner is pure Swift. See
+[docs/MODERNIZATION.md](docs/MODERNIZATION.md) and [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 ## Testing the app
 
@@ -35,21 +36,14 @@ If you don't have a DiceKey, go to https://dicekeys.app, use the feature to gene
 - Validate app button (optional)
 - Distribute app button
 
+## License
 
-## Security Key Seed Writer
-
-The command-line utility writes a 32-byte seed to a security key for use with [DiceKeys/SoloKeys standard for seeding authenticators](https://github.com/dicekeys/seeding-webauthn).
-
-It takes one parameter: a hex format 32-byte seed (64 hex characters) optionally preceded by "0x".  For example, for seed `0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f`:
-
-```
-seed-security-key 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
-```
-
- (DO NOT USE THE ABOVE SEED!)
-
-### Build Security Key Seed Writer
-```
-xcodebuild -workspace DiceKeys.xcworkspace -scheme seed-security-key -configuration Release clean build SYMROOT=$(PWD)/build
-```
-Get built executable binary at `$(PWD)/build/Release/seed-security-key`.
+Original work in this fork is MIT-licensed (see [LICENSE](LICENSE), © 2026 Patrick Sunday).
+Everything taken from elsewhere keeps its own terms, listed in
+[THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES). Two of those components, the DiceKeys app
+this fork started from and the read-dicekey scanner the Swift scanner is ported from, have
+**no open-source license yet** (DiceKeys, LLC: "all rights reserved while we choose a
+license"). That is why this fork is for personal use and TestFlight to the owner's own
+devices, not for publication, until DiceKeys picks a license. lib-seeded (MIT), libsodium
+(ISC), nlohmann/json (MIT), Inconsolata (OFL 1.1) and the BIP-39 word list (MIT) are fine to
+redistribute.
