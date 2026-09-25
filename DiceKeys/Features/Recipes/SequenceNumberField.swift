@@ -27,14 +27,14 @@ struct SequenceNumberView: View {
                     sequenceNumber += 1
                 } label: {
                     Image(systemName: "arrow.up.square")
-                        .resizable().aspectRatio(contentMode: .fit).frame(height: 28)
+                        .resizable().scaledToFit().frame(height: 28)
                 }
                 .buttonStyle(.plain)
                 Button {
                     sequenceNumber = max(1, sequenceNumber - 1)
                 } label: {
                     Image(systemName: "arrow.down.square")
-                        .resizable().aspectRatio(contentMode: .fit).frame(height: 28)
+                        .resizable().scaledToFit().frame(height: 28)
                 }
                 .buttonStyle(.plain)
             }

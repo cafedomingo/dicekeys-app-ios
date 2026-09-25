@@ -53,7 +53,7 @@ extension Corpus {
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceThumbnailMaxPixelSize: side * 2,
+            kCGImageSourceThumbnailMaxPixelSize: side * 2
         ]
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)

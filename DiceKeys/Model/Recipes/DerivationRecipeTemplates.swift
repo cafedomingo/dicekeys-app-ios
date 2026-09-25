@@ -14,7 +14,7 @@
 //  new fields before the closing "}" with no spaces.
 //  (e.g., inserting ","lengthInBytes":64".)
 //
-  
+
 import Foundation
 
 let derivationRecipeTemplates: [DerivationRecipe] = [
@@ -54,4 +54,4 @@ let derivationRecipeTemplates: [DerivationRecipe] = [
     DerivationRecipe(type: .Secret, name: "Cryptocurrency wallet seed", recipe: """
 {"purpose":"wallet"}
 """)
-];
+]

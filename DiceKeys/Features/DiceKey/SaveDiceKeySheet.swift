@@ -20,8 +20,7 @@ struct SaveDiceKeySheet: View {
             ScrollView {
                 VStack(spacing: 16) {
                     Image("Phonelet")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .resizable().scaledToFit()
                         .background(
                             DiceKeyView(diceKey: diceKeyState.diceKey, diceBoxColor: .alexandrasBlue, diePenColor: .alexandrasBlue)
                                 .scaleEffect(0.8)

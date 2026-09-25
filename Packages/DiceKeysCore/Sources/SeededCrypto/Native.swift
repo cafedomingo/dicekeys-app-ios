@@ -28,8 +28,8 @@ enum Native {
     /// Runs a native call that writes a malloc'd UTF-8 string into its first pointer
     /// and an optional error message into its second.
     static func string(_ call: (CStringOut, CStringOut) -> Int32) throws -> String {
-        var out: UnsafeMutablePointer<CChar>? = nil
-        var error: UnsafeMutablePointer<CChar>? = nil
+        var out: UnsafeMutablePointer<CChar>?
+        var error: UnsafeMutablePointer<CChar>?
         let ok = call(&out, &error)
         defer {
             dkc_free(out)
@@ -45,7 +45,7 @@ enum Native {
     /// optional error message into its second.
     static func bytes(_ call: (BytesOut, CStringOut) -> Int32) throws -> Data {
         var out = dkc_bytes(data: nil, length: 0)
-        var error: UnsafeMutablePointer<CChar>? = nil
+        var error: UnsafeMutablePointer<CChar>?
         let ok = call(&out, &error)
         defer {
             dkc_bytes_free(out)
@@ -60,7 +60,7 @@ enum Native {
     /// Runs a native call that only reports success/failure plus a flag.
     static func flag(_ call: (UnsafeMutablePointer<Int32>, CStringOut) -> Int32) throws -> Bool {
         var flag: Int32 = 0
-        var error: UnsafeMutablePointer<CChar>? = nil
+        var error: UnsafeMutablePointer<CChar>?
         let ok = call(&flag, &error)
         defer { dkc_free(error) }
         guard ok == 1 else {

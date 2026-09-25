@@ -18,7 +18,7 @@ struct TransferStickerInstructions: View {
     var stickerSheet: StickerSheetForFace {
         StickerSheetForFace(face: face)
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Remove the \(face.letterAndDigit) sticker from the sheet with letters \(stickerSheet.firstLetter.rawValue) through \(stickerSheet.lastLetter.rawValue).")
@@ -125,9 +125,9 @@ struct TransferSticker: View {
     var body: some View {
         ChildSizeReader(size: $bounds) {
             HStack(alignment: .center, spacing: 0) {
-                StickerSheet(showLetter: face.letter, highlightFaceWithDigit: face.digit)//.frame(width: portraitSheetSize.width, height: portraitSheetSize.height)
+                StickerSheet(showLetter: face.letter, highlightFaceWithDigit: face.digit)// .frame(width: portraitSheetSize.width, height: portraitSheetSize.height)
                 Spacer().frame(maxWidth: bounds.width * centerMarginFraction)
-                StickerTargetSheet(diceKey: diceKey, showLettersBeforeIndex: faceIndex, atDieIndex: faceIndex)//.frame(width: portraitSheetSize.width, height: portraitSheetSize.height)
+                StickerTargetSheet(diceKey: diceKey, showLettersBeforeIndex: faceIndex, atDieIndex: faceIndex)// .frame(width: portraitSheetSize.width, height: portraitSheetSize.height)
             }.overlay(
                 Path { path in
                     path.move(to: lineStart)

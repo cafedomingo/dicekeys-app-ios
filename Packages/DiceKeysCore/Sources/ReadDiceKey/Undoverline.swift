@@ -23,13 +23,13 @@ private let sampleOffsetsHorizontalFirst: [Point2i] = [
     Point2i(2, 0), Point2i(-2, 0), Point2i(0, 2), Point2i(0, -2),
     // 13
     Point2i(2, -1), Point2i(-2, -1), Point2i(-1, 2), Point2i(-1, -2),
-    Point2i(2, 1), Point2i(-2, 1), Point2i(1, 2), Point2i(1, -2),
+    Point2i(2, 1), Point2i(-2, 1), Point2i(1, 2), Point2i(1, -2)
     // 21
 ]
 
 /// `SampleOffsetsVerticalFirst`: used for three-pixel samples along horizontal lines.
 private let sampleOffsetsVerticalFirst: [Point2i] = [
-    Point2i(0, 0), Point2i(0, 1), Point2i(0, -1),
+    Point2i(0, 0), Point2i(0, 1), Point2i(0, -1)
 ]
 
 /// sample-point.h `getNumberOfPixelsToSample`: how many pixels to take around a sample
@@ -163,7 +163,7 @@ private let undoverlineWhiteDarkSamplePoints: [Float] = [
     0.63333, 0.6666, 0.7,
     0.73333, 0.7666, 0.8,
     0.83333, 0.8666, 0.9,
-    0.93333, 0.9666, 1.0,
+    0.93333, 0.9666, 1.0
 ]
 
 /// find-undoverlines.cpp `undoverlineRectToLine`: the centre line of the rectangle along

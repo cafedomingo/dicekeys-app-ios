@@ -41,7 +41,7 @@ private struct Randomize: View {
     var body: some View {
         Instruction("Shake the dice in the felt bag or in your hands.")
         Spacer()
-        Image("Illustration of shaking bag").resizable().aspectRatio(contentMode: .fit)
+        Image("Illustration of shaking bag").resizable().scaledToFit()
         Spacer()
     }
 }
@@ -50,7 +50,7 @@ private struct DropDice: View {
     var body: some View {
         Instruction("Let the dice fall randomly.")
         Spacer()
-        Image("Box Bottom After Roll").resizable().aspectRatio(contentMode: .fit)
+        Image("Box Bottom After Roll").resizable().scaledToFit()
         Spacer()
         Instruction("Most should land squarely into the 25 slots in the box base.")
         Spacer()
@@ -61,7 +61,7 @@ private struct FillEmptySlots: View {
     var body: some View {
         Instruction("Put the remaining dice squarely into the empty slots.")
         Spacer()
-        Image("Box Bottom All Dice In Place").resizable().aspectRatio(contentMode: .fit)
+        Image("Box Bottom All Dice In Place").resizable().scaledToFit()
         Spacer()
         Instruction("Leave the rest in their original random order and orientations.")
         Spacer()
@@ -84,7 +84,7 @@ private struct ScanFirstTime: View {
             ScanDiceKeyView(onDiceKeyRead: { diceKey = $0; scanning = false },
                         onCancel: { scanning = false })
         } else {
-            Image(scanningImageName).resizable().aspectRatio(contentMode: .fit).offset(x: 0, y: -50)
+            Image(scanningImageName).resizable().scaledToFit().offset(x: 0, y: -50)
             PrimaryButton("Scan") { scanning = true }
         }
         Spacer()
@@ -95,7 +95,7 @@ private struct SealBox: View {
     var body: some View {
         Instruction("Place the box top above the base so that the hinges line up.")
         Spacer()
-        Image("Seal Box").resizable().aspectRatio(contentMode: .fit)
+        Image("Seal Box").resizable().scaledToFit()
         Spacer()
         Instruction("Press firmly down along the edges. The box will snap together, helping to prevent accidental re-opening.")
         Spacer()

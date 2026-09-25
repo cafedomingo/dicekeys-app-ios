@@ -31,8 +31,7 @@ struct HomeView: View {
                 } label: {
                     VStack(alignment: .center) {
                         Image("Scanning a DiceKey PNG")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
+                            .resizable().scaledToFit()
                         Text("Load your DiceKey").font(.title2)
                     }
                     .aspectRatio(3.0, contentMode: .fit)
@@ -46,11 +45,11 @@ struct HomeView: View {
                 } label: {
                     VStack(alignment: .center) {
                         HStack {
-                            Image("Illustration of shaking bag").resizable().aspectRatio(contentMode: .fit)
+                            Image("Illustration of shaking bag").resizable().scaledToFit()
                             Spacer(minLength: 10)
-                            Image("Box Bottom After Roll").resizable().aspectRatio(contentMode: .fit)
+                            Image("Box Bottom After Roll").resizable().scaledToFit()
                             Spacer(minLength: 10)
-                            Image("Seal Box").resizable().aspectRatio(contentMode: .fit)
+                            Image("Seal Box").resizable().scaledToFit()
                         }
                         .aspectRatio(4, contentMode: .fit)
                         Text("Assemble \(knownDiceKeysStore.storedDiceKeys.isEmpty ? "your First" : "a") DiceKey").font(.title2)

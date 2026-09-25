@@ -9,7 +9,7 @@ import Foundation
 
 extension FaceOrientationLetterTrbl {
     var right: FaceOrientationLetterTrbl {
-        switch(self) {
+        switch self {
         case .Top: return .Right
         case .Right: return .Bottom
         case .Bottom: return .Left
@@ -18,7 +18,7 @@ extension FaceOrientationLetterTrbl {
     }
 
     var left: FaceOrientationLetterTrbl {
-        switch(self) {
+        switch self {
         case .Top: return .Left
         case .Right: return .Top
         case .Bottom: return .Right

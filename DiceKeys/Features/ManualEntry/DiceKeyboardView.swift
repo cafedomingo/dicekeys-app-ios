@@ -32,7 +32,9 @@ private struct CharacterKey: View {
     let char: Character
 
     var body: some View {
-        KeyboardKey(size: size, withBackground: true, action: { editableDiceKeyState.keyDown(char: char) }) {
+        KeyboardKey(size: size, withBackground: true) {
+            editableDiceKeyState.keyDown(char: char)
+        } label: {
             Text(String(char))
                 .font(.system(size: 256, design: .monospaced))
                 .padding(.top, 2)
@@ -54,8 +56,7 @@ private struct ImageKey: View {
         KeyboardKey(size: size, withBackground: false, action: action) {
             image
                 .resizable()
-                .padding(2)
-                .aspectRatio(contentMode: .fit)
+                .padding(2).scaledToFit()
                 .foregroundStyle(Color.accentColor)
         }
     }

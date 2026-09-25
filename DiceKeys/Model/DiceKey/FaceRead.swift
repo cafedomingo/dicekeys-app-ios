@@ -44,7 +44,7 @@ func decodeUnderline(_ underline: Undoverline?) -> FaceWithUnderlineAndOverlineC
     return decodeUnderlineCode(underline?.code)
 }
 
-func averageAngles (_ angles: Angle...) -> Angle {
+func averageAngles(_ angles: Angle...) -> Angle {
     guard angles.count > 0 else {
         return Angle(radians: 0)
     }
@@ -91,21 +91,21 @@ class FaceRead: Decodable {
         decodeOverline(overline)
     }
 
-    var letter: FaceLetter? { get {
+    var letter: FaceLetter? {
         return majorityOf3(
             FaceLetter(rawValue: String(ocrLetterCharsFromMostToLeastLikely.prefix(1))),
             decodedUnderline?.letter,
             decodedOverline?.letter
         )
-    }}
+    }
 
-    var digit: FaceDigit? { get {
+    var digit: FaceDigit? {
         return majorityOf3(
             FaceDigit(rawValue: String(ocrDigitCharsFromMostToLeastLikely.prefix(1))),
             decodedUnderline?.digit,
             decodedOverline?.digit
         )
-    }}
+    }
 
     var angle: Angle? {
         let undoverline1 = underline ?? overline

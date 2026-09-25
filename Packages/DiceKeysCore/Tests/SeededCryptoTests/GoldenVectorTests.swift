@@ -43,6 +43,7 @@ struct GoldenFixture: Decodable, Sendable {
 
 let fixture: GoldenFixture = {
     let url = Bundle.module.url(forResource: "golden-vectors", withExtension: "json", subdirectory: "Fixtures")!
+    // swiftlint:disable:next force_try
     return try! JSONDecoder().decode(GoldenFixture.self, from: Data(contentsOf: url))
 }()
 

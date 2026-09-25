@@ -29,8 +29,8 @@ cd "$(dirname "$0")/.."
 
 # `xcode-select` may point at the Command Line Tools, which ship no xcodebuild.
 if [[ -z "${DEVELOPER_DIR:-}" && ! -x "$(xcode-select -p 2>/dev/null)/usr/bin/xcodebuild" ]]; then
-    XCODE_APP="$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)"
-    [[ -n "$XCODE_APP" ]] || { echo "No Xcode found in /Applications; set DEVELOPER_DIR." >&2; exit 1; }
+    XCODE_APP="$(printf '%s\n' /Applications/Xcode*.app | sort -V | tail -1)"
+    [[ -d "$XCODE_APP" ]] || { echo "No Xcode found in /Applications; set DEVELOPER_DIR." >&2; exit 1; }
     export DEVELOPER_DIR="$XCODE_APP/Contents/Developer"
 fi
 

@@ -111,7 +111,7 @@ private struct GlassControl: ViewModifier {
 }
 
 #Preview {
-    @Previewable @State var selected: String? = nil
+    @Previewable @State var selected: String?
     ZStack {
         Color.gray
         ScanControls(cameras: [], selectedCameraID: $selected, onCancel: {})

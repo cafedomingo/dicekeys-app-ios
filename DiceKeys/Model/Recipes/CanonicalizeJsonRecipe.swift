@@ -12,54 +12,54 @@ import Foundation
 // and its functionality should not be changed without ensuring that the reference implementation
 // and dependent implementations are changed to match.
 
-func compareObjectFieldNames(a: String, b: String) -> Bool{
+func compareObjectFieldNames(a: String, b: String) -> Bool {
     // The "#" (sequence number) field always comes last
-    if(a == "#") {
+    if a == "#" {
         return false
-    }else if(b == "#"){
+    } else if b == "#" {
         return true
     }
-    
+
     // The "purpose" field always comes first
-    else if(a == "purpose") {
+    else if a == "purpose" {
         return true
-    } else if(b == "purpose") {
+    } else if b == "purpose" {
         return false
     }
     // Otherwise, sort in alphabetical order
-    else{
+    else {
         return a < b
     }
 }
 
-func toCanonicalizeRecipeJson(_ json: Any) -> String{
-    if ((json as? NSNull) != nil)  {
+func toCanonicalizeRecipeJson(_ json: Any) -> String {
+    if (json as? NSNull) != nil {
          return "null"
     }
-    
-    if let json = json as? Array<Any> {
+
+    if let json = json as? [Any] {
         let values = json.map { data in
             toCanonicalizeRecipeJson(data)
         }.joined(separator: ",")
-        
+
         return "[\(values)]"
     }
-    
-    if let json = json as? Dictionary<String, Any> {
+
+    if let json = json as? [String: Any] {
         // Sort keys
         let keys = json.keys.sorted { a, b in
             return compareObjectFieldNames(a: a, b: b)
         }
-        let values : [String] = keys.map { key in
+        let values: [String] = keys.map { key in
             return "\(quotedJsonString(key)):\(toCanonicalizeRecipeJson(json[key]!))"
         }
-                
+
         return "{\(values.joined(separator: ","))}"
     }
-    
-    if let json = json as? String{
+
+    if let json = json as? String {
         return quotedJsonString(json)
-    }else {
+    } else {
         return "\(json)"
     }
 }

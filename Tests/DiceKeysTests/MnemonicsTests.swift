@@ -21,7 +21,6 @@ extension StringProtocol {
 }
 
 struct MnemonicsTests {
-
     @Test func wordlist() {
         #expect(Wordlist.english.count == 2048)
     }

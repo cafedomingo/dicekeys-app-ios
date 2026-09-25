@@ -16,7 +16,7 @@ Outputs
   DiceKeys/Resources/AppIcon.icon/                                Icon Composer package
   DiceKeys/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png        flat fallback
 
-Run:  python3 scripts/generate-app-icon.py   (needs `pip install pillow`)
+Run:  python3 scripts/generate-app-icon.py   (needs `pip install -r scripts/requirements.txt`)
 """
 
 import json
@@ -29,7 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "scripts" / "app-icon-source" / "original-mark-1024.png"
 RESOURCES = ROOT / "DiceKeys" / "Resources"
 SIZE = 1024
-BLUE = (52, 65, 141)          # the mark's blue
+BLUE = (52, 65, 141)  # the mark's blue
 BLUE_DARK_MODE = (99, 116, 204)  # lighter so the box reads on a dark background
 WHITE = (255, 255, 255)
 # The mark fills 144..893 x 64..959 of its 1024 canvas; scale it to sit inside the
@@ -68,10 +68,14 @@ def split_layers(mark):
         if fpx[x, y] > 64:
             continue
         exterior[y * w + x] = 1
-        if x > 0: q.append((x - 1, y))
-        if x < w - 1: q.append((x + 1, y))
-        if y > 0: q.append((x, y - 1))
-        if y < h - 1: q.append((x, y + 1))
+        if x > 0:
+            q.append((x - 1, y))
+        if x < w - 1:
+            q.append((x + 1, y))
+        if y > 0:
+            q.append((x, y - 1))
+        if y < h - 1:
+            q.append((x, y + 1))
 
     dice = Image.new("L", (w, h), 0)
     dpx = dice.load()
@@ -98,7 +102,7 @@ def silhouette(alpha, color=WHITE):
 
 
 def color_string(rgb):
-    return "extended-srgb:%.5f,%.5f,%.5f,1.00000" % tuple(c / 255 for c in rgb)
+    return "extended-srgb:{:.5f},{:.5f},{:.5f},1.00000".format(*tuple(c / 255 for c in rgb))
 
 
 def write_icon_package(frame_alpha, dice_alpha):
@@ -165,7 +169,9 @@ def write_appiconset(name, image):
         old.unlink()
     image.save(folder / "AppIcon-1024.png")
     entry = {"filename": "AppIcon-1024.png", "idiom": "universal", "platform": "ios", "size": "1024x1024"}
-    (folder / "Contents.json").write_text(json.dumps({"images": [entry], "info": {"author": "xcode", "version": 1}}, indent=2) + "\n")
+    (folder / "Contents.json").write_text(
+        json.dumps({"images": [entry], "info": {"author": "xcode", "version": 1}}, indent=2) + "\n"
+    )
 
 
 def main():

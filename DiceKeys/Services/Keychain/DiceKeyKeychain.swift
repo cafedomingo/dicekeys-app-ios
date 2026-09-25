@@ -100,9 +100,6 @@ private let defaultReason: String = "Unlock your DiceKey"
 /// only by this app on this device, behind Face ID / Touch ID / passcode.
 /// Stateless; `AppModel` owns the instance the stores share.
 struct DiceKeyKeychain: Sendable {
-
-    init() {}
-
     func getReason(forCenterFace centerFace: Face?) -> String {
         if let face = centerFace {
             return "Unlock DiceKey with \(face.letterAndDigit) in Center"

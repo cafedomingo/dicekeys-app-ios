@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-
 struct DiceKeyCenterFaceOnlyView: View {
     var centerFace: Face
 
@@ -110,7 +109,7 @@ struct DiceKeyCenterFaceOnlyView: View {
     var body: some View {
         CalculateBounds(bounds: $size) {
             ZStack(alignment: .center) {
-                //.overlay(
+                // .overlay(
                     // The lines
                 Path { path in
                     path.move(to: originalFaceCornerTopLeft)
@@ -132,13 +131,13 @@ struct DiceKeyCenterFaceOnlyView: View {
                     .frame(width: diceKeySizeModel.width, height: diceKeySizeModel.height)
                     .offset(x: offsetLeftForCenteredObjects, y: offsetTopForCenteredObjects )
                 ).overlay(
-                    //)
+                    // )
                     // The magnfified die
                     DieView(face: centerFace, dieSize: magnifiedFaceSize, faceBorderColor: Color.black)
                         .offset(
                             x: offsetLeftForCenteredObjects + magnifiedFaceFractionalOffset.x * magnifiedFaceSize,
                             y: offsetTopForCenteredObjects + diceKeySizeModel.offsetToBoxCenterY + magnifiedFaceFractionalOffset.y * magnifiedFaceSize )
-                        //.hidden()
+                        // .hidden()
                 )
             }
         }.aspectRatio(self.aspectRatio, contentMode: .fit)

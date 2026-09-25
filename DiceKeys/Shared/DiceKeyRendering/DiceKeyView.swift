@@ -22,11 +22,11 @@ struct DiceKeySizeModel {
 
     let fractionOfVerticalSpaceRequiredForTab: CGFloat = 0.1
 
-    var aspectRatio: CGFloat { get {
+    var aspectRatio: CGFloat {
       (hasTab) ?
         (1 - fractionOfVerticalSpaceUsedByTab) :
         1
-    }}
+    }
 
     var width: CGFloat { min(bounds.width, bounds.height * aspectRatio) }
     var height: CGFloat { min(bounds.height, bounds.width / aspectRatio) }
@@ -109,7 +109,7 @@ struct DiceKeyView: View {
     var showDiceAtIndexes: Set<Int>?
     var aspectRatioMatchStickeys: Bool = false
     var onFacePressed: ((_ faceIndex: Int) -> Void)?
-    
+
     @AppStorage(Settings.hideDiceExceptCenterDie) var hideDiceExceptCenterDie: Bool = false
 
     @State private var viewSize: CGSize = CGSize.zero
@@ -179,7 +179,7 @@ struct DiceKeyView: View {
     }
 
     var body: some View {
-        VStack{
+        VStack {
             CalculateBounds(bounds: self.$viewSize) {
                 ZStack(alignment: .center) {
                     // The box
@@ -195,9 +195,8 @@ struct DiceKeyView: View {
                     }
                     // The dice
                     ForEach(facePositions) { facePosition in
-                        
                         let dieIsCenterDie = (facePosition.indexInArray == 12)
-                        if (computedShowDiceAtIndexes.contains(facePosition.id) && (!hideFaces || !hideDiceExceptCenterDie || dieIsCenterDie)) {
+                        if computedShowDiceAtIndexes.contains(facePosition.id) && (!hideFaces || !hideDiceExceptCenterDie || dieIsCenterDie) {
                             DieView(partialFace: facePosition.partialFace, dieSize: faceSize, penColor: diePenColor, faceSurfaceColor: highlightIndexes.contains(facePosition.indexInArray) ? Color.highlighter : faceSurfaceColor )
                                 .position(
                                     x: hCenter + CGFloat(-2 + facePosition.column) * dieStepSize,
@@ -209,7 +208,7 @@ struct DiceKeyView: View {
                                     }
                                 }
                                 .accessibilityAddTraits(onFacePressed != nil ? .isButton : [])
-                        }else{
+                        } else {
                             RoundedRectangle(cornerRadius: sizeModel.faceRadius)
                                 .size(width: faceSize, height: faceSize)
                                 .fill(diceBoxDieSlotColor)
@@ -220,8 +219,7 @@ struct DiceKeyView: View {
                                 )
                         }
 
-                        
-                        if(hideFaces && hideDiceExceptCenterDie) {
+                        if hideFaces && hideDiceExceptCenterDie {
                             RoundedRectangle(cornerRadius: sizeModel.faceRadius)
                                 .size(width: faceSize, height: faceSize)
                                 .fill(dieIsCenterDie ? diceBoxDieSlotHiddenColor.opacity(0.5) : diceBoxDieSlotHiddenColor)
@@ -233,7 +231,6 @@ struct DiceKeyView: View {
                         }
                     }
                 }
-
             }
             .aspectRatio(aspectRatioMatchStickeys ? 130/155 : sizeModel.aspectRatio, contentMode: .fit)
             .if(hideFaces) {
@@ -241,8 +238,8 @@ struct DiceKeyView: View {
                     toggleHideFaces()
                 }
             }
-            
-            if(withShowDiceLabel){
+
+            if withShowDiceLabel {
                 Text("tap to show dice")
                     .font(.footnote)
                     .opacity(hideDiceExceptCenterDie ? 1 : 0)

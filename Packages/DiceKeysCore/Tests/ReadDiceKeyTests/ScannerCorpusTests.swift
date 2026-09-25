@@ -34,7 +34,7 @@ struct CorpusImage: Sendable, CustomTestStringConvertible {
     static let crashOnlyPrefixes = ["CausedCrash", "G21J20C42", "U5bC4bE1l", "Y6bS2rG4b"]
     static let crashOnlySuffixes = ["-super-low-res"]
     static let allowedErrorsByPrefix: [String: Int] = [
-        "A32W41T31": 1, "D2tS2tP2l": 1, "E12U31P11": 1, "R60D50Y32": 4,
+        "A32W41T31": 1, "D2tS2tP2l": 1, "E12U31P11": 1, "R60D50Y32": 4
     ]
     static let allowedErrorsBySuffix: [String: Int] = ["-faded": 1]
 
@@ -88,7 +88,7 @@ enum Corpus {
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailWithTransform: true,
             kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceThumbnailMaxPixelSize: max(raw.width, raw.height),
+            kCGImageSourceThumbnailMaxPixelSize: max(raw.width, raw.height)
         ]
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
@@ -108,13 +108,25 @@ enum Corpus {
     static let rotationIndexes = [20, 15, 10, 5, 0, 21, 16, 11, 6, 1, 22, 17, 12, 7, 2, 23, 18, 13, 8, 3, 24, 19, 14, 9, 4]
 
     static func rotateOrientation(_ o: Character) -> Character {
-        switch o { case "t": "r"; case "r": "b"; case "b": "l"; case "l": "t"; default: o }
+        switch o {
+        case "t": "r"
+        case "r": "b"
+        case "b": "l"
+        case "l": "t"
+        default: o
+        }
     }
 
     /// Upstream names faces as letter, digit, orientation; the orientation is either
     /// t/r/b/l or the number of clockwise turns from upright, 0-3.
     static func orientationLetter(_ c: Character) -> Character {
-        switch c { case "0": "t"; case "1": "r"; case "2": "b"; case "3": "l"; default: c }
+        switch c {
+        case "0": "t"
+        case "1": "r"
+        case "2": "b"
+        case "3": "l"
+        default: c
+        }
     }
 
     /// Splits a 75-character name into (letter, digit, orientation letter) per face; nil if malformed.

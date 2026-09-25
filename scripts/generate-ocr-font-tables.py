@@ -28,8 +28,7 @@ import struct
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SOURCE = os.path.join(
-    ROOT, "scripts", "ocr-font-source", "inconsolata-700.cpp.gz")
+SOURCE = os.path.join(ROOT, "scripts", "ocr-font-source", "inconsolata-700.cpp.gz")
 OUTPUT = os.path.join(ROOT, "Packages", "DiceKeysCore", "Sources", "ReadDiceKey", "OcrFontTables.swift")
 
 LETTERS = "ABCDEFGHIJKLMNOPRSTUVWXYZ"  # no Q, as in the DiceKey specification
@@ -88,7 +87,7 @@ def encode_runs(runs):
 
 def base64_literal(data, indent):
     text = base64.b64encode(data).decode("ascii")
-    lines = [text[i:i + LINE_WIDTH] for i in range(0, len(text), LINE_WIDTH)]
+    lines = [text[i : i + LINE_WIDTH] for i in range(0, len(text), LINE_WIDTH)]
     pad = " " * indent
     return pad + '"""\n' + "".join(pad + line + "\n" for line in lines) + pad + '"""'
 
@@ -108,9 +107,9 @@ def main():
     letter_penalties = parse_penalties(src, "letterPenalties")
     digit_penalties = parse_penalties(src, "digitPenalties")
     if len(letter_penalties) != ocr_w * ocr_h * len(LETTERS):
-        sys.exit("letterPenalties has %d bytes, expected %d" % (len(letter_penalties), ocr_w * ocr_h * len(LETTERS)))
+        sys.exit(f"letterPenalties has {len(letter_penalties)} bytes, expected {ocr_w * ocr_h * len(LETTERS)}")
     if len(digit_penalties) != ocr_w * ocr_h * len(DIGITS):
-        sys.exit("digitPenalties has %d bytes, expected %d" % (len(digit_penalties), ocr_w * ocr_h * len(DIGITS)))
+        sys.exit(f"digitPenalties has {len(digit_penalties)} bytes, expected {ocr_w * ocr_h * len(DIGITS)}")
 
     # Check the alphabets in the C++ are the ones we assume, in the same order.
     letters_in_cpp = re.findall(r"//\s*'([A-Z])'\s*\{\s*'([A-Z])',\s*CharacterOutlines::char_([A-Z])", src)
@@ -150,24 +149,29 @@ def main():
     out.append("//")
     out.append("")
     out.append("enum InconsolataOCRFontData {")
-    out.append("    static let charWidthOverFontSize: Float = %s" % char_w_over_font)
-    out.append("    static let charHeightOverFontSize: Float = %s" % char_h_over_font)
-    out.append("    static let fontBaselineFraction: Float = %s" % baseline)
-    out.append("    static let ocrCharWidthInPixels = %d" % ocr_w)
-    out.append("    static let ocrCharHeightInPixels = %d" % ocr_h)
-    out.append("    static let outlineCharWidthInPixels = %d" % outline_w)
-    out.append("    static let outlineCharHeightInPixels = %d" % outline_h)
+    out.append(f"    static let charWidthOverFontSize: Float = {char_w_over_font}")
+    out.append(f"    static let charHeightOverFontSize: Float = {char_h_over_font}")
+    out.append(f"    static let fontBaselineFraction: Float = {baseline}")
+    out.append(f"    static let ocrCharWidthInPixels = {ocr_w}")
+    out.append(f"    static let ocrCharHeightInPixels = {ocr_h}")
+    out.append(f"    static let outlineCharWidthInPixels = {outline_w}")
+    out.append(f"    static let outlineCharHeightInPixels = {outline_h}")
     out.append("")
     out.append("    /// The letter alphabet, in table order (no Q).")
-    out.append('    static let letterCharacters = "%s"' % LETTERS)
+    out.append(f'    static let letterCharacters = "{LETTERS}"')
     out.append("    /// The digit alphabet, in table order.")
-    out.append('    static let digitCharacters = "%s"' % DIGITS)
+    out.append(f'    static let digitCharacters = "{DIGITS}"')
     out.append("")
-    out.append("    /// %d bytes: [row 0..<%d][column 0..<%d][letter index 0..<%d]." % (len(letter_penalties), ocr_h, ocr_w, len(LETTERS)))
+    out.append(
+        f"    /// {len(letter_penalties)} bytes: "
+        f"[row 0..<{ocr_h}][column 0..<{ocr_w}][letter index 0..<{len(LETTERS)}]."
+    )
     out.append("    static let letterPenaltiesBase64 =")
     out.append(base64_literal(letter_penalties, 8))
     out.append("")
-    out.append("    /// %d bytes: [row 0..<%d][column 0..<%d][digit index 0..<%d]." % (len(digit_penalties), ocr_h, ocr_w, len(DIGITS)))
+    out.append(
+        f"    /// {len(digit_penalties)} bytes: [row 0..<{ocr_h}][column 0..<{ocr_w}][digit index 0..<{len(DIGITS)}]."
+    )
     out.append("    static let digitPenaltiesBase64 =")
     out.append(base64_literal(digit_penalties, 8))
     out.append("")
@@ -175,7 +179,7 @@ def main():
     out.append("    /// one entry per character of `letterCharacters` followed by `digitCharacters`.")
     out.append("    static let outlineRunsBase64: [String] = [")
     for ch in LETTERS + DIGITS:
-        out.append("        // '%s'" % ch)
+        out.append(f"        // '{ch}'")
         out.append(base64_literal(outlines[ch], 8) + ",")
     out.append("    ]")
     out.append("}")
@@ -183,8 +187,10 @@ def main():
 
     with open(OUTPUT, "w") as f:
         f.write("\n".join(out))
-    print("wrote %s (%d letter penalty bytes, %d digit penalty bytes, %d glyph outlines)" % (
-        os.path.relpath(OUTPUT, ROOT), len(letter_penalties), len(digit_penalties), len(outlines)))
+    print(
+        f"wrote {os.path.relpath(OUTPUT, ROOT)} ({len(letter_penalties)} letter penalty bytes, "
+        f"{len(digit_penalties)} digit penalty bytes, {len(outlines)} glyph outlines)"
+    )
 
 
 if __name__ == "__main__":

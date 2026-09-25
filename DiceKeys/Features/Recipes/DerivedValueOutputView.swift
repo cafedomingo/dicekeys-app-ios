@@ -69,6 +69,7 @@ struct DerivedValueOutputView: View {
     let diceKey = DiceKey.createFromRandom()
     DerivedValueOutputView(
         diceKey: diceKey,
+        // swiftlint:disable:next force_try
         derivedValue: try! derivationRecipeTemplates[0].derivedValue(diceKey: diceKey),
         format: $format,
         onShowQrCode: {}

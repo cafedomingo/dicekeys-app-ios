@@ -7,14 +7,14 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG="$ROOT/Packages/DiceKeysCore/Sources"
 BUILD="$ROOT/.build/golden"
 mkdir -p "$BUILD"
-CFLAGS="-O1 -w -DNATIVE_LITTLE_ENDIAN=1 -DHAVE_MADVISE -DHAVE_MMAP -DHAVE_MPROTECT -DHAVE_POSIX_MEMALIGN -DHAVE_WEAK_SYMBOLS -DCONFIGURED=1"
-for f in $(find "$PKG/CSodium" -name '*.c'); do
-  clang $CFLAGS -I"$PKG/CSodium/include" -I"$PKG/CSodium/include/sodium" -c "$f" -o "$BUILD/$(echo "$f" | tr '/' '_').o"
-done
+CFLAGS=(-O1 -w -DNATIVE_LITTLE_ENDIAN=1 -DHAVE_MADVISE -DHAVE_MMAP -DHAVE_MPROTECT -DHAVE_POSIX_MEMALIGN -DHAVE_WEAK_SYMBOLS -DCONFIGURED=1)
+while IFS= read -r -d '' f; do
+  clang "${CFLAGS[@]}" -I"$PKG/CSodium/include" -I"$PKG/CSodium/include/sodium" -c "$f" -o "$BUILD/$(echo "$f" | tr '/' '_').o"
+done < <(find "$PKG/CSodium" -name '*.c' -print0)
 LIB="$ROOT/Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded"
-for f in $(find "$LIB" "$PKG/SeededCryptoNative" -name '*.cpp'); do
+while IFS= read -r -d '' f; do
   clang++ -std=c++17 -O1 -w -I"$LIB" -I"$PKG/SeededCryptoNative/include" -I"$PKG/CSodium/include" -c "$f" -o "$BUILD/$(basename "$f").o"
-done
+done < <(find "$LIB" "$PKG/SeededCryptoNative" -name '*.cpp' -print0)
 clang++ -std=c++17 -O1 -w -I"$LIB" -I"$PKG/SeededCryptoNative/include" "$ROOT/scripts/generate-golden-vectors.cpp" "$BUILD"/*.o -o "$BUILD/generate-golden-vectors"
 "$BUILD/generate-golden-vectors" > "$ROOT/Packages/DiceKeysCore/Tests/SeededCryptoTests/Fixtures/golden-vectors.json"
 echo "Wrote Packages/DiceKeysCore/Tests/SeededCryptoTests/Fixtures/golden-vectors.json"

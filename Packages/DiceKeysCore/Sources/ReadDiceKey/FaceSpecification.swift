@@ -185,7 +185,7 @@ enum DiceKeyFaceSpecification {
         FaceSpecification(letter: UInt8(ascii: "Z"), digit: UInt8(ascii: "3"), underlineCode: 0xda, overlineCode: 0x26),
         FaceSpecification(letter: UInt8(ascii: "Z"), digit: UInt8(ascii: "4"), underlineCode: 0xdb, overlineCode: 0x21),
         FaceSpecification(letter: UInt8(ascii: "Z"), digit: UInt8(ascii: "5"), underlineCode: 0xdc, overlineCode: 0x37),
-        FaceSpecification(letter: UInt8(ascii: "Z"), digit: UInt8(ascii: "6"), underlineCode: 0xdd, overlineCode: 0x30),
+        FaceSpecification(letter: UInt8(ascii: "Z"), digit: UInt8(ascii: "6"), underlineCode: 0xdd, overlineCode: 0x30)
     ]
 
     /// `underlineCodeToFaceSpecification`: 256 entries, `.null` where no face has the code.
@@ -236,7 +236,7 @@ enum FaceDimensionsFractional {
         0.6612894999999999,
         0.7419344999999999,
         0.8225795,
-        0.9032244999999999,
+        0.9032244999999999
     ]
 }
 

@@ -116,12 +116,11 @@ struct StickerTargetSheet: View {
                     // Hand image
                     Image("Hand with Sticker")
                         .resizable()
-                        .frame(width: handImageWidth, height: handImageHeight)
-                        .aspectRatio(contentMode: .fit)
+                        .frame(width: handImageWidth, height: handImageHeight).scaledToFit()
                         .frame(width: width, height: height)
                         .offset(handImageOffsetToCenterOfDie)
                         .offset(self.offset(forFaceIndex: atDieIndex))
-                        //.mask(foregroundColor)
+                        // .mask(foregroundColor)
                     // Face being placed
                     if let diceKey = self.diceKey {
                         DieView(face: diceKey.faces[atDieIndex], dieSize: faceSize, penColor: foregroundColor ?? Color.black, faceSurfaceColor: Color.clear)

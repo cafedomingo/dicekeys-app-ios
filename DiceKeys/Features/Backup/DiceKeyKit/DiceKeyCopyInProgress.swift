@@ -63,17 +63,16 @@ struct DiceKeyCopyInProgress: View {
                 // Hand image
                 Image("Hand with Sticker")
                     .resizable()
-                    .frame(width: handImageWidth, height: handImageHeight)
-                    .aspectRatio(contentMode: .fit)
+                    .frame(width: handImageWidth, height: handImageHeight).scaledToFit()
                     .frame(width: faceSizeModel.width, height: faceSizeModel.height)
                     .offset(handImageOffsetToCenterOfDie)
                     .offset(self.offset(forFaceIndex: atDieIndex))
-                    //.mask(foregroundColor)
+                    // .mask(foregroundColor)
                 // Face being placed
                 DieView(face: diceKey.faces[atDieIndex], dieSize: faceSize, penColor: diePenColor, faceSurfaceColor: Color.clear)
                     .offset(self.offset(forFaceIndex: atDieIndex))
             }
-        }}.aspectRatio(contentMode: .fit)
+        }}.scaledToFit()
     }
 }
 

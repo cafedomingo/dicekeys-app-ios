@@ -13,7 +13,7 @@ struct BackupDiceKeyView: View {
     /// Called when re-scanning during validation replaces the original DiceKey.
     let onDiceKeyReplaced: (DiceKey) -> Void
     let onComplete: () -> Void
-    var onBackedOut: (() -> Void)? = nil
+    var onBackedOut: (() -> Void)?
     var thereAreMoreStepsAfterBackup: Bool = false
     let progress: BackupProgress
 

@@ -94,7 +94,11 @@ risk to the OCR. Measure before changing either.
 - **Swift/C++ interop** could replace the hand-written C ABI over seeded-crypto.
 - **Modernizing the vendored C++** in the subtree is possible now that it is a git subtree;
   the golden vectors would catch any change to derived output.
-- **SwiftLint** as a build plugin.
+- **SwiftLint** as a build plugin, so Xcode shows violations while editing; CI already
+  runs it.
+- **The Python generators in Swift.** `generate-app-icon.py` and
+  `generate-ocr-font-tables.py` could be Swift scripts (CoreGraphics in place of Pillow),
+  dropping Python and scripts/requirements.txt. Both run rarely and their output is committed.
 - Two `VERIFY` comments remain in the scanner (`OCR.swift` on unstable sort ties,
   `DiceKeyReader.swift` on the four-second error-correction budget). Both describe
   faithfully ported upstream behaviour and need a key with a persistent bit error to

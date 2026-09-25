@@ -100,8 +100,7 @@ struct ValidateBackupView: View {
                 }
                 VStack {
                     Image(scanningBackupImageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .resizable().scaledToFit()
                         .offset(x: 0, y: -50)
                     PrimaryButton("Scan copy to validate") { scanningCopy = true }
                 }
@@ -112,7 +111,7 @@ struct ValidateBackupView: View {
 }
 
 #Preview {
-    @Previewable @State var backupScanned: DiceKey? = nil
+    @Previewable @State var backupScanned: DiceKey?
     VStack {
         ValidateBackupView(target: .Stickeys, originalDiceKey: DiceKey.createFromRandom(), onOriginalRescanned: { _ in }, backupScanned: $backupScanned)
     }

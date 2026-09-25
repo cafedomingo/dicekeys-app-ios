@@ -15,13 +15,13 @@ public class Mnemonic {
         case invalidMnemonic
         case invalidEntropy
     }
-    
+
     // Entropy -> Mnemonic
     public static func toMnemonic(_ bytes: [UInt8], wordlist: [String] = Wordlist.english) throws -> [String] {
-        let entropyBits = String(bytes.flatMap { ("00000000" + String($0, radix:2)).suffix(8) })
+        let entropyBits = String(bytes.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
         let checksumBits = Mnemonic.deriveChecksumBits(bytes)
         let bits = entropyBits + checksumBits
-        
+
         var phrase = [String]()
         for i in 0..<(bits.count / 11) {
             let wi = Int(bits[bits.index(bits.startIndex, offsetBy: i * 11)..<bits.index(bits.startIndex, offsetBy: (i + 1) * 11)], radix: 2)!
@@ -29,13 +29,13 @@ public class Mnemonic {
         }
         return phrase
     }
-    
+
     public static func deriveChecksumBits(_ bytes: [UInt8]) -> String {
-        let ENT = bytes.count * 8;
+        let ENT = bytes.count * 8
         let CS = ENT / 32
-        
+
         let hash = SHA256.hash(data: bytes)
-        let hashbits = String(hash.flatMap { ("00000000" + String($0, radix:2)).suffix(8) })
+        let hashbits = String(hash.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
         return String(hashbits.prefix(CS))
     }
 }

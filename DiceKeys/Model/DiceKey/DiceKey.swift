@@ -44,7 +44,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     static func == (lhs: DiceKey, rhs: DiceKey) -> Bool {
         (0..<25).allSatisfy { index in lhs.faces[index] == rhs.faces[index] }
     }
-    
+
     enum ConstructorError: Error {
         case emptyFace
     }
@@ -53,7 +53,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     let faces: [Face]
 
     /// The set of faces as a more formally-defined 25-item Tuple
-    var faceTuple: FaceTuple { get {
+    var faceTuple: FaceTuple {
         return (
             faces[0], faces[1], faces[2], faces[3], faces[4],
             faces[5], faces[6], faces[7], faces[8], faces[9],
@@ -61,7 +61,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
             faces[15], faces[16], faces[17], faces[18], faces[19],
             faces[20], faces[21], faces[22], faces[23], faces[24]
         )
-    }}
+    }
 
     init(_ faces: [Face]) {
         precondition(faces.count == 25)
@@ -77,16 +77,15 @@ final class DiceKey: Identifiable, Equatable, Sendable {
             return face
         }
     }
-    
+
     /// The center face of a DiceKey, useful as the most salient face for users to
     /// associate with the key.
     var centerFace: Face { faces[12] }
-    
+
     /// A common nickname for the DiceKey
     var nickname: String {
         nicknameForDiceKey(centerFace: self.centerFace)
     }
-
 
     /// Creae a DiceKey from a low-quality random number generator for testing purposes
     /// (not for cryptographic-quality DiceKey production)
@@ -99,7 +98,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
             )
         })
     }
-    
+
     /// A sample DiceKey for use in development, such as generating sample views
     static var Example: DiceKey {
         DiceKey((0..<25).map { index in
@@ -230,7 +229,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
         let (rotationWithSmallestDifference, _) = mostSimilarRotationWithDifference(other, maxDifferenceToRotateFor: maxDifferenceToRotateFor)
         return rotationWithSmallestDifference
     }
-    
+
     // Compare two DiceKeys to see if they will generate the same cryptographic seed
     static func rotationIndependentEquals(_ first: DiceKey?, _ second: DiceKey?) -> Bool {
         guard let a = first, let b = second else { return false }
@@ -254,17 +253,16 @@ final class DiceKey: Identifiable, Equatable, Sendable {
         }
         return diceKeyWithEarliestHumanReadableForm
     }
-    
+
     func toCenterUprightRotation() -> DiceKey {
-        for candidateDiceKey in threeAlternateRotations {
-            if(candidateDiceKey.centerFace.orientationAsLowercaseLetterTrbl.asClockwiseDegrees == 0){
-                return candidateDiceKey
-            }
+        for candidateDiceKey in threeAlternateRotations
+        where candidateDiceKey.centerFace.orientationAsLowercaseLetterTrbl.asClockwiseDegrees == 0 {
+            return candidateDiceKey
         }
-        
+
         return self
     }
-    
+
     private let recipeFor16ByteUniqueIdentifier = "{\"purpose\":\"a unique identifier for this DiceKey\",\"lengthInBytes\":16}"
 
     /// Filled on first use: the id is read from view bodies and costs a derivation, and it
@@ -275,6 +273,8 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     var idBytes: Data {
         idBytesCache.withLock { cached in
             if let cached { return cached }
+            // A fixed, valid recipe: derivation cannot fail.
+            // swiftlint:disable:next force_try
             let bytes = try! Secret.deriveFromSeed(withSeedString: toSeed(), recipe: recipeFor16ByteUniqueIdentifier).secretBytes()
             cached = bytes
             return bytes

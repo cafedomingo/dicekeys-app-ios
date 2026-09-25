@@ -34,7 +34,7 @@ extension FaceOrientationLetterTrbl {
         case FaceOrientationLetterTrbl.Left: return 270
         }
     }
-    
+
     var asFacingString: String {
         switch self {
         case .Top: return "upright"
@@ -63,7 +63,7 @@ struct Face: FaceIdentifier, Equatable {
     var letterAndDigit: String {
         letter.rawValue + digit.rawValue
     }
-    
+
     var humanReadableForm: String {
         letter.rawValue + digit.rawValue + orientationAsLowercaseLetterTrbl.rawValue
     }

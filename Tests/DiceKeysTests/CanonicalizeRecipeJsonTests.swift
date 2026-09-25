@@ -14,7 +14,6 @@ import Testing
 // and dependent implementations are changed to match.
 
 struct CanonicalizeRecipeJsonTests {
-
     static let canonicalizationTestVector: [(input: String, expected: String)] = [
         // Order fields correctly
         ("{\"#\":3,\"allow\":[{\"host\":\"*.example.com\"}]}", "{\"allow\":[{\"host\":\"*.example.com\"}],\"#\":3}"),

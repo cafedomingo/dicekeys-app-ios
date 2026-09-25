@@ -13,7 +13,7 @@ import AVFoundation
 struct ScanDiceKeyView: View {
     var stickers: Bool = false
     let onDiceKeyRead: (_ diceKey: DiceKey) -> Void
-    var onCancel: (() -> Void)? = nil
+    var onCancel: (() -> Void)?
 
     @State private var scanModel = DiceKeyScanModel()
     @State private var processor = DiceKeyFrameProcessor()

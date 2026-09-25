@@ -132,7 +132,7 @@ struct SavedDiceKeysView: View {
     @Environment(KnownDiceKeysStore.self) private var knownDiceKeysStore
 
     let onDiceKeyLoaded: (DiceKey) -> Void
-    var saveCallback: ((_ diceKey: DiceKey) -> Void)? = nil
+    var saveCallback: ((_ diceKey: DiceKey) -> Void)?
 
     private var diceKeysStoredInMemory: [DiceKey] { diceKeyMemoryStore.allDiceKeys }
 

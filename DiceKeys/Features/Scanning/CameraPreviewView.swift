@@ -17,7 +17,7 @@ struct CameraPreviewView {
     let onFrame: @MainActor @Sendable (ScannedFrame) -> Void
     /// Called when the session cannot start, so the screen can say so rather than
     /// showing a black rectangle with no explanation.
-    var onFailure: (@MainActor @Sendable (any Error) -> Void)? = nil
+    var onFailure: (@MainActor @Sendable (any Error) -> Void)?
 
     @MainActor
     final class Coordinator {
