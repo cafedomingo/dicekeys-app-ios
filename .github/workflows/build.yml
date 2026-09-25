@@ -1,20 +1,89 @@
-name: Swift
+name: Build
 
+# Pushes to main, and pull requests into it. A branch push that is also a PR would
+# otherwise run every job twice (the push and the pull_request event), and the concurrency
+# group cannot merge them because the two events have different refs.
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  # The native package (libsodium, seeded-crypto, and the Swift scanner) builds and tests
+  # with plain SwiftPM on the macOS host. GoldenVectorTests is the tripwire for any change
+  # to derived secrets.
+  native-package:
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          submodules: recursive
-      - name: Build workspace
+      - uses: actions/checkout@v7
+      - name: Select newest Xcode
         run: |
-          pod install
-          xcrun simctl list
-          xcodebuild clean test -workspace "DiceKeys.xcworkspace" -scheme 'DiceKeys (iOS)' -destination 'platform=iOS Simulator,name=iPhone 13'
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE" && xcodebuild -version && swift --version
+      # Release build: the scanner corpus is 23 twelve-megapixel photos, which takes
+      # minutes at -Onone and seconds optimized.
+      - name: Build and test package
+        working-directory: Packages/DiceKeysCore
+        run: swift test -c release -Xswiftc -enable-testing --parallel
+
+  # The app needs a generated Xcode project (XcodeGen) and the iOS SDK.
+  apps:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE" && xcodebuild -version
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build iOS app (simulator)
+        run: |
+          set -o pipefail
+          xcodebuild build -project DiceKeys.xcodeproj -scheme DiceKeys \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep -E 'error:|warning: unre|BUILD|\*\*' || true
+          grep -q 'BUILD SUCCEEDED' build-ios.log
+      - name: App unit tests (simulator)
+        run: |
+          set -o pipefail
+          # Pick the newest available iPhone simulator by UDID (names alone can be ambiguous
+          # across runtimes on the hosted runners).
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys,re
+          devices=json.load(sys.stdin)["devices"]
+          best=None
+          for runtime,devs in devices.items():
+              m=re.search(r"iOS-(\d+)-(\d+)", runtime)
+              if not m: continue
+              version=(int(m.group(1)),int(m.group(2)))
+              for d in devs:
+                  if d.get("isAvailable") and d["name"].startswith("iPhone"):
+                      key=(version,d["name"])
+                      if best is None or key>best[0]: best=(key,d["udid"])
+          print(best[1] if best else "")')
+          echo "Simulator: $UDID"
+          test -n "$UDID"
+          xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
+          grep -q 'TEST SUCCEEDED' test-ios.log
+      # Diagnostics only: a flaky artifact service must not fail a build that passed.
+      - name: Upload logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcodebuild-logs
+          path: "*.log"
+          retention-days: 7
