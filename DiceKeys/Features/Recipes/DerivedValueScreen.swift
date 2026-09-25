@@ -63,6 +63,7 @@ struct DerivedValueScreen: View {
             .privacyCover()
         }
         .onChange(of: recipe, initial: true) { _, recipe in
+            let hadValue = derivedValue != nil
             do {
                 derivedValue = try recipe?.derivedValue(diceKey: diceKey)
                 derivationError = nil
@@ -70,25 +71,12 @@ struct DerivedValueScreen: View {
                 derivedValue = nil
                 derivationError = error.localizedDescription
             }
-        }
-        .onAppear {
-            outputFormat = defaultOutputFormat
-        }
-    }
-
-    /// Templates for PGP, SSH, and wallets open on the format their users expect.
-    private var defaultOutputFormat: DerivedValueView {
-        guard let recipe, let derivedValue else { return .JSON }
-        if let purpose = recipe.purpose() {
-            if purpose == "pgp" && recipe.type == .SigningKey {
-                return .OpenPGPPrivateKey
-            } else if purpose == "ssh" && recipe.type == .SigningKey {
-                return .OpenSSHPrivateKey
-            } else if purpose == "wallet" && recipe.type == .Secret && derivedValue.views.contains(.BIP39) {
-                return .BIP39
+            // Choose the format once there is a value to choose for: on the first value, or
+            // when the chosen format no longer applies. Editing a recipe otherwise keeps it.
+            if let recipe, let derivedValue, !hadValue || !derivedValue.views.contains(outputFormat) {
+                outputFormat = recipe.defaultOutputFormat(for: derivedValue)
             }
         }
-        return derivedValue.views.first ?? .JSON
     }
 }
 
