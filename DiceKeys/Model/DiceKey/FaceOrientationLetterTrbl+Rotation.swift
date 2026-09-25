@@ -5,8 +5,6 @@
 //  Created by Stuart Schechter on 2021/01/22.
 //
 
-import Foundation
-
 extension FaceOrientationLetterTrbl {
     var right: FaceOrientationLetterTrbl {
         switch self {

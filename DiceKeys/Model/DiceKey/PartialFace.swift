@@ -5,8 +5,6 @@
 //  Created by Stuart Schechter on 2021/01/20.
 //
 
-import Foundation
-
 /// A face being entered by hand: any of letter, digit, or orientation may
 /// still be missing.
 struct PartialFace: Identifiable, Equatable, Sendable {
@@ -16,10 +14,6 @@ struct PartialFace: Identifiable, Equatable, Sendable {
 
     let index: Int
     var id: String { String(describing: index) }
-
-    var isDiceFaceModelValid: Bool {
-        letter != nil && digit != nil
-    }
 
     var face: Face? {
         if let faceLetter = letter, let faceDigit = digit {

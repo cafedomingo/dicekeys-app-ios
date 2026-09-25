@@ -97,12 +97,6 @@ final class DiceKeyMemoryStore {
         expireKey(diceKey.id)
     }
 
-    func expireForegroundKey() {
-        if !foregroundDiceKeyId.isEmpty {
-            expireKey(foregroundDiceKeyId)
-        }
-    }
-
     func expireAllKeys() {
         keyCache = [:]
         unlockedStates = [:]
@@ -131,10 +125,6 @@ final class DiceKeyMemoryStore {
         }
     }
 
-    func deferExpirationCountdown() {
-        memoryStoreExpirationState = .countdownDeferred
-    }
-
     // MARK: Queries
 
     var allDiceKeys: [DiceKey] {
@@ -158,10 +148,6 @@ final class DiceKeyMemoryStore {
             return whenExpiring
         }
         return .distantFuture
-    }
-
-    var isTimerOn: Bool {
-        expirationTime != .distantFuture && expirationTime >= currentTime
     }
 
     var timeRemainingInFractionalSeconds: TimeInterval {

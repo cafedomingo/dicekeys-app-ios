@@ -9,16 +9,6 @@ import Foundation
 import Synchronization
 import SeededCrypto
 
-typealias Tuple25<T> = (
-    T, T, T, T, T,
-    T, T, T, T, T,
-    T, T, T, T, T,
-    T, T, T, T, T,
-    T, T, T, T, T
-)
-
-typealias FaceTuple = Tuple25<Face>
-
 let clockwise90DegreeRotationIndexesFor5x5Grid = [
     20, 15, 10, 5, 0,
     21, 16, 11, 6, 1,
@@ -51,17 +41,6 @@ final class DiceKey: Identifiable, Equatable, Sendable {
 
     /// The 25 faces that make up a DiceKey, each with a letter, digit, and orientation
     let faces: [Face]
-
-    /// The set of faces as a more formally-defined 25-item Tuple
-    var faceTuple: FaceTuple {
-        return (
-            faces[0], faces[1], faces[2], faces[3], faces[4],
-            faces[5], faces[6], faces[7], faces[8], faces[9],
-            faces[10], faces[11], faces[12], faces[13], faces[14],
-            faces[15], faces[16], faces[17], faces[18], faces[19],
-            faces[20], faces[21], faces[22], faces[23], faces[24]
-        )
-    }
 
     init(_ faces: [Face]) {
         precondition(faces.count == 25)
@@ -136,20 +115,6 @@ final class DiceKey: Identifiable, Equatable, Sendable {
         })
     }
 
-    /// Returns a DiceKey stripped of all so that all dice are facing upright (top)
-    /// (non-mutating)
-    func withoutOrientations() -> DiceKey {
-        return DiceKey(
-            faces.map {
-                Face(
-                    letter: $0.letter,
-                    digit: $0.digit,
-                    orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.Top
-                )
-            }
-        )
-    }
-
     /// Returns a DiceKey rotated 90 degrees clockwise (non-mutating)
     func rotatedClockwise90Degrees() -> DiceKey {
         return DiceKey(
@@ -181,11 +146,6 @@ final class DiceKey: Identifiable, Equatable, Sendable {
             result.append(result[result.count-1].rotatedClockwise90Degrees())
         }
         return result
-    }
-
-    /// A four-element array of the four possible rotations/orientations of a DiceKey
-    private var allFourPossibleRotations: [DiceKey] {
-        [self] + self.threeAlternateRotations
     }
 
     /// Count the number of fields different between two DiceKeys.

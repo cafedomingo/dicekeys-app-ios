@@ -66,8 +66,6 @@ struct TransferSticker: View {
     }
 
     var faceSizeModel: DiceKeySizeModel { DiceKeySizeModel(portraitSheetSize.width) }
-    var faceSize: CGFloat { faceSizeModel.faceSize }
-    var faceStepSize: CGFloat { faceSizeModel.stepSize }
 
     var face: Face {
         diceKey.faces[faceIndex]

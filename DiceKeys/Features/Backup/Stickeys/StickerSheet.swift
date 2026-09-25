@@ -16,7 +16,6 @@ struct StickerSheet: View {
     var highlightFaceWithDigit: FaceDigit?
     let penColorOfHighlightedFace: Color = Color(CGColor(red: 0, green: 0, blue: 0, alpha: 0.2))
 
-    var maxFractionalSpace = CGFloat(0.8)
     @State private var bounds: CGSize = .zero
 
     var height: CGFloat {
@@ -30,9 +29,6 @@ struct StickerSheet: View {
     }
     var firstLetterIndex: Int {
         pageIndex * lettersPerStickySheet
-    }
-    var letterIndexesOnPage: Range<Int> {
-        (firstLetterIndex..<(firstLetterIndex + lettersPerStickySheet))
     }
 
     var width: CGFloat {

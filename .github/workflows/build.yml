@@ -10,6 +10,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  SWIFTLINT_VERSION: 0.65.1
+  SWIFTLINT_SHA256: c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0
+
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
@@ -25,8 +29,6 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 15
     env:
-      SWIFTLINT_VERSION: 0.65.1
-      SWIFTLINT_SHA256: c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0
       SHELLCHECK_VERSION: 0.11.0
       SHELLCHECK_SHA256: 339b930feb1ea764467013cc1f72d09cd6b869ebf1013296ba9055ab2ffbd26f
       ACTIONLINT_VERSION: 1.7.12
@@ -104,6 +106,16 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep -E 'error:|warning: unre|BUILD|\*\*' || true
           grep -q 'BUILD SUCCEEDED' build-ios.log
+      # Dead code: the analyzer reads the compiler invocations from the clean build above.
+      # .swiftlint-analyze.yml limits it to the app target.
+      - name: Unused code (swiftlint analyze)
+        run: |
+          set -euo pipefail
+          curl -sSfL -o "$RUNNER_TEMP/swiftlint.zip" "https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT_VERSION/portable_swiftlint.zip"
+          echo "$SWIFTLINT_SHA256  $RUNNER_TEMP/swiftlint.zip" | shasum -a 256 -c -
+          unzip -q -o "$RUNNER_TEMP/swiftlint.zip" swiftlint -d "$RUNNER_TEMP"
+          "$RUNNER_TEMP/swiftlint" analyze --strict --config .swiftlint.yml --config .swiftlint-analyze.yml \
+            --compiler-log-path build-ios.log --reporter github-actions-logging
       - name: App unit tests (simulator)
         run: |
           set -o pipefail

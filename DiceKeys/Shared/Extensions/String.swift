@@ -37,9 +37,3 @@ extension String {
         UIPasteboard.general.string = self
     }
 }
-
-extension Optional where Wrapped == String {
-    var isBlank: Bool {
-        self?.isBlank ?? true
-    }
-}

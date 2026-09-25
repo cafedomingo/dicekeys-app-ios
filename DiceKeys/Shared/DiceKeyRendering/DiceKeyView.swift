@@ -31,16 +31,8 @@ struct DiceKeySizeModel {
     var width: CGFloat { min(bounds.width, bounds.height * aspectRatio) }
     var height: CGFloat { min(bounds.height, bounds.width / aspectRatio) }
 
-    var size: CGSize {
-        CGSize(width: width, height: height)
-    }
-
     var fractionOfVerticalSpaceUsedByTab: CGFloat {
         hasTab ? fractionOfVerticalSpaceRequiredForTab : 0
-    }
-
-    var fractionOfVerticalSpaceUsedByBox: CGFloat {
-        1 - fractionOfVerticalSpaceUsedByTab
     }
 
     var linearSizeOfBox: CGFloat {
@@ -149,12 +141,9 @@ struct DiceKeyView: View {
     }
 
     var hCenter: CGFloat { sizeModel.centerX }
-    var vCenterOfView: CGFloat { sizeModel.centerY }
     var vCenterOfBox: CGFloat { sizeModel.boxCenterY }
     var faceSize: CGFloat { sizeModel.faceSize }
     var dieStepSize: CGFloat { sizeModel.stepSize }
-    var width: CGFloat { sizeModel.width }
-    var height: CGFloat { sizeModel.height }
     var linearSizeOfBox: CGFloat { sizeModel.linearSizeOfBox }
 
     private struct DiePosition: Identifiable {

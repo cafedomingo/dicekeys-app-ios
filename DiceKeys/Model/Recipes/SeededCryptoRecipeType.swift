@@ -7,8 +7,6 @@
 //  the recipe model and its UI need this type, the rest of that file was API-only.
 //
 
-import Foundation
-
 enum SeededCryptoRecipeType: String, Codable, CaseIterable, Identifiable {
     case Password, Secret, SigningKey, SymmetricKey, UnsealingKey
 

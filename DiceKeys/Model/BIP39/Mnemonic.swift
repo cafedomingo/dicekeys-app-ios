@@ -7,7 +7,6 @@
 //  Created by Liu Pengpeng on 2019/10/10.
 //  Edited by Angelos Veglektsis on 7/12/22.
 //
-import Foundation
 import CryptoKit
 
 public class Mnemonic {

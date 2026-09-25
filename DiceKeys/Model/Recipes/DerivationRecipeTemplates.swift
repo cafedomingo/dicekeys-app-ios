@@ -15,8 +15,6 @@
 //  (e.g., inserting ","lengthInBytes":64".)
 //
 
-import Foundation
-
 let derivationRecipeTemplates: [DerivationRecipe] = [
 	DerivationRecipe(type: .Password, name: "1Password", recipe: """
 {"allow":[{"host":"*.1password.com"}]}

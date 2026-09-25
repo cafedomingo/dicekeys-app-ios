@@ -5,7 +5,6 @@
 //  Created by Stuart Schechter on 2020/12/01.
 //
 
-import Foundation
 import Observation
 
 /// Observable state for a DiceKey that is unlocked in memory: the key itself and
@@ -33,13 +32,7 @@ final class UnlockedDiceKeyState: Identifiable {
 
     nonisolated var id: String { keyId }
 
-    var centerFace: Face { diceKey.centerFace }
-
     var nickname: String { diceKey.nickname }
-
-    var isCenterFaceStored: Bool {
-        knownDiceKeysStore.centerFace(forKeyId: keyId) != nil
-    }
 
     init(diceKey: DiceKey, knownDiceKeysStore: KnownDiceKeysStore, keychain: DiceKeyKeychain) {
         self.diceKey = diceKey
@@ -68,9 +61,5 @@ final class UnlockedDiceKeyState: Identifiable {
             lastError = PresentableError(title: stored ? "Couldn't Save DiceKey" : "Couldn't Remove DiceKey", error: error)
         }
         isDiceKeyStoredCache = keychain.hasDiceKey(forKeyId: keyId)
-    }
-
-    func clearError() {
-        lastError = nil
     }
 }

@@ -7,7 +7,6 @@
 //  typed `Route` rather than flipping booleans.
 //
 
-import Foundation
 import Observation
 
 /// Every screen reachable by pushing onto the root `NavigationStack`.
@@ -32,11 +31,6 @@ final class AppRouter {
 
     func push(_ route: Route) {
         path.append(route)
-    }
-
-    func pop() {
-        guard !path.isEmpty else { return }
-        path.removeLast()
     }
 
     func popToRoot() {

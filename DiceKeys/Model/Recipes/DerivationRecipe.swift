@@ -30,10 +30,6 @@ func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int 
     return recipe.canonicalize()
 }
 
-func getRecipeJson(_ hosts: String..., sequenceNumber: Int = 1) -> String {
-    getRecipeJson(hosts: hosts, sequenceNumber: sequenceNumber)
-}
-
 extension Dictionary where Key == String, Value == Any {
     func rebuild(updateJsonObject: [String: Any], skipProperties: [String]) -> [String: Any] {
         var dict = [String: Any]()
@@ -76,21 +72,6 @@ extension Dictionary where Key == String, Value == Any {
     }
 }
 
-extension Dictionary {
-    var jsonData: Data? {
-        return try? JSONSerialization.data(withJSONObject: self, options: [.prettyPrinted])
-    }
-
-    func toJSONString() -> String? {
-        if let jsonData = jsonData {
-            let jsonString = String(data: jsonData, encoding: .utf8)
-            return jsonString
-        }
-
-        return nil
-    }
-}
-
 extension String {
     func parseJsonObject() -> [String: Any]? {
         if let data = self.data(using: .utf8) {
@@ -103,15 +84,6 @@ extension String {
 
     func canonicalizeRecipeJson() -> String {
         return parseJsonObject()?.canonicalize() ?? self
-    }
-
-    func recipeWith(sequence: Int?) -> String {
-        if let sequence = sequence, var json = self.parseJsonObject() {
-            json.addSequenceNumberToDerivationOptionsJson(sequence)
-            return json.canonicalize()
-        }
-
-        return self
     }
 }
 

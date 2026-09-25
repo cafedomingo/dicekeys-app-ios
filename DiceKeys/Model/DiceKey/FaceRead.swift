@@ -11,10 +11,6 @@ import SwiftUI
 struct Point: Decodable {
     let x: CGFloat
     let y: CGFloat
-
-    var cgPoint: CGPoint {
-        CGPoint(x: x, y: y)
-    }
 }
 
 struct Line: Decodable {

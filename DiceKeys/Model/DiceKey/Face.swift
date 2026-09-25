@@ -5,8 +5,6 @@
 //  Created by Stuart Schechter on 2020/11/12.
 //
 
-import Foundation
-
 extension FaceOrientationLetterTrbl {
     func rotate90() -> FaceOrientationLetterTrbl {
         switch self {
@@ -14,15 +12,6 @@ extension FaceOrientationLetterTrbl {
         case FaceOrientationLetterTrbl.Right: return FaceOrientationLetterTrbl.Bottom
         case FaceOrientationLetterTrbl.Bottom: return FaceOrientationLetterTrbl.Left
         case FaceOrientationLetterTrbl.Left: return FaceOrientationLetterTrbl.Top
-        }
-    }
-
-    var asClockwiseRadians: Double {
-        switch self {
-        case FaceOrientationLetterTrbl.Top: return 0
-        case FaceOrientationLetterTrbl.Right: return Double.pi / 2
-        case FaceOrientationLetterTrbl.Bottom: return Double.pi
-        case FaceOrientationLetterTrbl.Left: return Double.pi * 3 / 2
         }
     }
 
@@ -45,17 +34,7 @@ extension FaceOrientationLetterTrbl {
     }
 }
 
-protocol FaceIdentifier {
-    var letter: FaceLetter { get }
-    var digit: FaceDigit { get }
-}
-
-struct FaceIdentity: FaceIdentifier {
-    let letter: FaceLetter
-    let digit: FaceDigit
-}
-
-struct Face: FaceIdentifier, Equatable {
+struct Face: Equatable {
     let letter: FaceLetter
     let digit: FaceDigit
     let orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl
@@ -66,11 +45,6 @@ struct Face: FaceIdentifier, Equatable {
 
     var humanReadableForm: String {
         letter.rawValue + digit.rawValue + orientationAsLowercaseLetterTrbl.rawValue
-    }
-
-    func rotate90() -> Face {
-            return Face(letter: letter, digit: digit, orientationAsLowercaseLetterTrbl: self.orientationAsLowercaseLetterTrbl.rotate90()
-        )
     }
 
     func numberOfFieldsDifferent(fromOtherFace other: Face) -> Int {

@@ -6,7 +6,6 @@
 //
 
 import AVFoundation
-import Foundation
 
 extension AVCaptureDevice {
     /// Whether the device is a connected video camera we can show a preview for.

@@ -37,13 +37,6 @@ enum DerivedValueView: Int, CaseIterable, Identifiable {
     }
 }
 
-protocol SerializableProtocol {
-    func toJson() -> String
-}
-
-extension Password: SerializableProtocol {
-}
-
 protocol DerivedValue {
     var views: [DerivedValueView] { get }
     func valueForView(view: DerivedValueView) -> String

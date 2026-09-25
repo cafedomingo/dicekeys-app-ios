@@ -10,7 +10,6 @@ import SwiftUI
 struct StickerTargetSheetSpecification {
     static let longSideOverShortSide = CGFloat(155.0/130.0)
     static let shortSideOverLongSide = 1/longSideOverShortSide
-    static let lettersPerStickySheet = 5
 }
 
 struct StickerTargetSheet: View {
@@ -79,9 +78,6 @@ struct StickerTargetSheet: View {
             width: 0.3695 * handImageWidth,
             height: 0.2845 * handImageHeight
         )
-    }
-    var letterRange: Range<Int> {
-        (0..<showLettersBeforeIndex)
     }
 
     var body: some View {

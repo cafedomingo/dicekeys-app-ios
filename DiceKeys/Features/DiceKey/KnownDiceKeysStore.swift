@@ -23,8 +23,6 @@ struct StoredEncryptedDiceKeyMetadata: Identifiable, Hashable, Sendable {
         centerFaceInHumanReadableForm.count < 3 ? nil : try? Face(fromHumanReadableForm: centerFaceInHumanReadableForm)
     }
 
-    var isCenterFaceStored: Bool { centerFace != nil }
-
     var nickname: String {
         guard let centerFace else { return "Unknown DiceKey" }
         return nicknameForDiceKey(centerFace: centerFace)
@@ -79,10 +77,6 @@ final class KnownDiceKeysStore {
         let value = humanReadableForm ?? ""
         centerFacesByKeyId[keyId] = value
         defaults.set(value, forKey: Self.centerFaceKey(forKeyId: keyId))
-    }
-
-    func centerFace(forKeyId keyId: String) -> Face? {
-        metadata(forKeyId: keyId).centerFace
     }
 
     func metadata(forKeyId keyId: String) -> StoredEncryptedDiceKeyMetadata {

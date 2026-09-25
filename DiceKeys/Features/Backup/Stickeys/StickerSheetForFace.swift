@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 
 struct StickerSheetForFace {
     let face: Face

@@ -39,10 +39,4 @@ final class DiceKeyScanModel {
         // apply a fixed 90° turn here to compensate for the raw landscape-native buffer.
         completedDiceKey = diceKey
     }
-
-    func reset() {
-        frameCount = 0
-        facesRead = []
-        completedDiceKey = nil
-    }
 }

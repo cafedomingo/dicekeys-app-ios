@@ -5,18 +5,12 @@
 //  Created by Stuart Schechter on 2020/12/11.
 //
 
-import Foundation
 import Observation
 
 enum RecipeBuilderProgress: Equatable {
     case incomplete
     case error(String)
     case ready(DerivationRecipe)
-
-    var isReady: Bool {
-        if case .ready = self { return true }
-        return false
-    }
 
     var recipe: DerivationRecipe? {
         if case .ready(let derivationRecipe) = self { return derivationRecipe }

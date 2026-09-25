@@ -72,18 +72,12 @@ struct DieFaceUprightView: View {
 
     var sizeOfRenderedFace: CGFloat { dieSize * linearFractionOfFaceRenderedToDieSize }
 
-    var left: CGFloat { (dieSize - sizeOfRenderedFace) / 2 }
     var top: CGFloat { (dieSize - sizeOfRenderedFace) / 2 }
 
     var hCenter: CGFloat { dieSize / 2 }
-    var vCenter: CGFloat { dieSize / 2 }
 
-    var textBaseline: CGFloat { top + FaceDimensionsFractional.textBaselineY * sizeOfRenderedFace }
-    var letterLeft: CGFloat { left + (1 - FaceDimensionsFractional.textRegionWidth) * sizeOfRenderedFace / 2 }
-    var digitLeft: CGFloat { left + (1 + FaceDimensionsFractional.spaceBetweenLetterAndDigit) * sizeOfRenderedFace / 2 }
     var underlineVCenter: CGFloat { top + ( FaceDimensionsFractional.underlineTop + FaceDimensionsFractional.undoverlineThickness / 2) * sizeOfRenderedFace }
     var overlineVCenter: CGFloat { top + ( FaceDimensionsFractional.overlineTop + FaceDimensionsFractional.undoverlineThickness / 2) * sizeOfRenderedFace }
-    var overlineTop: CGFloat { top + FaceDimensionsFractional.overlineTop * sizeOfRenderedFace }
     var fontSize: CGFloat {
         FaceDimensionsFractional.fontSize * sizeOfRenderedFace
     }

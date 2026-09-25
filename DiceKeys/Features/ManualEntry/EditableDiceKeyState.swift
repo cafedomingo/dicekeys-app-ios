@@ -5,7 +5,6 @@
 //  Created by Stuart Schechter on 2021/01/22.
 //
 
-import Foundation
 import Observation
 
 /// The 25 partially-entered faces of a DiceKey being typed in by hand.
@@ -44,24 +43,12 @@ final class EditableDiceKeyState {
         set { faceSelected.orientation = newValue }
     }
 
-    var nextEmptyDieIndex: Int? {
-        faces.first { !$0.isDiceFaceModelValid }?.index
-    }
-
     func moveNext() {
         faceSelectedIndex = min(24, faceSelectedIndex + 1)
     }
 
     func movePrev() {
         faceSelectedIndex = max(0, faceSelectedIndex - 1)
-    }
-
-    func moveDown() {
-        faceSelectedIndex = (faceSelectedIndex + 5) % 25
-    }
-
-    func moveUp() {
-        faceSelectedIndex = (faceSelectedIndex + 20) % 25
     }
 
     func rotateLeft() {
