@@ -1,0 +1,3 @@
+Vendored from https://github.com/jedisct1/libsodium.git at ref `1.0.22-RELEASE` (commit 77e1ce5d6dee871c49ef211222ba18ef0c486bda) by scripts/vendor-libsodium.sh. Only `src/libsodium` is copied; `include/sodium/version.h` was generated from `version.h.in` by `./configure`; the x86 `.S` assembly files were dropped. License: ISC (see LICENSE).
+
+libsodium is an independent project by Frank Denis, not part of DiceKeys. It is compiled from source here rather than pulled from swift-sodium's prebuilt xcframework because DiceKeys' seeded-crypto calls `argon2id_hash_raw`, a non-exported libsodium function (it needs Argon2id with an arbitrary-length salt, which the public `crypto_pwhash` API does not allow).
