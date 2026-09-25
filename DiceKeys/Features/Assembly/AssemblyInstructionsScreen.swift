@@ -1,0 +1,227 @@
+//
+//  AssemblyInstructionsScreen.swift
+//  DiceKeys
+//
+//  Created by Stuart Schechter on 2020/11/25.
+//
+
+import SwiftUI
+
+struct SingleLineScaledText: View {
+    let text: String
+
+    init(_ text: String) {
+        self.text = text
+    }
+
+    var body: some View {
+        Text(text).font(Font.system(size: 500, weight: .bold))
+            .minimumScaleFactor(0.01)
+            .scaledToFit()
+            .lineLimit(1)
+    }
+}
+
+private struct Warning: View {
+    let message: String
+
+    var body: some View {
+        HStack {
+            Spacer()
+            Text(message.uppercased()).bold()
+                .minimumScaleFactor(0.01)
+                .scaledToFit()
+                .lineLimit(1)
+            Spacer()
+        }
+    }
+}
+
+private struct Randomize: View {
+    var body: some View {
+        Instruction("Shake the dice in the felt bag or in your hands.")
+        Spacer()
+        Image("Illustration of shaking bag").resizable().aspectRatio(contentMode: .fit)
+        Spacer()
+    }
+}
+
+private struct DropDice: View {
+    var body: some View {
+        Instruction("Let the dice fall randomly.")
+        Spacer()
+        Image("Box Bottom After Roll").resizable().aspectRatio(contentMode: .fit)
+        Spacer()
+        Instruction("Most should land squarely into the 25 slots in the box base.")
+        Spacer()
+    }
+}
+
+private struct FillEmptySlots: View {
+    var body: some View {
+        Instruction("Put the remaining dice squarely into the empty slots.")
+        Spacer()
+        Image("Box Bottom All Dice In Place").resizable().aspectRatio(contentMode: .fit)
+        Spacer()
+        Instruction("Leave the rest in their original random order and orientations.")
+        Spacer()
+    }
+}
+
+private struct ScanFirstTime: View {
+    @State private var scanning: Bool = false
+    @Binding var diceKey: DiceKey?
+
+    private let scanningImageName = "Scanning Side View"
+
+    var body: some View {
+        Instruction("Scan the dice in the bottom of the box (without the top.)")
+        Spacer()
+        if let diceKey {
+            DiceKeyView(diceKey: diceKey)
+            PrimaryButton("Scan again") { self.diceKey = nil; scanning = true }
+        } else if scanning {
+            ScanDiceKeyView(onDiceKeyRead: { diceKey = $0; scanning = false },
+                        onCancel: { scanning = false })
+        } else {
+            Image(scanningImageName).resizable().aspectRatio(contentMode: .fit).offset(x: 0, y: -50)
+            PrimaryButton("Scan") { scanning = true }
+        }
+        Spacer()
+    }
+}
+
+private struct SealBox: View {
+    var body: some View {
+        Instruction("Place the box top above the base so that the hinges line up.")
+        Spacer()
+        Image("Seal Box").resizable().aspectRatio(contentMode: .fit)
+        Spacer()
+        Instruction("Press firmly down along the edges. The box will snap together, helping to prevent accidental re-opening.")
+        Spacer()
+    }
+}
+
+private struct InstructionsDone: View {
+    let createdDiceKey: Bool
+    let backedUpSuccessfully: Bool
+
+    var body: some View {
+        SingleLineScaledText(createdDiceKey ? "You did it!" : "That's it!")
+        Spacer()
+        if !createdDiceKey {
+            Instruction("There's nothing more to it.")
+            Spacer()
+            Instruction("Go back to assemble and scan in a real DiceKey.").padding(.top, 5)
+            Spacer()
+        } else if !backedUpSuccessfully {
+            Instruction("Be sure to make a backup soon!")
+            Spacer()
+        }
+        if createdDiceKey {
+            Instruction("When you press the \"Done\" button, we'll take you to the same screen you'll see after scanning your DiceKey from the home screen.")
+            Spacer()
+        }
+    }
+}
+
+struct AssemblyInstructionsScreen: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var onSuccess: ((DiceKey) -> Void)?
+
+    enum Step: Int {
+        case Randomize = 1
+        case DropDice
+        case FillEmptySlots
+        case ScanFirstTime
+        case CreateBackup
+        case SealBox
+        case Done
+    }
+
+    @State private var diceKeyScanned: DiceKey?
+    @State private var backupScanned: DiceKey?
+    @State private var step: Step = .Randomize
+    @State private var backupProgress = BackupProgress(target: .Stickeys)
+    @State private var userChoseToAllowSkipScanningStep: Bool = false
+
+    private let last = Step.Done.rawValue
+
+    private var backupSuccessful: Bool {
+        DiceKey.rotationIndependentEquals(diceKeyScanned, backupScanned)
+    }
+
+    private var showWarning: Bool {
+        step.rawValue > Step.Randomize.rawValue && step.rawValue < Step.SealBox.rawValue
+    }
+
+    var body: some View {
+        VStack {
+            Spacer()
+            VStack(alignment: .center) {
+                switch step {
+                case .Randomize: Randomize()
+                case .DropDice: DropDice()
+                case .FillEmptySlots: FillEmptySlots()
+                case .ScanFirstTime: ScanFirstTime(diceKey: $diceKeyScanned)
+                case .CreateBackup:
+                    BackupDiceKeyView(
+                        diceKey: diceKeyScanned ?? DiceKey.Example,
+                        onDiceKeyReplaced: { diceKeyScanned = $0 },
+                        onComplete: { step = Step(rawValue: step.rawValue + 1) ?? .Done },
+                        onBackedOut: { step = Step(rawValue: step.rawValue - 1) ?? .Randomize },
+                        thereAreMoreStepsAfterBackup: true,
+                        progress: backupProgress
+                    )
+                case .SealBox: SealBox()
+                case .Done: InstructionsDone(createdDiceKey: diceKeyScanned != nil, backedUpSuccessfully: backupSuccessful)
+                }
+            }
+            .padding(.horizontal, 15)
+            Spacer()
+            // Forward / Back nav
+            if step != .CreateBackup {
+                StepFooterView(
+                    goTo: { destination in
+                        if let newStep = Step(rawValue: destination) {
+                            step = newStep
+                        } else {
+                            if let diceKey = diceKeyScanned, destination > last {
+                                onSuccess?(diceKey)
+                            } else {
+                                dismiss()
+                            }
+                        }
+                    },
+                    step: step.rawValue,
+                    prev: step.rawValue > 0 ? step.rawValue - 1 : nil,
+                    next: step.rawValue + 1,
+                    setMaySkip: step == .ScanFirstTime && diceKeyScanned == nil && !userChoseToAllowSkipScanningStep
+                        ? { userChoseToAllowSkipScanningStep = true }
+                        : nil,
+                    isLastStep: step == .Done
+                )
+                .padding(.bottom)
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if showWarning {
+                Warning(message: "Do not close the box before the final Step.")
+                    .padding(.vertical, 5)
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(.white)
+                    .background(Color.warningBackground)
+            }
+        }
+        .navigationTitle("Assemble a DiceKey")
+        .toolbarTitleDisplayMode(.inline)
+    }
+}
+
+#Preview {
+    NavigationStack {
+        AssemblyInstructionsScreen()
+    }
+    .appEnvironment(AppModel.preview())
+}
