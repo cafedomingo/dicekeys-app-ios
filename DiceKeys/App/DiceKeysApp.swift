@@ -10,6 +10,11 @@ import SwiftUI
 @main
 struct DiceKeysApp: App {
     @State private var model = AppModel()
+    @State private var privacyCover = PrivacyCoverWindowController()
+
+    init() {
+        privacyCover.startObserving()
+    }
 
     var body: some Scene {
         WindowGroup {

@@ -60,7 +60,6 @@ struct DerivedValueScreen: View {
                 content: derivedValue?.valueForView(view: outputFormat) ?? ""
             )
             .presentationDetents([.medium, .large])
-            .privacyCover()
         }
         .onChange(of: recipe, initial: true) { _, recipe in
             let hadValue = derivedValue != nil
