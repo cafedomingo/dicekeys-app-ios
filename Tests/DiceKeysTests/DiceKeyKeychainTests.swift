@@ -2,11 +2,10 @@
 //  DiceKeyKeychainTests.swift
 //  DiceKeysTests
 //
-//  The saved DiceKey is guarded by `kSecAttrAccessControl`, so reading it back needs Face
-//  ID, Touch ID or the passcode and cannot be tested without a person. What can be tested
-//  is everything around the read: that saving succeeds, that asking whether a DiceKey is
-//  saved answers truthfully and without prompting, and that deleting actually removes the
-//  item. A prompt raised by any of these would leave the test hanging rather than passing.
+//  Reading a saved DiceKey back needs Face ID, Touch ID or the passcode, so it cannot be
+//  tested without a person. These cover everything around the read: that saving succeeds,
+//  that asking whether a DiceKey is saved answers truthfully, and that deleting removes the
+//  item. A prompt raised by any of them would hang the test rather than pass it.
 //
 
 import Foundation
@@ -77,19 +76,15 @@ struct DiceKeyKeychainTests {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         #expect(status == errSecSuccess)
         let attributes = item as? [String: Any]
-        // The access control is what makes the keychain, rather than app code, demand the
-        // user's presence before handing the DiceKey back. Compare it against one built the
-        // way the item was, rather than merely checking that some access control is there:
-        // `SecAccessControl` compares by its constraints, so an access control created with
-        // no flags at all would still be non-nil but would demand nothing.
+        // `SecAccessControl` compares by its constraints, and one created with no flags is
+        // still non-nil while demanding nothing, so check the constraints themselves.
         let storedAccessControl = try #require(attributes?[kSecAttrAccessControl as String]) as AnyObject
         let expectedAccessControl = try #require(SecAccessControlCreateWithFlags(
             nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .userPresence, nil
         ))
         #expect(CFEqual(storedAccessControl, expectedAccessControl))
-        // The protection class is passed into the access control rather than set on its own,
-        // and comes back here; the DiceKey must not be readable while the device is locked,
-        // nor restorable onto another device.
+        // The DiceKey must not be readable while the device is locked, nor restorable onto
+        // another device.
         #expect(attributes?[kSecAttrAccessible as String] as? String == kSecAttrAccessibleWhenUnlockedThisDeviceOnly as String)
     }
 }

@@ -136,10 +136,8 @@ jobs:
           print(best[1] if best else "")')
           echo "Simulator: $UDID"
           test -n "$UDID"
-          # Ad-hoc signing ("Sign to Run Locally") rather than CODE_SIGNING_ALLOWED=NO: with no
-          # entitlements the app has no keychain access and every SecItem call fails with
-          # errSecMissingEntitlement (-34018), which DiceKeyKeychainTests needs. The identity
-          # is "-", so this still asks for no team and no provisioning profile.
+          # Ad-hoc signing: with no entitlements the app has no keychain access at all and
+          # every SecItem call fails with errSecMissingEntitlement (-34018).
           xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination "platform=iOS Simulator,id=$UDID" \
             CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true

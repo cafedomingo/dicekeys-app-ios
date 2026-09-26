@@ -17,11 +17,9 @@ private enum KeyChain {
         case couldNotCreateAccessControl((any Error)?)
     }
 
-    /// The attributes that name an item, and nothing more. Lookups and deletes use only
-    /// these, so they match both the items written now (which carry `kSecAttrAccessControl`)
-    /// and any an older build left behind (which carried `kSecAttrAccessible` instead).
-    /// Naming a protection attribute in a query risks matching nothing, which for a delete
-    /// is a silent no-op.
+    /// The attributes that name an item, and nothing more. A query naming the item's
+    /// protection as well would match only items protected in exactly that way, and a
+    /// delete matching nothing fails silently.
     private static func query(id: String) -> [String: Any] {
         [
             kSecClass as String: kSecClassGenericPassword,
@@ -31,9 +29,9 @@ private enum KeyChain {
     }
 
     /// Requires the user's presence (Face ID, Touch ID or the passcode) to read the item
-    /// back, enforced by the keychain itself rather than by a call to `authenticate()` that
-    /// a future caller could forget. The protection class moves into the access control
-    /// object, so it is no longer passed separately as `kSecAttrAccessible`.
+    /// back, enforced by the keychain rather than by app code a caller could skip.
+    /// `SecAccessControlCreateWithFlags` takes the protection class, so an item carrying an
+    /// access control does not set `kSecAttrAccessible` separately.
     private static func userPresenceAccessControl() throws -> SecAccessControl {
         var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
@@ -59,11 +57,10 @@ private enum KeyChain {
         attributes[kSecAttrAccessControl as String] = try userPresenceAccessControl()
         attributes[kSecValueData as String] = key
 
-        // Add before deleting, so the usual case (nothing saved yet) cannot leave the
-        // keychain with nothing when the add fails. Only a duplicate needs the old item
-        // removed first, and on that one path a failing second add does leave nothing
-        // saved. The old item holds this same DiceKey either way: the account is
-        // `DiceKey.id`, which is derived by hashing the key itself.
+        // Add before deleting, so a failed add leaves an unsaved keychain untouched. A
+        // duplicate has to be removed first, so on that path alone a failed second add
+        // leaves nothing saved; the old item holds this same DiceKey regardless, since the
+        // account is `DiceKey.id`, derived by hashing the key.
         var status = SecItemAdd(attributes as CFDictionary, nil)
         if status == errSecDuplicateItem {
             try deleteKey(id: id, throwIfFails: true)
@@ -79,10 +76,9 @@ private enum KeyChain {
     }
 
     static func isPresentInKeyChain(id: String) -> Bool {
-        // Seek a generic password with the given account, without asking for its data and
-        // with interaction forbidden outright, so that merely checking whether a DiceKey is
-        // saved can never raise a Face ID prompt. This runs on the main path: from
-        // `UnlockedDiceKeyState.init`, and again after every save or delete.
+        // Asked without the data and with interaction forbidden: this runs on the main
+        // path, from `UnlockedDiceKeyState.init` and after every save and delete, so it must
+        // never raise a Face ID prompt.
         let context = LAContext()
         context.interactionNotAllowed = true
 
@@ -90,21 +86,18 @@ private enum KeyChain {
         itemQuery[kSecUseAuthenticationContext as String] = context
 
         // Only a definite "not found" means absent. Other failures (errSecInteractionNotAllowed
-        // for an item that would need authenticating, or while protected data is unavailable)
-        // say nothing about the item, and reporting a saved DiceKey as unsaved would invite a
+        // for an item needing authentication, or while protected data is unavailable) say
+        // nothing about the item, and reporting a saved DiceKey as unsaved would invite a
         // re-save or hide it.
         return SecItemCopyMatching(itemQuery as CFDictionary, nil) != errSecItemNotFound
     }
 
     static func loadKeyData(id: String, context: LAContext) throws -> Data {
-        // Seek a generic password with the given account, and ask for its data.
         var itemQuery = query(id: id)
         itemQuery[kSecReturnData as String] = true
-        // Reuse the context the caller has already authenticated, so that reading an
-        // access-controlled item does not prompt the user a second time.
+        // Reusing an already-authenticated context spares the user a second prompt.
         itemQuery[kSecUseAuthenticationContext as String] = context
 
-        // Find and cast the result as data.
         var item: CFTypeRef?
 
         let status = SecItemCopyMatching(itemQuery as CFDictionary, &item)
