@@ -14,7 +14,7 @@ private enum KeyChain {
     enum KeyChainError: Error {
         case notFound
         case osError(OSStatus)
-        case couldNotCreateAccessControl((any Error)?)
+        case couldNotCreateAccessControl
     }
 
     /// The attributes that name an item, and nothing more. A query naming the item's
@@ -33,21 +33,20 @@ private enum KeyChain {
     /// `SecAccessControlCreateWithFlags` takes the protection class, so an item carrying an
     /// access control does not set `kSecAttrAccessible` separately.
     private static func userPresenceAccessControl() throws -> SecAccessControl {
-        var error: Unmanaged<CFError>?
         guard let accessControl = SecAccessControlCreateWithFlags(
             nil,
             kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
             .userPresence,
-            &error
+            nil
         ) else {
-            throw KeyChainError.couldNotCreateAccessControl(error?.takeRetainedValue())
+            throw KeyChainError.couldNotCreateAccessControl
         }
         return accessControl
     }
 
-    static func deleteKey(id: String, throwIfFails: Bool = false) throws {
+    static func deleteKey(id: String) throws {
         let status = SecItemDelete(query(id: id) as CFDictionary)
-        if status != errSecSuccess && status != errSecItemNotFound && throwIfFails {
+        if status != errSecSuccess && status != errSecItemNotFound {
             throw KeyChainError.osError(status)
         }
     }
@@ -63,7 +62,7 @@ private enum KeyChain {
         // account is `DiceKey.id`, derived by hashing the key.
         var status = SecItemAdd(attributes as CFDictionary, nil)
         if status == errSecDuplicateItem {
-            try deleteKey(id: id, throwIfFails: true)
+            try deleteKey(id: id)
             status = SecItemAdd(attributes as CFDictionary, nil)
         }
         if status != errSecSuccess {
@@ -123,7 +122,7 @@ private let defaultReason: String = "Unlock your DiceKey"
 /// only by this app on this device, behind Face ID / Touch ID / passcode.
 /// Stateless; `AppModel` owns the instance the stores share.
 struct DiceKeyKeychain: Sendable {
-    func getReason(forCenterFace centerFace: Face?) -> String {
+    private func getReason(forCenterFace centerFace: Face?) -> String {
         if let face = centerFace {
             return "Unlock DiceKey with \(face.letterAndDigit) in Center"
         }
@@ -133,7 +132,7 @@ struct DiceKeyKeychain: Sendable {
     /// Asks the user to authenticate with Face ID, Touch ID, or their passcode, and returns
     /// the satisfied context so the keychain read that follows can reuse it.
     /// Throws an `LAError` (or the error reported by `canEvaluatePolicy`) on failure.
-    func authenticate(reason: String? = nil) async throws -> LAContext {
+    private func authenticate(reason: String? = nil) async throws -> LAContext {
         let laContext = LAContext()
         var policyError: NSError?
         guard laContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &policyError) else {
@@ -154,7 +153,7 @@ struct DiceKeyKeychain: Sendable {
     }
 
     func delete(keyId: String) throws {
-        try KeyChain.deleteKey(id: keyId, throwIfFails: true)
+        try KeyChain.deleteKey(id: keyId)
     }
 
     func hasDiceKey(forKeyId keyId: String) -> Bool {
