@@ -11,7 +11,7 @@ import UIKit
 /// A view overlay cannot do this job: UIKit presents sheets in a layer above the root
 /// view's overlays, so a root overlay leaves any sheet uncovered, and a cover applied
 /// inside each sheet draws a second one over the first. A window at a raised level is
-/// above sheets, alerts and the keyboard alike, and there is only ever one of it.
+/// above sheets, alerts and the keyboard alike, and there is only ever one per scene.
 ///
 /// Shown from the scene notification rather than from SwiftUI's `scenePhase`, because
 /// UIKit snapshots the scene as soon as `sceneDidEnterBackground` returns and will not
@@ -19,42 +19,56 @@ import UIKit
 /// posting thread, so the window is up before the notification returns.
 @MainActor
 final class PrivacyCoverWindowController {
-    private var coverWindow: UIWindow?
+    /// One cover per scene, keyed by scene identity: a window belongs to the scene it was
+    /// made for, so it cannot stand in for another one, and iPadOS can show several scenes
+    /// of this app at once. Dropped when the scene disconnects, which iOS can do to a
+    /// backgrounded app while the process lives on.
+    private var coverWindows: [ObjectIdentifier: UIWindow] = [:]
     private var observers: [any NSObjectProtocol] = []
 
     /// The cover is removed on `willEnterForeground` rather than on becoming active: iOS
     /// hands `.active` back as much as a second later, and the user is looking at the app
     /// long before that.
     func startObserving() {
-        let center = NotificationCenter.default
+        observe(UIScene.didEnterBackgroundNotification) { self.show(over: $0) }
+        observe(UIScene.willEnterForegroundNotification) { self.hide(over: $0) }
+        observe(UIScene.didDisconnectNotification) { self.discardWindow(for: $0) }
+    }
+
+    private func observe(_ name: Notification.Name, _ handler: @escaping @MainActor (UIWindowScene) -> Void) {
         observers.append(
-            center.addObserver(forName: UIScene.didEnterBackgroundNotification, object: nil, queue: nil) { note in
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: nil) { note in
                 guard let scene = note.object as? UIWindowScene else { return }
-                MainActor.assumeIsolated { self.show(over: scene) }
-            }
-        )
-        observers.append(
-            center.addObserver(forName: UIScene.willEnterForegroundNotification, object: nil, queue: nil) { _ in
-                MainActor.assumeIsolated { self.hide() }
+                MainActor.assumeIsolated { handler(scene) }
             }
         )
     }
 
     private func show(over scene: UIWindowScene) {
-        let window = coverWindow ?? makeWindow(over: scene)
-        coverWindow = window
-        // No animation: the snapshot is taken on return and would catch a half-faded cover.
+        let key = ObjectIdentifier(scene)
+        let window = coverWindows[key] ?? makeWindow(over: scene)
+        coverWindows[key] = window
+        // No animation, and any fade still running is cut short rather than left to play
+        // out: the snapshot is taken as soon as this returns and would otherwise catch a
+        // half-faded cover.
+        window.layer.removeAllAnimations()
         window.alpha = 1
         window.isHidden = false
     }
 
-    private func hide() {
-        guard let window = coverWindow else { return }
+    private func hide(over scene: UIWindowScene) {
+        guard let window = coverWindows[ObjectIdentifier(scene)] else { return }
         UIView.animate(withDuration: 0.25) {
             window.alpha = 0
         } completion: { _ in
-            window.isHidden = true
+            // Unless the scene went back to the background mid-fade, in which case `show`
+            // has already restored the alpha and the cover has to stay up.
+            if window.alpha == 0 { window.isHidden = true }
         }
+    }
+
+    private func discardWindow(for scene: UIWindowScene) {
+        coverWindows.removeValue(forKey: ObjectIdentifier(scene))
     }
 
     private func makeWindow(over scene: UIWindowScene) -> UIWindow {
