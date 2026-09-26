@@ -15,6 +15,9 @@ import Security
 import Testing
 @testable import DiceKeys
 
+/// Serialized because every test here works on the one keychain item for `DiceKey.Example`:
+/// run in parallel, the deletes in one test pull the item out from under another.
+@Suite(.serialized)
 struct DiceKeyKeychainTests {
     /// The keychain outlives a test run, so each test starts by clearing its own item.
     private func makeKeychain(forKeyId keyId: String) -> DiceKeyKeychain {
@@ -75,8 +78,15 @@ struct DiceKeyKeychainTests {
         #expect(status == errSecSuccess)
         let attributes = item as? [String: Any]
         // The access control is what makes the keychain, rather than app code, demand the
-        // user's presence before handing the DiceKey back.
-        #expect(attributes?[kSecAttrAccessControl as String] != nil)
+        // user's presence before handing the DiceKey back. Compare it against one built the
+        // way the item was, rather than merely checking that some access control is there:
+        // `SecAccessControl` compares by its constraints, so an access control created with
+        // no flags at all would still be non-nil but would demand nothing.
+        let storedAccessControl = try #require(attributes?[kSecAttrAccessControl as String]) as AnyObject
+        let expectedAccessControl = try #require(SecAccessControlCreateWithFlags(
+            nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .userPresence, nil
+        ))
+        #expect(CFEqual(storedAccessControl, expectedAccessControl))
         // The protection class is passed into the access control rather than set on its own,
         // and comes back here; the DiceKey must not be readable while the device is locked,
         // nor restorable onto another device.

@@ -59,9 +59,11 @@ private enum KeyChain {
         attributes[kSecAttrAccessControl as String] = try userPresenceAccessControl()
         attributes[kSecValueData as String] = key
 
-        // Add first, so a save that fails cannot leave the keychain with nothing. Only a
-        // duplicate needs the old item removed, and that old item holds this same DiceKey:
-        // the account is `DiceKey.id`, which is derived by hashing the key itself.
+        // Add before deleting, so the usual case (nothing saved yet) cannot leave the
+        // keychain with nothing when the add fails. Only a duplicate needs the old item
+        // removed first, and on that one path a failing second add does leave nothing
+        // saved. The old item holds this same DiceKey either way: the account is
+        // `DiceKey.id`, which is derived by hashing the key itself.
         var status = SecItemAdd(attributes as CFDictionary, nil)
         if status == errSecDuplicateItem {
             try deleteKey(id: id, throwIfFails: true)

@@ -49,6 +49,14 @@ the item's attributes and the operations around the read instead of the refusal 
 a device, check that unlocking a saved DiceKey prompts exactly once, and that merely asking
 whether a DiceKey is saved never prompts at all.
 
+Check one more thing while there. Saving and removing a DiceKey call `SecItemAdd` and
+`SecItemDelete` on the main actor, from the toggle in `SaveDiceKeySheet`. Neither should
+need to authenticate, and neither prompted on the Simulator, but `SecAccessControl.h` warns
+that operations on access-control-protected items "can block the execution because of UI
+which can appear", and recommends moving them off the main thread or bounding the UI with
+`kSecUseAuthenticationContext`. If the toggle ever stalls on a device, that is why, and the
+fix is to make `setStored` async rather than to weaken the access control.
+
 ## Simpler recipes
 
 **Why it exists.** Recipes still carry the original app's API shape: site templates are
