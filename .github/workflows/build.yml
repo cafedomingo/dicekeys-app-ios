@@ -136,9 +136,11 @@ jobs:
           print(best[1] if best else "")')
           echo "Simulator: $UDID"
           test -n "$UDID"
+          # Ad-hoc signing: with no entitlements the app has no keychain access at all and
+          # every SecItem call fails with errSecMissingEntitlement (-34018).
           xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination "platform=iOS Simulator,id=$UDID" \
-            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
+            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
           grep -q 'TEST SUCCEEDED' test-ios.log
       # Diagnostics only: a flaky artifact service must not fail a build that passed.
       - name: Upload logs
