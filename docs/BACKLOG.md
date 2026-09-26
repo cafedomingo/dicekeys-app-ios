@@ -38,18 +38,16 @@ a device still has to confirm that the key read matches the physical key in port
 both landscapes. The on-screen angle readout that was added for this came out in review,
 because it shipped to users; the check itself needs only a scan in each orientation.
 
-## Keychain access control
+## Confirm the keychain's access control on a device
 
-**Why it exists.** Face ID, Touch ID or the passcode guards a saved DiceKey only in app
-code: `DiceKeyKeychain.getDiceKey` calls `authenticate()` before reading. The keychain item
-itself has no `kSecAttrAccessControl`, so any code path that reads it directly gets the raw
-key with no prompt.
-
-**What is left.** Save with `SecAccessControlCreateWithFlags(..., .userPresence, ...)` and
-pass the `LAContext` from `authenticate()` as `kSecUseAuthenticationContext` so the user is
-not prompted twice. Keys already saved without access control need migrating (read after
-authenticating, re-save, delete the old item). It needs a device with Face ID or Touch ID
-to test.
+The saved DiceKey now carries `kSecAttrAccessControl` with `.userPresence`, so the keychain
+itself demands Face ID, Touch ID or the passcode before returning it, rather than trusting
+every caller to have called `authenticate()` first. What is left is confirming that on
+hardware. The Simulator has no Secure Enclave and does not enforce the constraint: a read
+with no authenticated context still hands back the key there, which is why the tests cover
+the item's attributes and the operations around the read instead of the refusal itself. On
+a device, check that unlocking a saved DiceKey prompts exactly once, and that merely asking
+whether a DiceKey is saved never prompts at all.
 
 ## Simpler recipes
 
