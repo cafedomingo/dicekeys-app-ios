@@ -38,13 +38,6 @@ final class DiceKeyMemoryStore {
     /// The id of the DiceKey the user is currently working with, or "" if none.
     private(set) var foregroundDiceKeyId: String = ""
 
-    /// True between a successful authentication and the next scene phase change. The Face
-    /// ID sheet leaves the scene inactive, and iOS takes around half a second to dismiss it
-    /// and hand `.active` back, during which the privacy cover would otherwise sit opaque
-    /// with nothing happening. Reading it lets the cover start fading at the moment the
-    /// user authenticated instead.
-    private(set) var authenticationJustSucceeded = false
-
     private var keyCache: [String: DiceKey] = [:]
     /// One `UnlockedDiceKeyState` per unlocked key, so views observing it share state.
     @ObservationIgnored private var unlockedStates: [String: UnlockedDiceKeyState] = [:]
@@ -201,7 +194,6 @@ final class DiceKeyMemoryStore {
     /// Authenticates the user and loads a saved DiceKey into the foreground.
     func unlock(_ metadata: StoredEncryptedDiceKeyMetadata) async throws -> DiceKey {
         let diceKey = try await keychain.getDiceKey(fromKeyId: metadata.keyId, centerFace: metadata.centerFace)
-        authenticationJustSucceeded = true
         setDiceKey(diceKey: diceKey)
         return diceKey
     }
@@ -224,7 +216,6 @@ final class DiceKeyMemoryStore {
     /// indefinitely. A running countdown carries on, and keys the user chose to keep until
     /// quitting are left alone.
     func appDidEnterBackground(at date: Date = Date()) {
-        authenticationJustSucceeded = false
         if case .countdownDeferred = memoryStoreExpirationState {
             startExpirationCountdown(date.addingTimeInterval(defaultExpirationPeriodInSeconds))
             countdownStartedByBackground = true
@@ -235,7 +226,6 @@ final class DiceKeyMemoryStore {
     /// now, before the next tick could show them. Otherwise a DiceKey still on screen
     /// defers expiration again, so leaving it later starts a full countdown.
     func appDidBecomeActive(at date: Date = Date()) {
-        authenticationJustSucceeded = false
         let startedByBackground = countdownStartedByBackground
         countdownStartedByBackground = false
         currentTime = date
