@@ -1,0 +1,110 @@
+# XcodeGen spec. The Xcode project is generated, not committed:
+#
+#   brew install xcodegen
+#   xcodegen generate
+#   open DiceKeys.xcodeproj
+#
+# Native dependencies come from the local Swift package in Packages/DiceKeysCore
+# (libsodium and seeded-crypto compiled from vendored sources, the scanner in Swift).
+
+name: DiceKeys
+options:
+  bundleIdPrefix: com.dicekeys
+  # iOS 26 is the floor because GitHub's hosted macOS runners (our CI compiler)
+  # ship Xcode 26.x: the simulator tests need a runtime the app can install on. Raise it
+  # to 27.0 once Xcode 27 is on the runners; the one 27-SDK API the app uses
+  # (PresentableError's item-bound alert) is already gated on the SDK, so nothing else
+  # needs to change. Xcode 27.0 builds this spec as is.
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "26.6"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+  groupSortPosition: top
+
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    SWIFT_UPCOMING_FEATURE_INTERNAL_IMPORTS_BY_DEFAULT: YES
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: NO
+    # Date-based versioning: scripts/testflight.sh overrides both on every upload with
+    # the build date (2026.9.22) and a minute-resolution timestamp (202609222352), so the
+    # version always rises and two builds on one day never collide. The literals below are
+    # only what local and CI builds report, where the numbers do not matter. No leading
+    # zeros: Apple wants plain integers between the periods.
+    MARKETING_VERSION: "2026.9.22"
+    CURRENT_PROJECT_VERSION: 202609222352
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    # Xcode's project-settings check nags for this one. It does nothing until the app
+    # actually has a String Catalog (localization is still an open item: every string is
+    # a literal), but setting it here means the answer survives `xcodegen generate`,
+    # which discards anything Xcode writes into the project file.
+    STRING_CATALOG_GENERATE_SYMBOLS: YES
+    DEAD_CODE_STRIPPING: YES
+  configs:
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+      ENABLE_TESTABILITY: YES
+
+packages:
+  DiceKeysCore:
+    path: Packages/DiceKeysCore
+
+targets:
+  DiceKeys:
+    type: application
+    platform: iOS
+    sources:
+      - path: DiceKeys
+        excludes:
+          - "**/.DS_Store"
+          - "Resources/AppIcon.icon"
+      # Icon Composer package: the layered Liquid Glass icon (iOS/macOS 26+). The
+      # AppIcon.appiconset with the same name is the flat fallback for older tooling.
+      - path: DiceKeys/Resources/AppIcon.icon
+        type: file
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
+        CODE_SIGN_ENTITLEMENTS: $(APP_ENTITLEMENTS)
+        PRODUCT_NAME: DiceKeys
+        PRODUCT_MODULE_NAME: DiceKeys
+        INFOPLIST_FILE: iOS/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    dependencies:
+      - package: DiceKeysCore
+        product: SeededCrypto
+      - package: DiceKeysCore
+        product: ReadDiceKey
+    scheme:
+      testTargets:
+        - DiceKeysTests
+      gatherCoverageData: true
+
+  DiceKeysTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/DiceKeysTests
+    dependencies:
+      - target: DiceKeys
+      - package: DiceKeysCore
+        product: SeededCrypto
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).Tests-iOS
+

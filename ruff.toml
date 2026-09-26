@@ -1,0 +1,7 @@
+# Lints the Python in scripts/. Rules are listed explicitly so a ruff upgrade does not
+# change what CI enforces.
+target-version = "py39"
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "B", "I", "UP", "EXE"]

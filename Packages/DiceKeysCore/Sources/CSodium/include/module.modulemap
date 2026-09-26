@@ -1,0 +1,4 @@
+module CSodium {
+    umbrella header "sodium.h"
+    export *
+}

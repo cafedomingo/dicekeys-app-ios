@@ -1,20 +1,151 @@
-name: Swift
+name: Build
 
+# Pushes to main, and pull requests into it. A branch push that is also a PR would
+# otherwise run every job twice (the push and the pull_request event), and the concurrency
+# group cannot merge them because the two events have different refs.
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+
+env:
+  SWIFTLINT_VERSION: 0.65.1
+  SWIFTLINT_SHA256: c1e429b0599cf1b516f369a2d9ec04eaf0e436f3c12b637df8851fa52ff694d0
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  # Swift, Python, shell and workflow linters, each at a pinned version so an upstream
+  # release cannot change what CI enforces. ruff's version comes from scripts/requirements.txt,
+  # which Dependabot bumps. The others are release binaries checked against their SHA-256 and
+  # bumped by hand, version and hash together. The actionlint hash is the one its release
+  # publishes; SwiftLint's portable zip and shellcheck publish none, so theirs were computed
+  # from the downloads.
+  lint:
     runs-on: macos-latest
+    timeout-minutes: 15
+    env:
+      SHELLCHECK_VERSION: 0.11.0
+      SHELLCHECK_SHA256: 339b930feb1ea764467013cc1f72d09cd6b869ebf1013296ba9055ab2ffbd26f
+      ACTIONLINT_VERSION: 1.7.12
+      ACTIONLINT_SHA256: aba9ced2dee8d27fecca3dc7feb1a7f9a52caefa1eb46f3271ea66b6e0e6953f
     steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          submodules: recursive
-      - name: Build workspace
+      - uses: actions/checkout@v7
+      - name: Install linters
         run: |
-          pod install
-          xcrun simctl list
-          xcodebuild clean test -workspace "DiceKeys.xcworkspace" -scheme 'DiceKeys (iOS)' -destination 'platform=iOS Simulator,name=iPhone 13'
+          set -euo pipefail
+          bin="$RUNNER_TEMP/bin" && mkdir -p "$bin" && cd "$RUNNER_TEMP"
+          fetch() { curl -sSfL -o "$1" "$2" && echo "$3  $1" | shasum -a 256 -c -; }
+          fetch swiftlint.zip "https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT_VERSION/portable_swiftlint.zip" "$SWIFTLINT_SHA256"
+          unzip -q -o swiftlint.zip swiftlint -d "$bin"
+          fetch shellcheck.tar.gz "https://github.com/koalaman/shellcheck/releases/download/v$SHELLCHECK_VERSION/shellcheck-v$SHELLCHECK_VERSION.darwin.aarch64.tar.gz" "$SHELLCHECK_SHA256"
+          tar xzf shellcheck.tar.gz -C "$bin" --strip-components 1 "shellcheck-v$SHELLCHECK_VERSION/shellcheck"
+          fetch actionlint.tar.gz "https://github.com/rhysd/actionlint/releases/download/v$ACTIONLINT_VERSION/actionlint_${ACTIONLINT_VERSION}_darwin_arm64.tar.gz" "$ACTIONLINT_SHA256"
+          tar xzf actionlint.tar.gz -C "$bin" actionlint
+          echo "$bin" >> "$GITHUB_PATH"
+      - name: SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging
+      - name: ruff check
+        uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89 # v4.1.0
+        with:
+          version-file: scripts/requirements.txt
+          src: scripts
+          args: check --output-format github
+      - name: ruff format
+        uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89 # v4.1.0
+        with:
+          version-file: scripts/requirements.txt
+          src: scripts
+          args: format --check
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+      # actionlint also runs shellcheck over each workflow `run:` block.
+      - name: actionlint
+        run: actionlint
+
+  # The native package (libsodium, seeded-crypto, and the Swift scanner) builds and tests
+  # with plain SwiftPM on the macOS host. GoldenVectorTests is the tripwire for any change
+  # to derived secrets.
+  native-package:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(printf '%s\n' /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE" && xcodebuild -version && swift --version
+      # Release build: the scanner corpus is 23 twelve-megapixel photos, which takes
+      # minutes at -Onone and seconds optimized.
+      - name: Build and test package
+        working-directory: Packages/DiceKeysCore
+        run: swift test -c release -Xswiftc -enable-testing --parallel
+
+  # The app needs a generated Xcode project (XcodeGen) and the iOS SDK.
+  apps:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(printf '%s\n' /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE" && xcodebuild -version
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build iOS app (simulator)
+        run: |
+          set -o pipefail
+          xcodebuild build -project DiceKeys.xcodeproj -scheme DiceKeys \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep -E 'error:|warning: unre|BUILD|\*\*' || true
+          grep -q 'BUILD SUCCEEDED' build-ios.log
+      # Dead code: the analyzer reads the compiler invocations from the clean build above.
+      # .swiftlint-analyze.yml limits it to the app target.
+      - name: Unused code (swiftlint analyze)
+        run: |
+          set -euo pipefail
+          curl -sSfL -o "$RUNNER_TEMP/swiftlint.zip" "https://github.com/realm/SwiftLint/releases/download/$SWIFTLINT_VERSION/portable_swiftlint.zip"
+          echo "$SWIFTLINT_SHA256  $RUNNER_TEMP/swiftlint.zip" | shasum -a 256 -c -
+          unzip -q -o "$RUNNER_TEMP/swiftlint.zip" swiftlint -d "$RUNNER_TEMP"
+          "$RUNNER_TEMP/swiftlint" analyze --strict --config .swiftlint.yml --config .swiftlint-analyze.yml \
+            --compiler-log-path build-ios.log --reporter github-actions-logging
+      - name: App unit tests (simulator)
+        run: |
+          set -o pipefail
+          # Pick the newest available iPhone simulator by UDID (names alone can be ambiguous
+          # across runtimes on the hosted runners).
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys,re
+          devices=json.load(sys.stdin)["devices"]
+          best=None
+          for runtime,devs in devices.items():
+              m=re.search(r"iOS-(\d+)-(\d+)", runtime)
+              if not m: continue
+              version=(int(m.group(1)),int(m.group(2)))
+              for d in devs:
+                  if d.get("isAvailable") and d["name"].startswith("iPhone"):
+                      key=(version,d["name"])
+                      if best is None or key>best[0]: best=(key,d["udid"])
+          print(best[1] if best else "")')
+          echo "Simulator: $UDID"
+          test -n "$UDID"
+          xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
+          grep -q 'TEST SUCCEEDED' test-ios.log
+      # Diagnostics only: a flaky artifact service must not fail a build that passed.
+      - name: Upload logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcodebuild-logs
+          path: "*.log"
+          retention-days: 7

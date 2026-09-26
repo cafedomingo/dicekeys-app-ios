@@ -1,0 +1,156 @@
+Third-party code and assets in this repository
+==============================================
+
+The MIT license in LICENSE covers only the original work in this fork. Everything
+below was copied, vendored, ported or derived from someone else and keeps its own
+terms. Entries are ordered from "no open-source license" to "permissive".
+
+
+1. dicekeys/dicekeys-app-ios  (the app this fork started from)
+--------------------------------------------------------------
+Origin:    https://github.com/dicekeys/dicekeys-app-ios, commit 543a1b0 (v0.73)
+Owner:     DiceKeys, LLC
+License:   NONE GRANTED. Upstream's LICENSE.md reads, in full:
+
+    This project is currently copyright DiceKeys, LLC with all rights reserved
+    while we choose a license.
+
+    We are choosing between the MIT license, under which we have already
+    released our seeded crypto libraries, and a candidate "Right to Privacy"
+    open source license that forbids the use of this code in such applications
+    as stalkerware and government surveillance. [...] If you have thoughts on
+    this choice, please contribute them either to the repository for the
+    candidate license or by email us at license@dicekeys.com.
+
+Where in this repo:
+    DiceKeys/Model/DiceKey, DiceKeys/Model/Recipes, DiceKeys/Model/BIP39,
+    DiceKeys/Services/Api, the illustrations in
+    DiceKeys/Resources/Assets.xcassets, the app-icon mark
+    (scripts/app-icon-source/original-mark-1024.png and everything generated
+    from it), and the UI flows in DiceKeys/Features (rewritten, but derived).
+    GitHub's terms let a public repository be forked and
+    viewed; they do not grant a license to redistribute. This fork is therefore
+    for personal use (local builds, TestFlight to the owner's devices), not for
+    publication, until DiceKeys, LLC chooses a license.
+
+
+2. dicekeys/read-dicekey  (the DiceKey scanner)
+-----------------------------------------------
+Origin:    https://github.com/dicekeys/read-dicekey, commit 0440036
+Owner:     DiceKeys, LLC
+License:   NONE GRANTED (same placeholder as above).
+Where in this repo:
+    Packages/DiceKeysCore/Sources/ReadDiceKey is a Swift port of upstream's
+    lib-read-dicekey (same algorithm, stage by stage; see
+    docs/SCANNER-PORT-NOTES.md), so it is a derivative work.
+    Packages/DiceKeysCore/Sources/ReadDiceKey/OcrFontTables.swift is generated
+    from upstream's rasterized Inconsolata glyph tables (item 7).
+    Packages/DiceKeysCore/Tests/ReadDiceKeyTests/Fixtures/images/*.jpg|png are
+    upstream's 23 test photographs, and Fixtures/reference-cpp-scanner.json is
+    upstream's scanner output on them.
+
+
+3. dicekeys/seeded-crypto  (lib-seeded, the derivation library)
+---------------------------------------------------------------
+Origin:    https://github.com/dicekeys/seeded-crypto, branch primary, commit c9c7740,
+           tracked through the fork https://github.com/cafedomingo/seeded-crypto
+Owner:     DiceKeys, LLC
+License:   MIT. Copyright (c) 2020 DiceKeys, LLC.
+           Full text: Packages/DiceKeysCore/Vendor/seeded-crypto/LICENSE.md
+Where:     Packages/DiceKeysCore/Vendor/seeded-crypto (git subtree, unmodified
+           sources; see docs/DEPENDENCIES.md). It bundles items 4, 5 and 6.
+
+    MIT License
+
+    Copyright (c) 2020 DiceKeys, LLC
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+
+4. nlohmann/json 3.7.0  (bundled inside lib-seeded)
+---------------------------------------------------
+Origin:    https://github.com/nlohmann/json
+Owner:     Niels Lohmann
+License:   MIT. Copyright (c) 2013-2019 Niels Lohmann. Same MIT text as item 3.
+Where:     Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded/github-com-nlohmann-json/json.hpp
+
+
+5. SHA1 by 983  (bundled inside lib-seeded)
+-------------------------------------------
+Origin:    https://github.com/983/SHA1/blob/master/sha1.hpp
+License:   Public domain, per the header of the file.
+Where:     Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded/key-formats/SHA1.hpp
+
+
+6. libsodium 1.0.22
+-------------------
+Origin:    https://github.com/jedisct1/libsodium, tag 1.0.22-RELEASE
+Owner:     Frank Denis and contributors
+License:   ISC. Full text: Packages/DiceKeysCore/Sources/CSodium/LICENSE
+Where:     Packages/DiceKeysCore/Sources/CSodium (src/libsodium copied by
+           scripts/vendor-libsodium.sh) and the private header copy at
+           Packages/DiceKeysCore/Vendor/seeded-crypto/extern/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h.
+           libsodium's Argon2 implementation is by Daniel Dinu and Dmitry
+           Khovratovich under CC0 1.0; other files carry their own notices
+           inside the libsodium tree.
+
+    ISC License
+
+    Copyright (c) 2013-2026
+    Frank Denis <j at pureftpd dot org>
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
+    copyright notice and this permission notice appear in all copies.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+7. Inconsolata (Bold)
+---------------------
+Origin:    https://github.com/googlefonts/Inconsolata
+Owner:     The Inconsolata Project Authors (Raph Levien)
+License:   SIL Open Font License 1.1 (https://openfontlicense.org)
+Where:     DiceKeys/fonts/Inconsolata-Bold.otf (shipped in the app bundle), and
+           the OCR glyph tables in
+           Packages/DiceKeysCore/Sources/ReadDiceKey/OcrFontTables.swift and
+           scripts/ocr-font-source/, which are rasterizations of this font.
+           The OFL permits bundling and derived works; the font itself is not
+           sold separately here and keeps its name only inside the bundle.
+
+
+8. BIP-39 English word list
+---------------------------
+Origin:    https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt
+Authors:   Marek Palatinus, Pavol Rusnak, Aaron Voisine, Sean Bowe
+License:   MIT (BIP-39 is published under "License: MIT" in the BIPs repository).
+Where:     DiceKeys/Model/BIP39/Wordlist.swift (the 2048 words, verbatim) and the
+           word lists under Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded/externally-generated.
+
+
+9. Code from other projects, adapted
+------------------------------------
+- DiceKeys/Services/Camera/CameraSession.swift keeps the upstream header credit
+  to https://github.com/RosayGaspard/SwiftUI-Simple-camera-app (MIT).

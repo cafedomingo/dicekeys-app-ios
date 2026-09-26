@@ -1,0 +1,129 @@
+{
+  "exampleDiceKeySeed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+  "exampleDiceKeySeedWithoutOrientations": "A1B2C3D4E5F6G1H2I3J4K5L6M1N2O3P4R5S6T1U2V3W4X5Y6Z1",
+  "sodiumVersion": "1.0.22",
+  "vectors": [
+    {
+      "json": "{\"password\":\"15-Self-depth-yahoo-limbs-brute-petty-ionic-fool-await-spree-ought-vixen-happy-runny-blend\",\"recipe\":\"{\\\"allow\\\":[{\\\"host\\\":\\\"*.1password.com\\\"}]}\"}",
+      "name": "template 1Password",
+      "password": "15-Self-depth-yahoo-limbs-brute-petty-ionic-fool-await-spree-ought-vixen-happy-runny-blend",
+      "recipe": "{\"allow\":[{\"host\":\"*.1password.com\"}]}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
+      "json": "{\"password\":\"15-Bunch-drift-basin-ultra-email-tiara-mossy-truck-lingo-snaps-o\",\"recipe\":\"{\\\"allow\\\":[{\\\"host\\\":\\\"*.apple.com\\\"},{\\\"host\\\":\\\"*.icloud.com\\\"}],\\\"lengthInChars\\\":64}\"}",
+      "name": "template Apple 64 chars",
+      "password": "15-Bunch-drift-basin-ultra-email-tiara-mossy-truck-lingo-snaps-o",
+      "recipe": "{\"allow\":[{\"host\":\"*.apple.com\"},{\"host\":\"*.icloud.com\"}],\"lengthInChars\":64}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
+      "json": "{\"password\":\"15-Wharf-manly-nervy-stunt-bring-smite-rehab-stilt-traps-tacky-blogs-tibia-elbow-wrath-image\",\"recipe\":\"{\\\"allow\\\":[{\\\"host\\\":\\\"*.bitwarden.com\\\"}]}\"}",
+      "name": "template Bitwarden",
+      "password": "15-Wharf-manly-nervy-stunt-bring-smite-rehab-stilt-traps-tacky-blogs-tibia-elbow-wrath-image",
+      "recipe": "{\"allow\":[{\"host\":\"*.bitwarden.com\"}]}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
+      "json": "{\"password\":\"15-Jawed-salsa-trend-humid-video-quiet-satin-gamma-whiny-jiffy-tabby-robin-anger-flock-limit\",\"recipe\":\"{\\\"allow\\\":[{\\\"host\\\":\\\"*.google.com\\\"}],\\\"#\\\":2}\"}",
+      "name": "template Google sequence 2",
+      "password": "15-Jawed-salsa-trend-humid-video-quiet-satin-gamma-whiny-jiffy-tabby-robin-anger-flock-limit",
+      "recipe": "{\"allow\":[{\"host\":\"*.google.com\"}],\"#\":2}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
+      "json": "{\"password\":\"\",\"recipe\":\"{\\\"allow\\\":[{\\\"host\\\":\\\"*.exampl.com\\\"}],\\\"lengthInChars\\\":0}\"}",
+      "name": "issue 56 lengthInChars 0",
+      "password": "",
+      "recipe": "{\"allow\":[{\"host\":\"*.exampl.com\"}],\"lengthInChars\":0}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "this string is seedy",
+      "type": "Password"
+    },
+    {
+      "json": "{\"recipe\":\"{\\\"purpose\\\":\\\"wallet\\\"}\",\"secretBytes\":\"d19e149109f0d77657fc39d91583c9a2b8f392a71a20b0bb0f3f67f3d0455480\"}",
+      "name": "template wallet secret",
+      "recipe": "{\"purpose\":\"wallet\"}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "secretBytesHex": "d19e149109f0d77657fc39d91583c9a2b8f392a71a20b0bb0f3f67f3d0455480",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Secret"
+    },
+    {
+      "json": "{\"recipe\":\"{\\\"purpose\\\":\\\"wallet\\\",\\\"lengthInBytes\\\":32}\",\"secretBytes\":\"d4f1c89bc91531eaafbdb28e69944b90f069508b63a5f187fd72e1b9d78e12d6\"}",
+      "name": "wallet 32 bytes explicit",
+      "recipe": "{\"purpose\":\"wallet\",\"lengthInBytes\":32}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "secretBytesHex": "d4f1c89bc91531eaafbdb28e69944b90f069508b63a5f187fd72e1b9d78e12d6",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Secret"
+    },
+    {
+      "json": "{\"recipe\":\"{\\\"purpose\\\":\\\"a unique identifier for this DiceKey\\\",\\\"lengthInBytes\\\":16}\",\"secretBytes\":\"31f6979a628e4800780118a5dc466129\"}",
+      "name": "DiceKey 16 byte id",
+      "recipe": "{\"purpose\":\"a unique identifier for this DiceKey\",\"lengthInBytes\":16}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "secretBytesHex": "31f6979a628e4800780118a5dc466129",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Secret"
+    },
+    {
+      "json": "{\"recipe\":\"{\\\"purpose\\\":\\\"ssh\\\"}\",\"signingKeyBytes\":\"dbf66ac21ce0aa7f6394629cb09f56c4ff76c7bba58643e6424dbc0f6fa7b6b1a315c4b87e433d87b7411b2b79702128fe4c92c038f33d803dbdb09b829df522\"}",
+      "message": "The quick brown fox jumps over the lazy dog",
+      "name": "template ssh",
+      "openPgpPemFormatSecretKey": "-----BEGIN PGP PRIVATE KEY BLOCK-----\nlFgEAAAAABYJKwYBBAHaRw8BAQdAoxXEuH5DPYe3QRsreXAhKP5MksA48z2APb2w\nm4Kd9SIAAQDb9mrCHOCqf2OUYpywn1bE/3bHu6WGQ+ZCTbwPb6e2sRKjtACIkAQT\nFggAOBYhBGqboJnNFWOFNtwaVDIvfJyShkpZBQIAAAAAAhsBBQsJCAcCBhUKCQgL\nAgQWAgMBAh4BAheAAAoJEDIvfJyShkpZMXcA/RRkVtDfPg2M2UhLUit1UHuUoUhD\nlqs2i6Kdlip74wdPAQDoja28unHmuH8RHDswGUOruHgtCD9I/p4WWMBYveboAA==\n-----END PGP PRIVATE KEY BLOCK-----\n",
+      "openSshPemPrivateKey": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACCjFcS4fkM9h7dBGyt5cCEo/kySwDjzPYA9vbCbgp31IgAA\nAIgz9SbrM/Um6wAAAAtzc2gtZWQyNTUxOQAAACCjFcS4fkM9h7dBGyt5cCEo/kyS\nwDjzPYA9vbCbgp31IgAAAEDb9mrCHOCqf2OUYpywn1bE/3bHu6WGQ+ZCTbwPb6e2\nsaMVxLh+Qz2Ht0EbK3lwISj+TJLAOPM9gD29sJuCnfUiAAAAAAECAwQF\n-----END OPENSSH PRIVATE KEY-----\n",
+      "openSshPublicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKMVxLh+Qz2Ht0EbK3lwISj+TJLAOPM9gD29sJuCnfUi DiceKeys",
+      "recipe": "{\"purpose\":\"ssh\"}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "signatureHex": "70d0ab90171e24a8619ef9c1a55aa8405870660fdf5db5640ede075d34e32a9ad121565a936e712d79f4434390f7e45f01b469e0de50cd922d07b545f618d00f",
+      "signatureVerificationKeyJson": "{\"keyBytes\":\"a315c4b87e433d87b7411b2b79702128fe4c92c038f33d803dbdb09b829df522\",\"recipe\":\"{\\\"purpose\\\":\\\"ssh\\\"}\"}",
+      "type": "SigningKey"
+    },
+    {
+      "json": "{\"recipe\":\"{\\\"purpose\\\":\\\"pgp\\\"}\",\"signingKeyBytes\":\"e321b792ccc928a9373a537e5da8852cb236c8057c08c40081b3e11ba3d1ba00c938100935446167429970a024660006bab27e481032347a95e787e9ac515be6\"}",
+      "message": "The quick brown fox jumps over the lazy dog",
+      "name": "template pgp",
+      "openPgpPemFormatSecretKey": "-----BEGIN PGP PRIVATE KEY BLOCK-----\nlFgEAAAAABYJKwYBBAHaRw8BAQdAyTgQCTVEYWdCmXCgJGYABrqyfkgQMjR6leeH\n6axRW+YAAQDjIbeSzMkoqTc6U35dqIUssjbIBXwIxACBs+Ebo9G6AA8HtACIkAQT\nFggAOBYhBDWa5dgiraW7p+Fc7PusysoDQtmDBQIAAAAAAhsBBQsJCAcCBhUKCQgL\nAgQWAgMBAh4BAheAAAoJEPusysoDQtmDYegBANM8j8dH/2uC/5IxjFxH0nKi1Dfj\nbUHcinZuNR6OPjYjAQCUQ9hqxBGJNwYZSOQ+ZduhP0A9EXoPoGeM607MQvdhDg==\n-----END PGP PRIVATE KEY BLOCK-----\n",
+      "openSshPemPrivateKey": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACDJOBAJNURhZ0KZcKAkZgAGurJ+SBAyNHqV54fprFFb5gAA\nAIjXPQxh1z0MYQAAAAtzc2gtZWQyNTUxOQAAACDJOBAJNURhZ0KZcKAkZgAGurJ+\nSBAyNHqV54fprFFb5gAAAEDjIbeSzMkoqTc6U35dqIUssjbIBXwIxACBs+Ebo9G6\nAMk4EAk1RGFnQplwoCRmAAa6sn5IEDI0epXnh+msUVvmAAAAAAECAwQF\n-----END OPENSSH PRIVATE KEY-----\n",
+      "openSshPublicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMk4EAk1RGFnQplwoCRmAAa6sn5IEDI0epXnh+msUVvm DiceKeys",
+      "recipe": "{\"purpose\":\"pgp\"}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "signatureHex": "dc18a87a4831523072f039b062ceeefaaf3167108b1adf5a39530e8aea3f5c6879a0346e66633a98e6cf1516307ffb96cdf9c4f408953786d8a66bdda4be9403",
+      "signatureVerificationKeyJson": "{\"keyBytes\":\"c938100935446167429970a024660006bab27e481032347a95e787e9ac515be6\",\"recipe\":\"{\\\"purpose\\\":\\\"pgp\\\"}\"}",
+      "type": "SigningKey"
+    },
+    {
+      "json": "{\"keyBytes\":\"a9a37b11aee52e515eefcfb1c4dc6d1593dd0b1a7896ca5d9c530752753e74e0\",\"recipe\":\"{\\\"purpose\\\":\\\"symmetric test\\\"}\"}",
+      "keyBytesHex": "a9a37b11aee52e515eefcfb1c4dc6d1593dd0b1a7896ca5d9c530752753e74e0",
+      "message": "The quick brown fox jumps over the lazy dog",
+      "name": "symmetric key",
+      "packagedSealedMessageJson": "{\"ciphertext\":\"f5bc18ce0813dc97f6c500f139750997147b3602da6e9ba64e14f9ec97033101f685a89742373ad119b176a806e245ed12340ffd5d9844ee3d1eac722a63d05eb3da0be330eb51a8c11624a43a022a265d42f5\",\"recipe\":\"{\\\"purpose\\\":\\\"symmetric test\\\"}\"}",
+      "recipe": "{\"purpose\":\"symmetric test\"}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "SymmetricKey"
+    },
+    {
+      "json": "{\"recipe\":\"{\\\"purpose\\\":\\\"unsealing test\\\"}\",\"sealingKeyBytes\":\"e825bc0b74e5c2558e4e161b327335a511e1aee8e36b9cd2677e87555446926b\",\"unsealingKeyBytes\":\"ec54b9c6dbd2ab4ffeeac82cbbf2b2fcb6a51864a054a4fa94392309fe754c6c\"}",
+      "message": "The quick brown fox jumps over the lazy dog",
+      "name": "unsealing key",
+      "packagedSealedMessageJson": "{\"ciphertext\":\"a55436c46ad8aafb4dc0ce59bba181c9860e376b3f975431cb2dc9877ddd891b7cac9141c30dadb44be57ce9212d989db842df3a2771c2f94dc1c9db420214d6b27eb5e23a5b2a2c8ca5f360c1f916dab32ea0f428145878024ae0\",\"recipe\":\"{\\\"purpose\\\":\\\"unsealing test\\\"}\"}",
+      "recipe": "{\"purpose\":\"unsealing test\"}",
+      "recipeWithAllOptionalParametersSpecified": "{\"hashFunction\":\"BLAKE2b\"}",
+      "sealingKeyJson": "{\"keyBytes\":\"e825bc0b74e5c2558e4e161b327335a511e1aee8e36b9cd2677e87555446926b\",\"recipe\":\"{\\\"purpose\\\":\\\"unsealing test\\\"}\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "UnsealingKey"
+    }
+  ]
+}

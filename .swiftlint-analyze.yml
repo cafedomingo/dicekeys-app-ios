@@ -1,0 +1,5 @@
+# Child config for `swiftlint analyze`: the app target only. The DiceKeysCore package
+# is left out because its tests are not in the app build log, so declarations only the
+# tests use would be reported as unused.
+excluded:
+  - Packages
