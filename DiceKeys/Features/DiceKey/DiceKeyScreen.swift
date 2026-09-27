@@ -58,7 +58,8 @@ struct DiceKeyScreen: View {
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .ignoresSafeArea(.keyboard)
-        .navigationTitle(diceKeyState.nickname)
+        .navigationTitle("DiceKey")
+        .navigationSubtitle("\(diceKey.centerFace.letterAndDigit) in center")
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

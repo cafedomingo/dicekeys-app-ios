@@ -32,8 +32,6 @@ final class UnlockedDiceKeyState: Identifiable {
 
     nonisolated var id: String { keyId }
 
-    var nickname: String { diceKey.nickname }
-
     init(diceKey: DiceKey, knownDiceKeysStore: KnownDiceKeysStore, keychain: DiceKeyKeychain) {
         self.diceKey = diceKey
         self.knownDiceKeysStore = knownDiceKeysStore
