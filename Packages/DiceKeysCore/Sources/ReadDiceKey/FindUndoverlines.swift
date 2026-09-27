@@ -113,15 +113,11 @@ func findRectangles(_ gray: GrayImage, levels: Int = 13, minPerimeter: Double = 
                 // Canny(grayBlur, edges, 253, 255, 5) and a 3x3 dilate to close gaps between
                 // edge segments.
                 let edges = gray.medianBlur3().canny5(lowThreshold: 253, highThreshold: 255).dilate3()
-                contours = findContours(in: edges, scratch: &scratch)
+                contours = findContours(in: edges, atLeast: 1, minPerimeter: minPerimeter, scratch: &scratch)
             } else {
-                contours = findContours(in: gray, atLeast: thresholdValue, scratch: &scratch)
+                contours = findContours(in: gray, atLeast: thresholdValue, minPerimeter: minPerimeter, scratch: &scratch)
             }
-            var rectangles: [RectangleDetected] = []
-            for contour in contours where arcLengthOpen(contour) >= minPerimeter {
-                rectangles.append(RectangleDetected(contour: contour, foundAtThreshold: thresholdValue))
-            }
-            slots[level] = rectangles
+            slots[level] = contours.map { RectangleDetected(contour: $0, foundAtThreshold: thresholdValue) }
             if workers > 1 && worker == 0 { break }
             level += step
         }

@@ -51,7 +51,15 @@ func findContours(in binary: GrayImage, scratch: inout ContourScratch) -> [Conto
 /// `findContours` of the binarisation `image >= threshold`, without materialising it: the
 /// comparison is done while filling the label plane. With `threshold` 1 this is the plain
 /// contour search of a binary image.
-func findContours(in image: GrayImage, atLeast threshold: Int, scratch: inout ContourScratch) -> [Contour] {
+///
+/// Returns only borders whose `arcLengthOpen` is at least `minPerimeter`. Shorter ones are
+/// still traced, because their labels shape the borders found after them.
+func findContours(
+    in image: GrayImage,
+    atLeast threshold: Int,
+    minPerimeter: Double = 0,
+    scratch: inout ContourScratch
+) -> [Contour] {
     let w = image.width, h = image.height
     guard w > 0 && h > 0 else { return [] }
     let stride = w + 2
@@ -115,7 +123,9 @@ func findContours(in image: GrayImage, atLeast threshold: Int, scratch: inout Co
                     if !found {
                         // An isolated pixel is a border on its own.
                         f[p] = -nbd
-                        contours.append([Point2i(x - 1, y - 1)])
+                        if minPerimeter <= 0 {
+                            contours.append([Point2i(x - 1, y - 1)])
+                        }
                         continue
                     }
                     points.removeAll(keepingCapacity: true)
@@ -161,7 +171,12 @@ func findContours(in image: GrayImage, atLeast threshold: Int, scratch: inout Co
                         i3 = i4
                         backDir = (d + 4) & 7
                     }
-                    contours.append(points)
+                    if arcLengthOpen(points) < minPerimeter { continue }
+                    // Exact size: storing `points` itself would give every later contour the
+                    // longest border's capacity.
+                    contours.append(Contour(unsafeUninitializedCapacity: points.count) { buffer, count in
+                        count = buffer.initialize(fromContentsOf: points)
+                    })
                 }
             }
         }
