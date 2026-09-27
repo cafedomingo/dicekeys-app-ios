@@ -174,9 +174,8 @@ func findContours(
                         backDir = (d + 4) & 7
                     }
                     if arcLengthOpen(points) < minPerimeter { continue }
-                    // An exact-size copy. Appending `points` itself would share its buffer,
-                    // so the next removeAll(keepingCapacity:) would allocate a new one of the
-                    // longest border's size, and every later contour would keep that much.
+                    // Exact size: storing `points` itself would give every later contour the
+                    // longest border's capacity.
                     contours.append(Contour(unsafeUninitializedCapacity: points.count) { buffer, count in
                         count = buffer.initialize(fromContentsOf: points)
                     })

@@ -9,9 +9,7 @@ import Testing
 
 @Suite("findContours memory")
 struct ContourMemoryTests {
-    /// A comb (one border with a corner at every tooth) across the top, then a grid of
-    /// 2x2 specks below it: the shape of a busy camera frame, where one long border is
-    /// followed by thousands of small ones.
+    /// One long border (a comb, with a corner at every tooth) above thousands of 2x2 specks.
     private func combAboveSpecks(width: Int, speckRows: Int) -> GrayImage {
         let height = 4 + speckRows * 3
         var image = GrayImage(width: width, height: height)
@@ -33,9 +31,6 @@ struct ContourMemoryTests {
         return image
     }
 
-    // A camera frame of the world crashed the app with an allocation failure: every
-    // contour traced after a long one was stored with the long one's capacity, so a
-    // frame's contours needed (number of contours) x (longest contour) points of memory.
     @Test("each contour keeps only the memory its own points need")
     func contourCapacityTracksItsLength() {
         let contours = findContours(in: combAboveSpecks(width: 1000, speckRows: 10))
