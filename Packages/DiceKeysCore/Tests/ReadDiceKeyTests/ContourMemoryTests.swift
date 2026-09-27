@@ -47,4 +47,22 @@ struct ContourMemoryTests {
         let capacity = contours.reduce(0) { $0 + $1.capacity }
         #expect(capacity <= 2 * points)
     }
+
+    // findRectangles keeps only borders of perimeter 50 or more, so the tracer drops the
+    // shorter ones as it finishes them rather than returning every border of a busy frame.
+    @Test("a minimum perimeter keeps exactly the borders the filter afterwards would")
+    func minimumPerimeterMatchesFilteringAfterwards() throws {
+        let photo = try #require(CorpusImage.all.first)
+        let rgba = try Corpus.rgba(from: photo.url, scaledToSquare: 1080)
+        let gray = rgba.data.withUnsafeBytes { GrayImage(rgba: $0, width: rgba.width, height: rgba.height) }
+        for image in [combAboveSpecks(width: 1000, speckRows: 10), gray] {
+            for threshold in [1, 98, 156] {
+                var scratch = ContourScratch()
+                let all = findContours(in: image, atLeast: threshold, scratch: &scratch)
+                let kept = findContours(in: image, atLeast: threshold, minPerimeter: 50, scratch: &scratch)
+                #expect(kept == all.filter { arcLengthOpen($0) >= 50 })
+                #expect(kept.count < all.count)
+            }
+        }
+    }
 }

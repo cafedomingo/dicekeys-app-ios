@@ -77,7 +77,7 @@ func removeOverlappingRectangles(_ rectangles: [RectangleDetected], comparatorLo
 /// `findRectangles(gray, N = 13, minPerimeter = 50)`: at level 0 the contours of the
 /// dilated Canny edges of the median-blurred frame; at levels 1..<N the contours of
 /// `gray >= (l + 1) * 255 / N`. Every contour of open perimeter at least `minPerimeter`
-/// becomes a rectangle.
+/// becomes a rectangle; the tracer drops the shorter ones itself, so they are never stored.
 ///
 /// The levels are independent, so they run concurrently (one contour scratch plane per
 /// worker) and the rectangles are concatenated in level order, which keeps the tie-breaks
@@ -113,15 +113,11 @@ func findRectangles(_ gray: GrayImage, levels: Int = 13, minPerimeter: Double = 
                 // Canny(grayBlur, edges, 253, 255, 5) and a 3x3 dilate to close gaps between
                 // edge segments.
                 let edges = gray.medianBlur3().canny5(lowThreshold: 253, highThreshold: 255).dilate3()
-                contours = findContours(in: edges, scratch: &scratch)
+                contours = findContours(in: edges, atLeast: 1, minPerimeter: minPerimeter, scratch: &scratch)
             } else {
-                contours = findContours(in: gray, atLeast: thresholdValue, scratch: &scratch)
+                contours = findContours(in: gray, atLeast: thresholdValue, minPerimeter: minPerimeter, scratch: &scratch)
             }
-            var rectangles: [RectangleDetected] = []
-            for contour in contours where arcLengthOpen(contour) >= minPerimeter {
-                rectangles.append(RectangleDetected(contour: contour, foundAtThreshold: thresholdValue))
-            }
-            slots[level] = rectangles
+            slots[level] = contours.map { RectangleDetected(contour: $0, foundAtThreshold: thresholdValue) }
             if workers > 1 && worker == 0 { break }
             level += step
         }

@@ -51,7 +51,17 @@ func findContours(in binary: GrayImage, scratch: inout ContourScratch) -> [Conto
 /// `findContours` of the binarisation `image >= threshold`, without materialising it: the
 /// comparison is done while filling the label plane. With `threshold` 1 this is the plain
 /// contour search of a binary image.
-func findContours(in image: GrayImage, atLeast threshold: Int, scratch: inout ContourScratch) -> [Contour] {
+///
+/// Only borders whose `arcLengthOpen` is at least `minPerimeter` are returned, the same list
+/// as filtering the full result afterwards. Every border is still traced and labelled, since
+/// later borders depend on the labels; the short ones are just never stored, which is most
+/// of them in a busy frame.
+func findContours(
+    in image: GrayImage,
+    atLeast threshold: Int,
+    minPerimeter: Double = 0,
+    scratch: inout ContourScratch
+) -> [Contour] {
     let w = image.width, h = image.height
     guard w > 0 && h > 0 else { return [] }
     let stride = w + 2
@@ -115,7 +125,9 @@ func findContours(in image: GrayImage, atLeast threshold: Int, scratch: inout Co
                     if !found {
                         // An isolated pixel is a border on its own.
                         f[p] = -nbd
-                        contours.append([Point2i(x - 1, y - 1)])
+                        if minPerimeter <= 0 {
+                            contours.append([Point2i(x - 1, y - 1)])
+                        }
                         continue
                     }
                     points.removeAll(keepingCapacity: true)
@@ -161,6 +173,7 @@ func findContours(in image: GrayImage, atLeast threshold: Int, scratch: inout Co
                         i3 = i4
                         backDir = (d + 4) & 7
                     }
+                    if arcLengthOpen(points) < minPerimeter { continue }
                     // An exact-size copy. Appending `points` itself would share its buffer,
                     // so the next removeAll(keepingCapacity:) would allocate a new one of the
                     // longest border's size, and every later contour would keep that much.
