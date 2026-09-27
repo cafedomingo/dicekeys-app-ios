@@ -157,22 +157,54 @@ update: set `deploymentTarget` to 27.0 in `project.yml`, drop the `#else` branch
 else in the app wants a 27-only API, and the app already compiles against the 27 SDK
 locally while keeping 26 as its minimum, so there is no urgency.
 
-## iPad, and later the foldable
+## iPad, the Mac, and later the foldable
 
-No iPad has ever run this. The iPad declares all four interface orientations, which makes
-item 1 more than cosmetic there, and several screens were laid out against a phone-shaped
-canvas. The backup and validation illustrations already run off the right edge on a phone.
+**Why it exists.** The app is built for iPhone and iPad (`TARGETED_DEVICE_FAMILY` is
+`1,2`), but no iPad has ever run it. Several screens were laid out against a phone-shaped
+canvas, and the backup and validation illustrations already run off the right edge on a
+phone.
 
-The iPhone Duo, Apple's foldable, ships 23 October 2026 with a 5.4-inch outer and a 7.6-inch
-inner display, and no simulator for it exists in Xcode 27.0. Nothing to do yet. When it
-matters, the portrait lock is the first thing to revisit, and the fold transition resizes the
-app live, which is the same class of problem as rotation: the preview and the overlay have to
-stay agreed through a size change.
+**What proper iPad support covers.** Four things, roughly in order:
+
+- **Rotation.** The iPad declares all four interface orientations, so item 1 stops being
+  cosmetic here: the camera and the interface have to turn together.
+- **Wider layouts.** Screens that stretch a phone column across a tablet, and the
+  illustrations that already overflow, need layouts that use the width.
+- **Resizable windows.** `Info.plist` does not set `UIRequiresFullScreen`, so the app
+  already opts into iPad multitasking and its window can be resized freely. Every screen
+  has to survive a live resize, and the scanner is the hard case: the preview and the
+  overlay have to stay agreed through a size change.
+- **Keyboard and pointer.** Hover states and shortcuts for the common actions. The least
+  urgent of the four, and the one to drop first if the rest is enough.
+
+**The Mac is the cheap place to test it.** `SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD` is on
+(the Xcode default), so an Apple silicon Mac runs the unmodified app with the iPad interface,
+in a resizable window, with no extra target; Mac Catalyst stays off because nothing needs
+it. It has never been run. Three things make it worth doing:
+
+- It is an iPad-idiom, landscape, resizable window, which is most of the list above.
+- It has a real camera. The camera fallback for machines with no back camera and the
+  unmirrored preview are already in place, so a real DiceKey can be scanned with the
+  built-in camera or an iPhone as a Continuity Camera, without installing on a phone.
+- It may enforce the keychain's access control, which the Simulator ignores. Unverified.
+
+It is not a replacement for the Simulator, which remains the closer match for an iPhone.
+
+The first run needs the Mac registered as a development device, once. Unlike the Simulator,
+real hardware runs only builds whose development profile lists that machine, and this Mac is
+not on the team's list yet. TestFlight never needed this because distribution profiles do not
+list devices. Either sign into Xcode's Accounts and run the app on My Mac (Designed for iPad),
+which registers it automatically, or add the Mac's provisioning UDID by hand in the developer
+account. After that the destination is `platform=macOS,variant=Designed for iPad`.
+
+**The iPhone Duo**, Apple's foldable, ships 23 October 2026 with a 5.4-inch outer and a
+7.6-inch inner display, and no simulator for it exists in Xcode 27.0. Nothing to do yet.
+When it matters, the portrait lock is the first thing to revisit, and the fold transition
+resizes the app live, which is the resizable-window problem above arriving on a phone. Work
+done for the iPad carries over.
 
 ## Smaller items, not worth their own change
 
-- **Mac as Designed for iPad** has never been run, though the camera fallback for machines
-  with no back camera and the unmirrored preview are both in place for it.
 - **Swift/C++ interop** could replace the hand-written C ABI over seeded-crypto.
 - **Modernizing the vendored C++** in the subtree is possible now that it is a git subtree;
   the golden vectors would catch any change to derived output.
