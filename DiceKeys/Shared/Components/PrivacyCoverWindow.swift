@@ -78,8 +78,9 @@ final class PrivacyCoverWindowController {
         }
     }
 
-    /// The cover standing over `scene`, if one has been raised for it.
-    func coverWindow(for scene: UIWindowScene) -> UIWindow? {
+    /// The cover standing over `scene`, if one has been raised for it. Read by the tests,
+    /// which the unused-code analyzer does not see.
+    func coverWindow(for scene: UIWindowScene) -> UIWindow? { // swiftlint:disable:this unused_declaration
         coverWindows[ObjectIdentifier(scene)]
     }
 
