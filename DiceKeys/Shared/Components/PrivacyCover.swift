@@ -31,17 +31,23 @@ func privacyCoverIsVisible(scenePhase: ScenePhase) -> Bool {
 private struct PrivacyCover: ViewModifier {
     @Environment(\.scenePhase) private var scenePhase
 
+    private var isVisible: Bool {
+        privacyCoverIsVisible(scenePhase: scenePhase)
+    }
+
     func body(content: Content) -> some View {
         content
             .overlay {
-                if privacyCoverIsVisible(scenePhase: scenePhase) {
+                if isVisible {
                     // Inserted without animation: the snapshot is taken as soon as
                     // `didEnterBackground` returns and will not wait for one to finish.
                     PrivacyCoverView()
                         .transition(.asymmetric(insertion: .identity, removal: .opacity))
                 }
             }
-            .animation(.easeOut(duration: 0.25), value: scenePhase == .background)
+            // Keyed to the same value the overlay is, so the removal fade cannot be left
+            // behind by a change to the rule.
+            .animation(.easeOut(duration: 0.25), value: isVisible)
     }
 }
 
