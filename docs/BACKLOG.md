@@ -61,6 +61,64 @@ which can appear", and recommends moving them off the main thread or bounding th
 `kSecUseAuthenticationContext`. If the toggle ever stalls on a device, that is why, and the
 fix is to make `setStored` async rather than to weaken the access control.
 
+## A better scanner
+
+**Why it exists.** The scanner is a faithful port of upstream's OpenCV pipeline, kept
+output-identical to the C++ so the port could be proven correct photo by photo
+(`docs/SCANNER-PORT-NOTES.md`). Nobody chose it as the best way to find a DiceKey. It is
+brute force: every frame is thresholded at twelve fixed brightness levels plus one Canny
+edge image, every border at every level is traced and fitted with a rectangle (about 2,100
+per frame), and filtering then keeps the 25 to 50 that are shaped like undoverlines. Nearly
+all of the work is spent on things that are not a DiceKey, so an ordinary busy scene is the
+worst case. That is where the TestFlight crash came from: one busy frame of the world needed
+gigabytes until the contour tracer stopped holding the longest border's capacity for every
+contour (PR #9). After that fix a 1080-pixel frame peaks between 81 MB for a textured scene
+and 353 MB for a pixel checkerboard, still a lot of memory for a result that is usually
+"nothing here". The goal is a dramatically better scanner, not a faster copy of this one.
+
+**The choices, cheapest first.**
+
+1. **Drop short borders while tracing.** `findRectangles` discards every contour under 50
+   pixels of perimeter, but only after `findContours` has returned all of them. Measuring
+   the perimeter as the border is traced and never storing the short ones keeps the output
+   byte-identical and cuts memory and time on busy frames most.
+2. **Scan a smaller frame.** No capture resolution is set, so the session takes its default
+   and the full 1080-pixel square is scanned. Undoverlines are large at the distance a
+   DiceKey is held, and cost falls roughly with area, at some risk to the OCR. Converting
+   the frame is unmeasured too: it is oriented, turned into a `CGImage` and redrawn into a
+   byte buffer, two passes over every pixel where `CIContext.render(toBitmap:)` would do one.
+3. **Track the key between frames.** Once the grid is found, search near it, and fall back
+   to the full frame when it is lost. With nothing found, scan every few frames rather than
+   every frame.
+4. **One pass across all brightness levels.** The twelve thresholds approximate what MSER
+   (maximally stable extremal regions) computes directly: regions that stay stable as the
+   threshold moves, found with a component tree in near-linear time over one pass. This is
+   the real algorithmic fix within the current design, and the largest change of the four.
+5. **Apple's Vision framework (the likely choice).** `DetectRectanglesRequest` (the Swift
+   Vision API, iOS 18 and later) finds quadrilaterals with `minimumAspectRatio`,
+   `maximumAspectRatio`, `minimumSize` and `maximumObservations` to narrow it to
+   undoverline-shaped bars; `RecognizeTextRequest` could replace the template OCR for the
+   letter and digit. Apple maintains it and it is built for exactly this, a camera frame of
+   an arbitrary scene. The port notes rejected Vision's contours because they cannot be
+   compared with the C++ reference; that constraint goes away once matching C++ stops being
+   the goal.
+
+**What choosing 5 means.** Options 2 to 5 give up byte-identical output, and 5 gives up the
+C++ comparison entirely, so correctness rests on the 23 photos in the corpus test still
+reading correctly and on scans of real keys in bad light. Grow the corpus before the switch,
+especially with hard cases: glare, angle, low light, a key partly out of frame. The
+undoverline bit decoding, grid assembly and multi-frame merge are the DiceKey-specific part
+and can stay; what Vision replaces is finding the candidates and, perhaps, reading the
+characters. Nobody has checked yet whether `DetectRectanglesRequest` reliably finds bars as
+thin as undoverlines (width 0.177 of their length), so a spike against the corpus comes
+before any commitment. Also unknown: whether Vision runs on the GPU or Neural Engine here
+rather than the CPU cores, which is where the battery and heat win would come from.
+
+**Measure first, on a phone.** The 20 ms per frame and the memory figures are from an M2.
+Take per-frame time, peak memory and energy on an iPhone for the current scanner before
+changing it, so every option is judged against the same numbers. Option 1 is worth doing
+regardless: it is cheap, and it helps for as long as the tracer is still there.
+
 ## Simpler recipes
 
 **Why it exists.** A recipe can be built from a web address, a purpose, or raw JSON. The web
@@ -380,13 +438,3 @@ implementation to check against, so the vectors are not one cross-check among se
 **Related.** Removing Argon2id would leave exactly one hash function to reimplement, and
 would retire the internal header include on its own. The two smaller items about Swift and
 C++ interop and about modernising the vendored C++ are the incremental version of this.
-
-## Frame conversion performance
-
-The scanner itself went from 49 ms to 20 ms per 1080-pixel frame on an M2 and the owner
-found on-device speed fine, so this is opportunistic. What has never been measured is the
-work *before* the scanner: each frame is oriented, turned into a `CGImage`, and redrawn into
-a byte buffer, which is two passes over every pixel where `CIContext.render(toBitmap:)`
-would do one. There is also no capture resolution set, so the session takes its default and
-the full square is scanned; a smaller frame would cut scan cost roughly with area, at some
-risk to the OCR. Measure before changing either.
