@@ -47,7 +47,6 @@ struct RecipeListView: View {
                 router.push(.derive(.recipe(recipe)))
             }
             .presentationDetents([.medium, .large])
-            .privacyCover()
         }
     }
 }

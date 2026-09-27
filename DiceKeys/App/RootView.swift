@@ -23,7 +23,6 @@ struct RootView: View {
                     destination(for: route)
                 }
         }
-        .privacyCover()
         .onChange(of: router.path) { oldPath, newPath in
             // Leaving the DiceKey screen (by any route) starts the expiration countdown.
             if oldPath.contains(.diceKey) && !newPath.contains(.diceKey) {

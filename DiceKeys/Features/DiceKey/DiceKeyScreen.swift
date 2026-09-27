@@ -82,7 +82,6 @@ struct DiceKeyScreen: View {
         .sheet(isPresented: $showStorageOptions) {
             SaveDiceKeySheet(diceKeyState: diceKeyState)
                 .presentationDetents([.medium, .large])
-                .privacyCover()
         }
         .onAppear {
             if router.showStorageOptionsOnPresent {
