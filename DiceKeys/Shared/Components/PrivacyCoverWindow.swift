@@ -23,7 +23,7 @@ final class PrivacyCoverWindowController {
     /// made for, so it cannot stand in for another one, and iPadOS can show several scenes
     /// of this app at once. Dropped when the scene disconnects, which iOS can do to a
     /// backgrounded app while the process lives on.
-    private var coverWindows: [ObjectIdentifier: UIWindow] = [:]
+    private(set) var coverWindows: [ObjectIdentifier: UIWindow] = [:]
     /// Held so they can be unregistered. The handlers capture `self` weakly, so a discarded
     /// controller is not kept alive by the notification centre while it waits for `deinit`.
     nonisolated(unsafe) private var observers: [any NSObjectProtocol] = []
@@ -76,11 +76,6 @@ final class PrivacyCoverWindowController {
             // has already restored the alpha and the cover has to stay up.
             if window.alpha == 0 { window.isHidden = true }
         }
-    }
-
-    /// The cover standing over `scene`, if one has been raised for it.
-    func coverWindow(for scene: UIWindowScene) -> UIWindow? {
-        coverWindows[ObjectIdentifier(scene)]
     }
 
     private func discardWindow(for scene: UIWindowScene) {

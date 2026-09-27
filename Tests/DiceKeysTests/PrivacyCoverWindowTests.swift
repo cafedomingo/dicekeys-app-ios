@@ -29,11 +29,11 @@ struct PrivacyCoverWindowTests {
     func backgroundingRaisesTheCover() throws {
         let scene = try firstScene()
         let controller = observingController()
-        #expect(controller.coverWindow(for: scene) == nil)
+        #expect(controller.coverWindows[ObjectIdentifier(scene)] == nil)
 
         NotificationCenter.default.post(name: UIScene.didEnterBackgroundNotification, object: scene)
 
-        let window = try #require(controller.coverWindow(for: scene))
+        let window = try #require(controller.coverWindows[ObjectIdentifier(scene)])
         #expect(!window.isHidden)
         #expect(window.alpha == 1)
     }
@@ -48,7 +48,7 @@ struct PrivacyCoverWindowTests {
 
         // `UIView.animate` sets the value straight away and animates the presentation, so
         // the fade having started is visible without waiting for it to finish.
-        let window = try #require(controller.coverWindow(for: scene))
+        let window = try #require(controller.coverWindows[ObjectIdentifier(scene)])
         #expect(window.alpha == 0)
     }
 
@@ -62,7 +62,7 @@ struct PrivacyCoverWindowTests {
         // have gone, so covering here hides the app with nothing left to hide it from.
         NotificationCenter.default.post(name: UIScene.willDeactivateNotification, object: scene)
 
-        #expect(controller.coverWindow(for: scene) == nil)
+        #expect(controller.coverWindows[ObjectIdentifier(scene)] == nil)
     }
 
     @Test("the cover of a disconnected scene is discarded rather than reused")
@@ -70,10 +70,10 @@ struct PrivacyCoverWindowTests {
         let scene = try firstScene()
         let controller = observingController()
         NotificationCenter.default.post(name: UIScene.didEnterBackgroundNotification, object: scene)
-        #expect(controller.coverWindow(for: scene) != nil)
+        #expect(controller.coverWindows[ObjectIdentifier(scene)] != nil)
 
         NotificationCenter.default.post(name: UIScene.didDisconnectNotification, object: scene)
 
-        #expect(controller.coverWindow(for: scene) == nil)
+        #expect(controller.coverWindows[ObjectIdentifier(scene)] == nil)
     }
 }
