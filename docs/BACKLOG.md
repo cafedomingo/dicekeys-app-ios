@@ -70,10 +70,8 @@ brute force: every frame is thresholded at twelve fixed brightness levels plus o
 edge image, every border at every level is traced and fitted with a rectangle (about 2,100
 per frame), and filtering then keeps the 25 to 50 that are shaped like undoverlines. Nearly
 all of the work is spent on things that are not a DiceKey, so an ordinary busy scene is the
-worst case, which is how one frame of the world crashed a TestFlight build. PR #9 fixed that
-and stopped storing the short borders, bringing a busy 1080-pixel frame down to 60 to 80 MB,
-but the design is unchanged. The goal is a dramatically better scanner, and with it deleting
-code the system frameworks already provide.
+worst case. The goal is a dramatically better scanner, and with it deleting code the system
+frameworks already provide.
 
 **The direction: Apple's Vision framework.** The port notes rejected Vision because its
 results cannot be compared with the C++ reference. That constraint goes away once matching
