@@ -161,7 +161,12 @@ func findContours(in image: GrayImage, atLeast threshold: Int, scratch: inout Co
                         i3 = i4
                         backDir = (d + 4) & 7
                     }
-                    contours.append(points)
+                    // An exact-size copy. Appending `points` itself would share its buffer,
+                    // so the next removeAll(keepingCapacity:) would allocate a new one of the
+                    // longest border's size, and every later contour would keep that much.
+                    contours.append(Contour(unsafeUninitializedCapacity: points.count) { buffer, count in
+                        count = buffer.initialize(fromContentsOf: points)
+                    })
                 }
             }
         }
