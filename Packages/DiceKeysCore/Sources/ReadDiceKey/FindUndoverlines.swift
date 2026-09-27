@@ -77,7 +77,7 @@ func removeOverlappingRectangles(_ rectangles: [RectangleDetected], comparatorLo
 /// `findRectangles(gray, N = 13, minPerimeter = 50)`: at level 0 the contours of the
 /// dilated Canny edges of the median-blurred frame; at levels 1..<N the contours of
 /// `gray >= (l + 1) * 255 / N`. Every contour of open perimeter at least `minPerimeter`
-/// becomes a rectangle; the tracer drops the shorter ones itself, so they are never stored.
+/// becomes a rectangle.
 ///
 /// The levels are independent, so they run concurrently (one contour scratch plane per
 /// worker) and the rectangles are concatenated in level order, which keeps the tie-breaks

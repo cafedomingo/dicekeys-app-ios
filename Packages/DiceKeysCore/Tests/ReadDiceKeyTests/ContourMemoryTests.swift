@@ -43,8 +43,6 @@ struct ContourMemoryTests {
         #expect(capacity <= 2 * points)
     }
 
-    // findRectangles keeps only borders of perimeter 50 or more, so the tracer drops the
-    // shorter ones as it finishes them rather than returning every border of a busy frame.
     @Test("a minimum perimeter keeps exactly the borders the filter afterwards would")
     func minimumPerimeterMatchesFilteringAfterwards() throws {
         let photo = try #require(CorpusImage.all.first)

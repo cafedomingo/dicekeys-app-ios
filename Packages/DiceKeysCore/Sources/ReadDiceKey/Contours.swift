@@ -52,10 +52,8 @@ func findContours(in binary: GrayImage, scratch: inout ContourScratch) -> [Conto
 /// comparison is done while filling the label plane. With `threshold` 1 this is the plain
 /// contour search of a binary image.
 ///
-/// Only borders whose `arcLengthOpen` is at least `minPerimeter` are returned, the same list
-/// as filtering the full result afterwards. Every border is still traced and labelled, since
-/// later borders depend on the labels; the short ones are just never stored, which is most
-/// of them in a busy frame.
+/// Returns only borders whose `arcLengthOpen` is at least `minPerimeter`. Shorter ones are
+/// still traced, because their labels shape the borders found after them.
 func findContours(
     in image: GrayImage,
     atLeast threshold: Int,
