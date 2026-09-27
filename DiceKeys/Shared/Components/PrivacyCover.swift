@@ -5,24 +5,49 @@
 
 import SwiftUI
 
-/// Hides the screen whenever the scene is not active. iOS snapshots the app for the app
-/// switcher as it leaves the foreground, and that snapshot would otherwise show whatever
-/// DiceKey or derived secret was on screen, even after the key expires. The root view and
-/// every sheet apply it, because sheets are presented above the root's overlays.
+/// Whether the cover belongs on screen.
+///
+/// Only when backgrounded. UIKit snapshots the scene for the app switcher immediately after
+/// `sceneDidEnterBackground` returns, which is the one moment the screen is captured into
+/// something that outlives the user looking at it.
+///
+/// Deliberately not "whenever the scene is not active". Resigning active also happens for
+/// the app switcher gesture, Control Center, Notification Center and system alerts, the Face
+/// ID prompt among them, and iOS hands `.active` back as much as a second after the last of
+/// those visibly closes. Covering for all of them means the screen stays hidden long after
+/// there is anything to hide it from. Apple's QA1838 names `didEnterBackground` as the right
+/// moment, and Wallet behaves this way: card details stay visible in the app switcher
+/// gesture and are hidden once the app is actually backgrounded.
+///
+/// The cost, accepted knowingly: revealed dice are visible behind the Face ID sheet, under
+/// Control Center, and in a screenshot the user takes themselves. In each the user is present
+/// and could see the screen anyway.
+func privacyCoverIsVisible(scenePhase: ScenePhase) -> Bool {
+    scenePhase == .background
+}
+
+/// Hides the screen while the app is backgrounded. The root view and every sheet apply it,
+/// because sheets are presented above the root's overlays.
 private struct PrivacyCover: ViewModifier {
     @Environment(\.scenePhase) private var scenePhase
+
+    private var isVisible: Bool {
+        privacyCoverIsVisible(scenePhase: scenePhase)
+    }
 
     func body(content: Content) -> some View {
         content
             .overlay {
-                if scenePhase != .active {
-                    // Appears at once, so the snapshot never catches it half-faded; fades
-                    // out on return.
+                if isVisible {
+                    // Inserted without animation: the snapshot is taken as soon as
+                    // `didEnterBackground` returns and will not wait for one to finish.
                     PrivacyCoverView()
                         .transition(.asymmetric(insertion: .identity, removal: .opacity))
                 }
             }
-            .animation(.easeOut(duration: 0.25), value: scenePhase == .active)
+            // Keyed to the same value the overlay is, so the removal fade cannot be left
+            // behind by a change to the rule.
+            .animation(.easeOut(duration: 0.25), value: isVisible)
     }
 }
 
