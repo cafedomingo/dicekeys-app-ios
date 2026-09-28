@@ -24,7 +24,7 @@ License:   NONE GRANTED. Upstream's LICENSE.md reads, in full:
 
 Where in this repo:
     DiceKeys/Model/DiceKey, DiceKeys/Model/Recipes, DiceKeys/Model/BIP39,
-    DiceKeys/Services/Api, Packages/DiceKeysCore/Sources/DiceKeySpecification
+    DiceKeys/Services/Api, Packages/ReadDiceKey/Sources/DiceKeySpecification
     (the generated face specification), the illustrations in
     DiceKeys/Resources/Assets.xcassets, the app-icon mark
     (scripts/app-icon-source/original-mark-1024.png and everything generated
@@ -41,10 +41,10 @@ Origin:    https://github.com/dicekeys/read-dicekey, commit 0440036
 Owner:     DiceKeys, LLC
 License:   NONE GRANTED (same placeholder as above).
 Where in this repo:
-    Packages/DiceKeysCore/Sources/ReadDiceKey began as a Swift port of
+    Packages/ReadDiceKey/Sources/ReadDiceKey began as a Swift port of
     upstream's lib-read-dicekey and still finds and decodes the bars its way
     (see docs/SCANNING.md), so it is a derivative work.
-    Packages/DiceKeysCore/Tests/ReadDiceKeyTests/Fixtures/images holds upstream's
+    Packages/ReadDiceKey/Tests/ReadDiceKeyTests/Fixtures/images holds upstream's
     test photographs alongside the owner's; its README.md says which are which.
 
 

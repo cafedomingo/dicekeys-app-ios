@@ -57,6 +57,8 @@ settings:
 packages:
   DiceKeysCore:
     path: Packages/DiceKeysCore
+  ReadDiceKey:
+    path: Packages/ReadDiceKey
 
 targets:
   DiceKeys:
@@ -86,9 +88,9 @@ targets:
     dependencies:
       - package: DiceKeysCore
         product: SeededCrypto
-      - package: DiceKeysCore
+      - package: ReadDiceKey
         product: DiceKeySpecification
-      - package: DiceKeysCore
+      - package: ReadDiceKey
         product: ReadDiceKey
     scheme:
       testTargets:
@@ -104,9 +106,9 @@ targets:
       - target: DiceKeys
       - package: DiceKeysCore
         product: SeededCrypto
-      - package: DiceKeysCore
+      - package: ReadDiceKey
         product: DiceKeySpecification
-      - package: DiceKeysCore
+      - package: ReadDiceKey
         product: ReadDiceKey
     settings:
       base:

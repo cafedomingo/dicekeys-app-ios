@@ -11,10 +11,10 @@ Companion documents:
 A single iOS app target: SwiftUI on Observation, `NavigationStack`, async/await and Swift 6
 strict concurrency, with Liquid Glass chrome. It scans a physical DiceKey with the camera or
 takes one typed by hand, holds it in memory behind Face ID, and derives passwords, keys and
-seeds from it. One local Swift package supplies everything native, with no external package
-dependencies: libsodium as a source copy, DiceKeys' seeded-crypto as an unmodified git
-subtree behind a small C ABI, the generated face specification, and a DiceKey scanner written
-in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or OpenCV remain, and there is
+seeds from it. Two local Swift packages supply the rest, with no external dependencies:
+`DiceKeysCore` holds libsodium as a source copy and DiceKeys' seeded-crypto as an unmodified
+git subtree behind a small C ABI, and `ReadDiceKey` holds the generated face specification and
+a DiceKey scanner written in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or OpenCV remain, and there is
 not one `#if os(...)` left in the app.
 
 ## Goals, in priority order
@@ -139,7 +139,7 @@ change.
 
 ```
 swift run --package-path BuildTools xcodegen generate
-open DiceKeys.xcodeproj        # schemes: DiceKeys, DiceKeysCore-Package
+open DiceKeys.xcodeproj        # scheme: DiceKeys
 ```
 
 The Xcode project is generated and git-ignored. **Edit `project.yml`, never the project.**
@@ -179,9 +179,9 @@ permissions error until it is accepted.
 
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
-- `swift test -c release` for `Packages/DiceKeysCore`: the golden derivation vectors, the
-  scanner over upstream's photos, the owner's photos and video, and drawn keys, and
-  concurrent first use of libsodium.
+- `swift test -c release` for each package: in `Packages/DiceKeysCore` the golden derivation
+  vectors and concurrent first use of libsodium, and in `Packages/ReadDiceKey` the scanner over
+  upstream's photos, the owner's photos and video, and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
 
 The runners have no iOS 27 SDK, which is why the deployment target is 26 and the one
@@ -204,7 +204,7 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 - `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to the
   same fixture, and proves every rotation of a key derives the same seed. That last test is
   why the rotation bugs were display problems rather than security ones.
-- `Packages/DiceKeysCore/Tests/ReadDiceKeyTests/` runs the scanner over upstream's photos and
+- `Packages/ReadDiceKey/Tests/ReadDiceKeyTests/` runs the scanner over upstream's photos and
   the owner's photos and video (the file names are the expected reads): it must never read a
   face wrong, must read well-framed keys, and must read nothing where there is no key. Keys drawn from the face
   codes cover reading across frames: a quarter turn between frames, a second key, a frame

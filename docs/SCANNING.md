@@ -1,7 +1,7 @@
 # How scanning works
 
 The scanner reads a DiceKey from the camera: 25 dice in a 5x5 box, each showing a letter, a
-digit and a rotation. It lives in `Packages/DiceKeysCore/Sources/ReadDiceKey/`, is written in
+digit and a rotation. It lives in `Packages/ReadDiceKey/Sources/ReadDiceKey/`, is written in
 Swift, and uses only system frameworks: `simd`, CoreVideo and Dispatch. This
 document explains what it reads, how, and why it works this way rather than the alternatives
 that were measured.

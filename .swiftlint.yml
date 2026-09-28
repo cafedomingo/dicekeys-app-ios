@@ -26,8 +26,9 @@ included:
   - Tests
   - seed-security-key
   - Packages/DiceKeysCore/Sources/SeededCrypto
-  - Packages/DiceKeysCore/Sources/ReadDiceKey
   - Packages/DiceKeysCore/Tests
+  - Packages/ReadDiceKey/Sources/ReadDiceKey
+  - Packages/ReadDiceKey/Tests
 excluded:
   - Packages/DiceKeysCore/Sources/CSodium
   - Packages/DiceKeysCore/Sources/SeededCryptoNative
