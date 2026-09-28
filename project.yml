@@ -67,8 +67,8 @@ targets:
         excludes:
           - "**/.DS_Store"
           - "Resources/AppIcon.icon"
-      # Icon Composer package: the layered Liquid Glass icon (iOS/macOS 26+). The
-      # AppIcon.appiconset with the same name is the flat fallback for older tooling.
+      # Icon Composer package: the layered Liquid Glass icon, which Xcode compiles into every
+      # size and the light, dark and tinted appearances.
       - path: DiceKeys/Resources/AppIcon.icon
         type: file
         buildPhase: resources
