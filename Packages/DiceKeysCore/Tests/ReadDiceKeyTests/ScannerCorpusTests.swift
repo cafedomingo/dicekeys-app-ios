@@ -53,12 +53,19 @@ struct CorpusImage: Sendable, CustomTestStringConvertible {
 enum Corpus {
     enum Size: String, CaseIterable, Sendable {
         case native
-        /// The whole photo scaled so its shorter side is 1080 pixels, the side of the app's frames.
+        /// The whole photo at the app's scale: its shorter side 1080 pixels, the side of the
+        /// app's frames. The photos were not taken through the scanning overlay, so cropping
+        /// them to its square can cut off dice that a user would have brought into it.
         case shorterSide1080
+        /// Exactly what the app scans: the centered 1080-pixel square.
+        case centeredSquare1080
     }
 
     /// The photo as gray pixels, EXIF orientation applied.
     static func gray(from url: URL, size: Size) throws -> GrayImage {
+        if size == .centeredSquare1080 {
+            return try gray(from: url, square: 1080)
+        }
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
               let raw = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
@@ -160,8 +167,8 @@ enum Corpus {
 @Suite("Scanner photo corpus")
 struct ScannerCorpusTests {
     /// The fewest faces the photos that must read may yield between them, one frame each at the
-    /// app's frame size. Today they read 539; the floor sits a little lower so that another
-    /// Mac's JPEG decoder, which can move a face or two, cannot fail it.
+    /// app's frame size. It sits a little below what they read (the test prints that), so that
+    /// another Mac's JPEG decoder, which can move a face or two, cannot fail it.
     static let minimumFacesRead = 530
 
     static let cases = CorpusImage.all.flatMap { image in Corpus.Size.allCases.map { (image, $0) } }
