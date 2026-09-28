@@ -72,8 +72,6 @@ private struct ScanFirstTime: View {
     @State private var scanning: Bool = false
     @Binding var diceKey: DiceKey?
 
-    private let scanningImageName = "Scanning Side View"
-
     var body: some View {
         Instruction("Scan the dice in the bottom of the box (without the top.)")
         Spacer()
@@ -84,7 +82,7 @@ private struct ScanFirstTime: View {
             ScanDiceKeyView(onDiceKeyRead: { diceKey = $0; scanning = false },
                         onCancel: { scanning = false })
         } else {
-            Image(scanningImageName).resizable().scaledToFit().offset(x: 0, y: -50)
+            Image(.scanningADiceKey).resizable().scaledToFit().offset(x: 0, y: -50)
             PrimaryButton("Scan") { scanning = true }
         }
         Spacer()

@@ -37,8 +37,8 @@ struct ValidateBackupView: View {
         invalidIndexes.count > 5
     }
 
-    private var scanningBackupImageName: String {
-        return target == .Stickeys ? "Scanning a Stickey" : "Scanning a DiceKey PNG"
+    private var scanningBackupImage: ImageResource {
+        target == .Stickeys ? .scanningAStickey : .scanningADiceKey
     }
 
     var body: some View {
@@ -99,7 +99,7 @@ struct ValidateBackupView: View {
                     PrimaryButton("Scan DiceKey") { scanningOriginal = true }.hidden()
                 }
                 VStack {
-                    Image(scanningBackupImageName)
+                    Image(scanningBackupImage)
                         .resizable().scaledToFit()
                         .offset(x: 0, y: -50)
                     PrimaryButton("Scan copy to validate") { scanningCopy = true }

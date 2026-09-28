@@ -21,6 +21,7 @@ struct SaveDiceKeySheet: View {
                 VStack(spacing: 16) {
                     Image("Phonelet")
                         .resizable().scaledToFit()
+                        .foregroundStyle(.tint)
                         .background(
                             DiceKeyView(diceKey: diceKeyState.diceKey, diceBoxColor: Color.Depiction.kitBlue, diePenColor: Color.Depiction.kitBlue)
                                 .scaleEffect(0.8)
