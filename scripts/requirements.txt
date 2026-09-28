@@ -1,2 +1,2 @@
 # Python dependencies of scripts/.
-pillow==11.3.0
+pillow==12.3.0
