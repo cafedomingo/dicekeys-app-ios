@@ -21,14 +21,18 @@ nonisolated struct ScannedFrame: Sendable {
 /// subclass in the app: AVFoundation requires an `AVCaptureVideoDataOutputSampleBufferDelegate`,
 /// which must be an `NSObject`.
 ///
-/// Frames are scanned where AVFoundation delivers them, on the serial queue handed to
-/// `setSampleBufferDelegate`. While a scan runs that queue is busy, and the output, which
-/// discards late frames, drops the frames that arrive meanwhile. `@unchecked Sendable`
-/// because the scanner is only ever touched on that queue.
+/// Frames are scanned where AVFoundation delivers them, on `queue`. While a scan runs the
+/// queue is busy, and the output, which discards late frames, drops the frames that arrive
+/// meanwhile. `@unchecked Sendable` because the scanner is only ever touched on that queue,
+/// which is the same for every output the delegate serves, so a camera switch cannot overlap
+/// two scans.
 ///
 /// `nonisolated` so the delegate method is never main-actor-isolated even if the
 /// module is built with main-actor default isolation.
 nonisolated final class CameraSampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, @unchecked Sendable {
+    /// The single DispatchQueue in the app: AVFoundation requires a serial queue for
+    /// sample-buffer delivery, and the frames are scanned on it while the user waits.
+    let queue = DispatchQueue(label: "com.dicekeys.sampleBuffers", qos: .userInitiated)
     private var scanner = DiceKeyScanner()
     private let onFrame: @MainActor @Sendable (ScannedFrame) -> Void
 

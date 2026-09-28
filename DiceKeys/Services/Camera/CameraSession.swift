@@ -140,9 +140,7 @@ final class CameraSession {
         if let format = GrayImage.lumaPixelFormats.first(where: videoOutput.availableVideoPixelFormatTypes.contains) {
             videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
         }
-        // The single DispatchQueue in the app: AVFoundation requires a serial queue
-        // for sample-buffer delivery, and the frames are scanned on it while the user waits.
-        videoOutput.setSampleBufferDelegate(delegate, queue: DispatchQueue(label: "com.dicekeys.sampleBuffers", qos: .userInitiated))
+        videoOutput.setSampleBufferDelegate(delegate, queue: delegate.queue)
         if session.canAddOutput(videoOutput) {
             session.addOutput(videoOutput)
         }
