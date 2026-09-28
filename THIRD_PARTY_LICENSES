@@ -54,8 +54,8 @@ Origin:    https://github.com/dicekeys/seeded-crypto, branch primary, commit c9c
            tracked through the fork https://github.com/cafedomingo/seeded-crypto
 Owner:     DiceKeys, LLC
 License:   MIT. Copyright (c) 2020 DiceKeys, LLC.
-           Full text: Packages/DiceKeysCore/Vendor/seeded-crypto/LICENSE.md
-Where:     Packages/DiceKeysCore/Vendor/seeded-crypto (git subtree, unmodified
+           Full text: Packages/SeededCrypto/Vendor/seeded-crypto/LICENSE.md
+Where:     Packages/SeededCrypto/Vendor/seeded-crypto (git subtree, unmodified
            sources; see docs/DEPENDENCIES.md). It bundles items 4, 5 and 6.
 
     MIT License
@@ -86,24 +86,24 @@ Where:     Packages/DiceKeysCore/Vendor/seeded-crypto (git subtree, unmodified
 Origin:    https://github.com/nlohmann/json
 Owner:     Niels Lohmann
 License:   MIT. Copyright (c) 2013-2019 Niels Lohmann. Same MIT text as item 3.
-Where:     Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded/github-com-nlohmann-json/json.hpp
+Where:     Packages/SeededCrypto/Vendor/seeded-crypto/lib-seeded/github-com-nlohmann-json/json.hpp
 
 
 5. SHA1 by 983  (bundled inside lib-seeded)
 -------------------------------------------
 Origin:    https://github.com/983/SHA1/blob/master/sha1.hpp
 License:   Public domain, per the header of the file.
-Where:     Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded/key-formats/SHA1.hpp
+Where:     Packages/SeededCrypto/Vendor/seeded-crypto/lib-seeded/key-formats/SHA1.hpp
 
 
 6. libsodium 1.0.22
 -------------------
 Origin:    https://github.com/jedisct1/libsodium, tag 1.0.22-RELEASE
 Owner:     Frank Denis and contributors
-License:   ISC. Full text: Packages/DiceKeysCore/Sources/CSodium/LICENSE
-Where:     Packages/DiceKeysCore/Sources/CSodium (src/libsodium copied by
+License:   ISC. Full text: Packages/SeededCrypto/Sources/CSodium/LICENSE
+Where:     Packages/SeededCrypto/Sources/CSodium (src/libsodium copied by
            scripts/vendor-libsodium.sh) and the private header copy at
-           Packages/DiceKeysCore/Vendor/seeded-crypto/extern/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h.
+           Packages/SeededCrypto/Vendor/seeded-crypto/extern/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h.
            libsodium's Argon2 implementation is by Daniel Dinu and Dmitry
            Khovratovich under CC0 1.0; other files carry their own notices
            inside the libsodium tree.
@@ -142,7 +142,7 @@ Origin:    https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt
 Authors:   Marek Palatinus, Pavol Rusnak, Aaron Voisine, Sean Bowe
 License:   MIT (BIP-39 is published under "License: MIT" in the BIPs repository).
 Where:     DiceKeys/Model/BIP39/Wordlist.swift (the 2048 words, verbatim) and the
-           word lists under Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded/externally-generated.
+           word lists under Packages/SeededCrypto/Vendor/seeded-crypto/lib-seeded/externally-generated.
 
 
 9. Code from other projects, adapted

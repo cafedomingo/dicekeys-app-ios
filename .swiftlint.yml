@@ -25,13 +25,13 @@ included:
   - DiceKeys
   - Tests
   - seed-security-key
-  - Packages/DiceKeysCore/Sources/SeededCrypto
-  - Packages/DiceKeysCore/Tests
+  - Packages/SeededCrypto/Sources/SeededCrypto
+  - Packages/SeededCrypto/Tests
   - Packages/ReadDiceKey/Sources/ReadDiceKey
   - Packages/ReadDiceKey/Tests
 excluded:
-  - Packages/DiceKeysCore/Sources/CSodium
-  - Packages/DiceKeysCore/Sources/SeededCryptoNative
+  - Packages/SeededCrypto/Sources/CSodium
+  - Packages/SeededCrypto/Sources/SeededCryptoNative
 unused_import:
   # Foundation re-exports these; without this, a file that imports Foundation only for
   # CGFloat or CGSize has the import reported as unused.

@@ -4,7 +4,7 @@
 //
 //  The seed string is the only input to every derivation. These expectations were
 //  computed independently of the app (see scripts/generate-golden-vectors.cpp and the
-//  fixture in Packages/DiceKeysCore/Tests/SeededCryptoTests/Fixtures). If they fail,
+//  fixture in Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures). If they fail,
 //  DiceKey canonicalization changed and every derived secret changes with it.
 //
 

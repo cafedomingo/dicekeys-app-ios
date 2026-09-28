@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Re-vendors libsodium into Packages/DiceKeysCore/Sources/CSodium from a git ref.
+# Re-vendors libsodium into Packages/SeededCrypto/Sources/CSodium from a git ref.
 #
 #   ./scripts/vendor-libsodium.sh [git-url] [ref]
 #   defaults: https://github.com/jedisct1/libsodium.git 1.0.22-RELEASE
@@ -12,7 +12,7 @@ set -euo pipefail
 URL="${1:-https://github.com/jedisct1/libsodium.git}"
 REF="${2:-1.0.22-RELEASE}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DEST="$ROOT/Packages/DiceKeysCore/Sources/CSodium"
+DEST="$ROOT/Packages/SeededCrypto/Sources/CSodium"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
@@ -37,7 +37,7 @@ MM
 # seeded-crypto's recipe.cpp includes this private header by relative path into what is,
 # upstream, the libsodium submodule; keep the copy in the subtree current. The subtree's
 # own .gitignore ignores extern/**, so the copy has to be force-added.
-ARGON2="$ROOT/Packages/DiceKeysCore/Vendor/seeded-crypto/extern/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h"
+ARGON2="$ROOT/Packages/SeededCrypto/Vendor/seeded-crypto/extern/libsodium/src/libsodium/crypto_pwhash/argon2/argon2.h"
 cp "$DEST/crypto_pwhash/argon2/argon2.h" "$ARGON2"
 git -C "$ROOT" add -f "$ARGON2"
 cat > "$DEST/VENDOR.md" <<MD

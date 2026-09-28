@@ -184,6 +184,11 @@ The recorded total in `ScannerCorpusTests` then resets to what the new photos re
 
 ## Smaller items, not worth their own change
 
+- **`update-seeded-crypto.sh` cannot pull.** `git subtree` finds its earlier merges from
+  metadata in their commit messages, and squash merges drop it, so the script stops with
+  "was never added". Vendoring by copy, as `vendor-libsodium.sh` does, survives squash
+  merges.
+
 - **Swift/C++ interop** could replace the hand-written C ABI over seeded-crypto.
 - **Modernizing the vendored C++** in the subtree is possible now that it is a git subtree;
   the golden vectors would catch any change to derived output.

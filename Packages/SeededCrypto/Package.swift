@@ -1,21 +1,21 @@
 // swift-tools-version: 6.2
 //
-// DiceKeysCore: the native libraries the DiceKeys app depends on, vendored as
-// sources so the app builds with no CocoaPods, no submodules, no Objective-C, no
-// third-party binaries and no network access beyond what Xcode itself needs.
+// SeededCrypto: DiceKeys' seeded-crypto and the libsodium it builds on, vendored as sources
+// so the app builds with no CocoaPods, no submodules, no Objective-C, no third-party
+// binaries and no network access beyond what Xcode itself needs.
 //
 //   CSodium            libsodium 1.0.22 compiled from source (C)
 //   SeededCryptoCXX    DiceKeys lib-seeded (C++), a git subtree under Vendor/
 //   SeededCryptoNative our C-ABI shim over it
 //   SeededCrypto       Swift API used by the app
 //
-// Provenance: Sources/CSodium/VENDOR.md (libsodium copy) and the subtree commit history of
-// Vendor/seeded-crypto (`git log -- Packages/DiceKeysCore/Vendor/seeded-crypto`).
+// Provenance: Sources/CSodium/VENDOR.md for the libsodium copy, and THIRD_PARTY_LICENSES
+// for the seeded-crypto commit Vendor/seeded-crypto was taken from.
 
 import PackageDescription
 
 let package = Package(
-    name: "DiceKeysCore",
+    name: "SeededCrypto",
     platforms: [
         .iOS(.v26),
         .macOS(.v26),

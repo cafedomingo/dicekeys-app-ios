@@ -20,7 +20,7 @@ and a device, then Product → Run.
 
 There is no CocoaPods, no git submodule, no Objective-C and no third-party binary.
 libsodium and the DiceKeys seeded-crypto C++ library are vendored as source in
-`Packages/DiceKeysCore`; the DiceKey scanner is pure Swift, in `Packages/ReadDiceKey`. See
+`Packages/SeededCrypto`; the DiceKey scanner is pure Swift, in `Packages/ReadDiceKey`. See
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 ## Testing the app

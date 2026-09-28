@@ -12,10 +12,10 @@ A single iOS app target: SwiftUI on Observation, `NavigationStack`, async/await 
 strict concurrency, with Liquid Glass chrome. It scans a physical DiceKey with the camera or
 takes one typed by hand, holds it in memory behind Face ID, and derives passwords, keys and
 seeds from it. Two local Swift packages supply the rest, with no external dependencies:
-`DiceKeysCore` holds libsodium as a source copy and DiceKeys' seeded-crypto as an unmodified
+`SeededCrypto` holds libsodium as a source copy and DiceKeys' seeded-crypto as an unmodified
 git subtree behind a small C ABI, and `ReadDiceKey` holds the generated face specification and
-a DiceKey scanner written in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or OpenCV remain, and there is
-not one `#if os(...)` left in the app.
+a DiceKey scanner written in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or
+OpenCV remain, and there is not one `#if os(...)` left in the app.
 
 ## Goals, in priority order
 
@@ -31,7 +31,7 @@ not one `#if os(...)` left in the app.
    controls, nothing fighting the system look.
 
 Nothing here changes what the app derives. Any change that alters derived output is a bug,
-and `Packages/DiceKeysCore/Tests/SeededCryptoTests` exists to catch it.
+and `Packages/SeededCrypto/Tests/SeededCryptoTests` exists to catch it.
 
 ---
 
@@ -179,7 +179,7 @@ permissions error until it is accepted.
 
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
-- `swift test -c release` for each package: in `Packages/DiceKeysCore` the golden derivation
+- `swift test -c release` for each package: in `Packages/SeededCrypto` the golden derivation
   vectors and concurrent first use of libsodium, and in `Packages/ReadDiceKey` the scanner over
   upstream's photos, the owner's photos and video, and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
@@ -198,7 +198,7 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## How the safety nets work
 
-- `Packages/DiceKeysCore/Tests/SeededCryptoTests/Fixtures/golden-vectors.json` came from the
+- `Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/golden-vectors.json` came from the
   reference C++ (`scripts/generate-golden-vectors.sh`). If `GoldenVectorTests` fails, derived
   secrets have changed; do not update the fixture without understanding why.
 - `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to the
