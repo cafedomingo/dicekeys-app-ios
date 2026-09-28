@@ -102,6 +102,8 @@ targets:
       - target: DiceKeys
       - package: DiceKeysCore
         product: SeededCrypto
+      - package: DiceKeysCore
+        product: ReadDiceKey
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES

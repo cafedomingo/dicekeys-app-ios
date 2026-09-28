@@ -7,6 +7,7 @@
 
 import Foundation
 import Synchronization
+import ReadDiceKey
 import SeededCrypto
 
 let clockwise90DegreeRotationIndexesFor5x5Grid = [
@@ -36,7 +37,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     }
 
     enum ConstructorError: Error {
-        case emptyFace
+        case invalidFace
     }
 
     /// The 25 faces that make up a DiceKey, each with a letter, digit, and orientation
@@ -47,13 +48,17 @@ final class DiceKey: Identifiable, Equatable, Sendable {
         self.faces = faces
     }
 
-    init(_ facesRead: [FaceRead]) throws {
-        precondition(facesRead.count == 25)
-        self.faces = try facesRead.map { fr -> Face in
-            guard let face = fr.toFace() else {
-                throw ConstructorError.emptyFace
+    /// The faces the scanner read, rows top to bottom as the camera saw them.
+    init(_ scanned: [ScannedFace]) throws {
+        precondition(scanned.count == 25)
+        let orientations: [FaceOrientationLetterTrbl] = [.Top, .Right, .Bottom, .Left]
+        self.faces = try scanned.map { face in
+            guard let letter = FaceLetter(rawValue: String(face.letter)),
+                  let digit = FaceDigit(rawValue: String(face.digit)),
+                  orientations.indices.contains(face.clockwiseTurns) else {
+                throw ConstructorError.invalidFace
             }
-            return face
+            return Face(letter: letter, digit: digit, orientationAsLowercaseLetterTrbl: orientations[face.clockwiseTurns])
         }
     }
 

@@ -89,7 +89,7 @@ struct ScanDiceKeyView: View {
                 )
                 FacesReadOverlay(
                     renderedSize: size,
-                    facesRead: scanModel.facesRead,
+                    dice: scanModel.dice,
                     imageFrameSize: scanModel.imageFrameSize
                 )
                 ScanControls(cameras: cameras, selectedCameraID: $selectedCameraID, onCancel: onCancel)

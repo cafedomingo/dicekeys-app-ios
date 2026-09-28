@@ -136,6 +136,11 @@ final class CameraSession {
 
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.alwaysDiscardsLateVideoFrames = true
+        // Bi-planar Y'CbCr, whose luma plane the scanner reads as it is.
+        let lumaFormats = [kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
+        if let format = lumaFormats.first(where: videoOutput.availableVideoPixelFormatTypes.contains) {
+            videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
+        }
         // The single DispatchQueue in the app: AVFoundation requires a serial queue
         // for sample-buffer delivery.
         videoOutput.setSampleBufferDelegate(delegate, queue: DispatchQueue(label: "com.dicekeys.sampleBuffers"))
