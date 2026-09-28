@@ -77,7 +77,7 @@ DiceKeys/
     Extensions/   Data, String, View
     PlatformTypes.swift  (UIFont.inconsolataBold)
   Resources/, fonts/    Colors.xcassets (see Colors), Assets.xcassets, AppIcon.icon
-Tests/DiceKeysTests/    Swift Testing: CanonicalizeRecipeJsonTests, MnemonicsTests, DiceKeySeedTests
+Tests/DiceKeysTests/    Swift Testing
 Tests/DiceKeysUITests/  ScreenWalk, run by scripts/screen-walk.sh, not by CI
 ```
 
@@ -181,7 +181,7 @@ permissions error until it is accepted.
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
 - `swift test -c release` for `Packages/DiceKeysCore`: the golden derivation vectors, the
-  scanner over upstream's 23 photos, the owner's photos and video, and drawn keys, and
+  scanner over upstream's photos, the owner's photos and video, and drawn keys, and
   concurrent first use of libsodium.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
 
