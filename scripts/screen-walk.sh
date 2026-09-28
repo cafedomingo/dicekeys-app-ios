@@ -16,7 +16,6 @@ if [[ -z "${DEVELOPER_DIR:-}" && ! -x "$(xcode-select -p 2>/dev/null)/usr/bin/xc
   [[ -d "$XCODE_APP" ]] || { echo "No Xcode found in /Applications; set DEVELOPER_DIR." >&2; exit 1; }
   export DEVELOPER_DIR="$XCODE_APP/Contents/Developer"
 fi
-command -v xcodegen >/dev/null || { echo "xcodegen is not installed (brew install xcodegen)." >&2; exit 1; }
 
 udid="${2:-$(xcrun simctl list devices booted | grep -Eo '[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}' | head -1 || true)}"
 if [ -z "$udid" ]; then
@@ -26,7 +25,7 @@ fi
 xcrun simctl bootstatus "$udid" -b >/dev/null
 
 cd "$(dirname "$0")/.."
-xcodegen generate --quiet
+swift run --package-path BuildTools xcodegen generate --quiet
 bundle_id="$(xcodebuild -showBuildSettings -project DiceKeys.xcodeproj -scheme DiceKeys 2>/dev/null |
   awk '/ PRODUCT_BUNDLE_IDENTIFIER =/ { print $3; exit }')"
 
