@@ -40,14 +40,11 @@ Origin:    https://github.com/dicekeys/read-dicekey, commit 0440036
 Owner:     DiceKeys, LLC
 License:   NONE GRANTED (same placeholder as above).
 Where in this repo:
-    Packages/DiceKeysCore/Sources/ReadDiceKey is a Swift port of upstream's
-    lib-read-dicekey (same algorithm, stage by stage; see
-    docs/SCANNER-PORT-NOTES.md), so it is a derivative work.
-    Packages/DiceKeysCore/Sources/ReadDiceKey/OcrFontTables.swift is generated
-    from upstream's rasterized Inconsolata glyph tables (item 7).
+    Packages/DiceKeysCore/Sources/ReadDiceKey began as a Swift port of
+    upstream's lib-read-dicekey and still finds and decodes the bars its way
+    (see docs/SCANNING.md), so it is a derivative work.
     Packages/DiceKeysCore/Tests/ReadDiceKeyTests/Fixtures/images/*.jpg|png are
-    upstream's 23 test photographs, and Fixtures/reference-cpp-scanner.json is
-    upstream's scanner output on them.
+    upstream's 23 test photographs.
 
 
 3. dicekeys/seeded-crypto  (lib-seeded, the derivation library)
@@ -133,10 +130,7 @@ Where:     Packages/DiceKeysCore/Sources/CSodium (src/libsodium copied by
 Origin:    https://github.com/googlefonts/Inconsolata
 Owner:     The Inconsolata Project Authors (Raph Levien)
 License:   SIL Open Font License 1.1 (https://openfontlicense.org)
-Where:     DiceKeys/fonts/Inconsolata-Bold.otf (shipped in the app bundle), and
-           the OCR glyph tables in
-           Packages/DiceKeysCore/Sources/ReadDiceKey/OcrFontTables.swift and
-           scripts/ocr-font-source/, which are rasterizations of this font.
+Where:     DiceKeys/fonts/Inconsolata-Bold.otf (shipped in the app bundle).
            The OFL permits bundling and derived works; the font itself is not
            sold separately here and keeps its name only inside the bundle.
 

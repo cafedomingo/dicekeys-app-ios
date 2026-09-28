@@ -61,91 +61,27 @@ which can appear", and recommends moving them off the main thread or bounding th
 `kSecUseAuthenticationContext`. If the toggle ever stalls on a device, that is why, and the
 fix is to make `setStored` async rather than to weaken the access control.
 
-## A better scanner, built on Vision
+## A faster scanner
 
-**Why it exists.** The scanner is a faithful port of upstream's OpenCV pipeline, kept
-output-identical to the C++ so the port could be proven correct photo by photo
-(`docs/SCANNER-PORT-NOTES.md`). Nobody chose it as the best way to find a DiceKey. It is
-brute force: every frame is thresholded at twelve fixed brightness levels plus one Canny
-edge image, every border at every level is traced and fitted with a rectangle (about 2,100
-per frame), and filtering then keeps the 25 to 50 that are shaped like undoverlines. Nearly
-all of the work is spent on things that are not a DiceKey, so an ordinary busy scene is the
-worst case. The goal is a dramatically better scanner, and with it deleting code the system
-frameworks already provide.
+**Why it exists.** The scanner was rewritten around the two bar codes on each face, and
+Apple's Vision framework was measured and ruled out along the way; `SCANNING.md` has both. On
+an M2 it scans a frame in 6.6 ms against the original's 21.7, but only by spreading the same
+CPU over more cores (31.4 ms of CPU against 31.8), and it holds about 39 MB while scanning. It
+still thresholds the whole frame twelve times and traces every border at each level, and no
+phone has measured it.
 
-**The direction: Apple's Vision framework.** The port notes rejected Vision because its
-results cannot be compared with the C++ reference. That constraint goes away once matching
-C++ stops being the goal. Vision is maintained by Apple, is built for camera frames of
-arbitrary scenes, and takes the camera's `CVPixelBuffer` directly with an orientation and a
-region of interest.
+**What is left, in order.**
 
-**What Vision would replace**, counted in `Packages/DiceKeysCore/Sources/ReadDiceKey/`:
-
-- **Finding candidates.** `DetectRectanglesRequest` (the Swift Vision API) finds
-  quadrilaterals, narrowed by `minimumAspectRatio`, `maximumAspectRatio`, `minimumSize` and
-  `maximumObservations`. That replaces the contour tracer (`Contours.swift`, 344 lines), the
-  blur, Canny, dilate and threshold filters in `GrayImage.swift` (most of its 445), the
-  rectangle fitting in `Geometry.swift`, and the thirteen-level search in
-  `FindUndoverlines.swift`.
-- **Reading the letter and digit.** `RecognizeTextRequest` could replace the template OCR:
-  `OCR.swift` (189 lines), the generated `OcrFontTables.swift` (3,741), and with them
-  `scripts/generate-ocr-font-tables.py` and `scripts/ocr-font-source/`. Worth knowing: the
-  letter and digit are also encoded in both the underline and the overline, and OCR is the
-  third vote that decides which line is wrong when the two disagree (`FaceRead.error()`). So
-  the question is whether Vision reads single rotated characters well enough to be that
-  vote, or whether the two codes alone are enough.
-- **Converting the frame.** Each frame is oriented, cropped to a square, turned into a
-  `CGImage`, redrawn into an RGBA buffer and converted to gray (`rgbaCenteredSquare` in the
-  app, `GrayImage(rgba:)` in the package). Vision needs none of that. Whatever still samples
-  pixels (the undoverline dots) could read the camera's luma plane directly.
-
-**What stays**, because it is the DiceKey rather than image processing: reading the eleven
-dots of an undoverline and decoding them (`Undoverline.swift`, `FaceSpecification.swift`),
-assembling the 5x5 grid (`AssembleDiceKey.swift`), merging reads across frames and deciding
-when to stop (`FaceRead.swift`, `DiceKeyReader.swift`).
-
-**Removable now, whatever is decided.** Two things are left over from the C++ interface
-rather than needed by the app:
-
-- **The overlay renderer.** `DiceKeyScanner.renderOverlay` and `augment`, with the drawing
-  code behind them in `DiceKeyReader.swift`, are called only by tests. The app draws its own
-  overlay in SwiftUI (`FacesReadOverlay`).
-- **The JSON round trip.** The scanner encodes its result as a JSON string and the app
-  decodes it again with `FaceRead.fromJson`, a boundary that existed because the scanner was
-  C++ behind a C ABI. A Swift scanner can hand back typed values.
-
-**Unknowns, to settle with a spike before committing.** Whether `DetectRectanglesRequest`
-reliably finds bars as thin as undoverlines (width 0.177 of their length) at the angles and
-distances a DiceKey is held; whether text recognition reads isolated single characters in
-four rotations; and whether Vision runs on the GPU or Neural Engine here rather than the CPU
-cores, which is where a battery and heat win would come from. The spike runs Vision over the
-corpus and reports what it finds, before any code is removed.
-
-**Correctness without the reference.** Leaving the C++ comparison behind means correctness
-rests on the 23 photos in the corpus test still reading correctly, and on scans of real keys.
-Grow the corpus before the switch, especially with hard cases: glare, angle, low light, a
-key partly out of frame, and busy backgrounds with no key at all.
-
-**Measure first, on a phone.** The 20 ms per frame and the memory figures are from an M2.
-Take per-frame time, peak memory and energy on an iPhone for the current scanner before
-changing it, so the Vision version is judged against the same numbers.
-
-**Alternatives, if Vision falls short.** Each keeps more of the current code:
-
-- **Scan a smaller frame.** No capture resolution is set, so the full 1080-pixel square is
-  scanned. Undoverlines are large at the distance a DiceKey is held, and cost falls roughly
-  with area, at some risk to the OCR.
-- **Track the key between frames.** Once the grid is found, search near it and fall back to
-  the full frame when it is lost; with nothing found, scan every few frames.
-- **One pass across all brightness levels.** The twelve thresholds approximate what MSER
-  (maximally stable extremal regions) computes directly, with a component tree in
-  near-linear time over one pass. The real algorithmic fix within the current design.
-- **`DetectContoursRequest`.** Vision's own contour detection in place of the tracer,
-  keeping the rectangle fitting and filtering. A smaller step than rectangles, and a smaller
-  deletion.
-- **A trained detector.** A Core ML model that finds whole faces, trained with Create ML.
-  The most capable and the most work, and it needs labeled photos this project does not
-  have yet.
+- **A phone baseline.** Time, peak memory and energy per frame on an iPhone.
+- **A cheaper step 2.** Adaptive thresholding (each pixel against the mean of its neighborhood,
+  a box blur vImage provides) and connected components could replace the twelve thresholds
+  and the border tracer, the standard design for fiducial markers such as QR codes and
+  AprilTags, touching each pixel about once with one label plane. Spike it against the
+  corpus, and keep it only if it reads at least as many faces with none wrong.
+- **Then, only if the phone needs it,** a smaller frame (on the corpus cropped to the app's
+  square, the port read 412 faces at 540 pixels against 417 at 1080, for about a third of the
+  work) or following the key between frames and searching
+  only near where it was.
 
 ## Simpler recipes
 
@@ -242,17 +178,13 @@ done for the iPad carries over.
   the golden vectors would catch any change to derived output.
 - **SwiftLint** as a build plugin, so Xcode shows violations while editing; CI already
   runs it.
-- **The Python generators in Swift.** `generate-app-icon.py` and
-  `generate-ocr-font-tables.py` could be Swift scripts (CoreGraphics in place of Pillow),
-  dropping Pillow and scripts/requirements.txt. Both run rarely and their output is committed.
+- **The Python generator in Swift.** `generate-app-icon.py` could be a Swift script
+  (CoreGraphics in place of Pillow), dropping Pillow and scripts/requirements.txt. It runs
+  rarely and its output is committed.
 - **Three small interface bugs** found while screenshotting every screen for dark mode:
   the raw JSON recipe warning shows two Cancel buttons; the assembly warning banner is
   clipped at both edges on the backup-choice step; "OpenSSH Private Key" wraps to three lines
   in the output format picker.
-- Two `VERIFY` comments remain in the scanner (`OCR.swift` on unstable sort ties,
-  `DiceKeyReader.swift` on the four-second error-correction budget). Both describe
-  faithfully ported upstream behavior and need a key with a persistent bit error to
-  exercise, not a code change.
 
 # Ideas
 

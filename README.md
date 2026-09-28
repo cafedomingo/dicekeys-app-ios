@@ -42,7 +42,7 @@ If you don't have a DiceKey, go to https://dicekeys.app, use the feature to gene
 Original work in this fork is MIT-licensed (see [LICENSE](LICENSE), © 2026 Patrick Sunday).
 Everything taken from elsewhere keeps its own terms, listed in
 [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES). Two of those components, the DiceKeys app
-this fork started from and the read-dicekey scanner the Swift scanner is ported from, have
+this fork started from and the read-dicekey scanner the Swift scanner is derived from, have
 **no open-source license yet** (DiceKeys, LLC: "all rights reserved while we choose a
 license"). That is why this fork is for personal use and TestFlight to the owner's own
 devices, not for publication, until DiceKeys picks a license. lib-seeded (MIT), libsodium
