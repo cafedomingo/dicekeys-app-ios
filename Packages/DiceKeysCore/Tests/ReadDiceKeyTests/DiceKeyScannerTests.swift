@@ -94,6 +94,18 @@ struct DiceKeyScannerTests {
         #expect(scanner.faces.compactMap { $0 }.count == 21)
     }
 
+    @Test("a grid of faces that repeats a letter is not a key")
+    func repeatedLettersAreNotAKey() {
+        // A sheet of StickKeys stickers: each row the same five letters, the digit changing by row.
+        let sheet = SyntheticDiceKey(faces: (0..<25).map { i in
+            ScannedFace(letter: Array("ABCDE")[i % 5], digit: Character(String(i / 5 + 1)), clockwiseTurns: 0)
+        })
+        var scanner = DiceKeyScanner()
+        scanner.scan(sheet.image(side: 1080))
+        #expect(scanner.faces.compactMap { $0 }.count == 25)
+        #expect(scanner.diceKey == nil)
+    }
+
     @Test("a different key starts over")
     func differentKeyStartsOver() {
         var scanner = DiceKeyScanner()

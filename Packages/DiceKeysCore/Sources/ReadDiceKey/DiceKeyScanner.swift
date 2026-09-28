@@ -55,7 +55,10 @@ public struct DiceKeyScanner: Sendable {
     /// All 25 faces, rows top to bottom, once every one has been read.
     public var diceKey: [ScannedFace]? {
         let read = faces.compactMap { $0 }
-        return read.count == 25 ? read : nil
+        // A DiceKey has one die per letter. Faces that repeat a letter are something else,
+        // such as a sheet of StickKeys stickers, however well they read.
+        guard read.count == 25, Set(read.map(\.letter)).count == 25 else { return nil }
+        return read
     }
 
     /// Reads one frame and merges what it shows with the frames before.
