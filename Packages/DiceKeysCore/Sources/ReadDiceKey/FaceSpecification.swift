@@ -2,39 +2,19 @@
 //  FaceSpecification.swift
 //  ReadDiceKey
 //
-//  The DiceKey face specification (lib-dicekey/externally-generated/
-//  dicekey-face-specification.{h,cpp}): the 150 faces with their 8-bit underline and
-//  overline codes, the physical proportions of a face, and the 11-bit undoverline decoder
-//  (lib-read-dicekey/decode-die.cpp). The 150-entry table is transcribed from the C++;
-//  the 256-entry code lookups are derived from it at startup (they were verified equal to
-//  the C++ tables).
+//  What is printed on a DiceKey face: a letter, a digit, and under and over them two bars
+//  whose 11 dots encode the face. The 150-face table comes from the DiceKeys specification.
 //
 
-import Foundation
-
-/// One of the 150 valid faces: a letter, a digit and the two codes printed under and over it.
-/// `.null` (letter and digit 0) stands in for the C++ `NullFaceSpecification`.
+/// One of the 150 faces: a letter, a digit, and the 8-bit codes of its underline and overline.
 struct FaceSpecification: Sendable, Equatable {
     let letter: UInt8
     let digit: UInt8
     let underlineCode: UInt8
     let overlineCode: UInt8
-
-    static let null = FaceSpecification(letter: 0, digit: 0, underlineCode: 0, overlineCode: 0)
-
-    var isNull: Bool { letter == 0 }
 }
 
 enum DiceKeyFaceSpecification {
-    static let faceLetters = "ABCDEFGHIJKLMNOPRSTUVWXYZ"
-    static let faceDigits = "123456"
-    static let faceRotationLetters = "trbl"
-
-    static let numberOfDotsInUndoverline = 11
-    static let minNumberOfBlackDotsInUndoverline = 4
-    static let minNumberOfWhiteDotsInUndoverline = 4
-
-    /// `letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes`.
     static let faces: [FaceSpecification] = [
         FaceSpecification(letter: UInt8(ascii: "A"), digit: UInt8(ascii: "1"), underlineCode: 0x7, overlineCode: 0xe9),
         FaceSpecification(letter: UInt8(ascii: "A"), digit: UInt8(ascii: "2"), underlineCode: 0xb, overlineCode: 0xf1),
@@ -188,91 +168,59 @@ enum DiceKeyFaceSpecification {
         FaceSpecification(letter: UInt8(ascii: "Z"), digit: UInt8(ascii: "6"), underlineCode: 0xdd, overlineCode: 0x30)
     ]
 
-    /// `underlineCodeToFaceSpecification`: 256 entries, `.null` where no face has the code.
-    static let underlineCodeToFace: [FaceSpecification] = {
-        var table = [FaceSpecification](repeating: .null, count: 256)
+    /// The face each underline code names; nil for the codes no face uses.
+    static let faceByUnderlineCode: [FaceSpecification?] = {
+        var table = [FaceSpecification?](repeating: nil, count: 256)
         for face in faces { table[Int(face.underlineCode)] = face }
         return table
     }()
 
-    /// `overlineCodeToFaceSpecification`.
-    static let overlineCodeToFace: [FaceSpecification] = {
-        var table = [FaceSpecification](repeating: .null, count: 256)
+    /// The face each overline code names; nil for the codes no face uses.
+    static let faceByOverlineCode: [FaceSpecification?] = {
+        var table = [FaceSpecification?](repeating: nil, count: 256)
         for face in faces { table[Int(face.overlineCode)] = face }
         return table
     }()
-
-    /// `decodeUndoverlineByte`: never fails, returns `.null` for an invalid code.
-    static func decodeUndoverlineByte(isOverline: Bool, _ letterDigitEncodingByte: UInt8) -> FaceSpecification {
-        isOverline ? overlineCodeToFace[Int(letterDigitEncodingByte)] : underlineCodeToFace[Int(letterDigitEncodingByte)]
-    }
 }
 
-/// `FaceDimensionsFractional`: the geometry of a face as fractions of its edge length.
-enum FaceDimensionsFractional {
-    static let size: Float = 1
-    static let center: Float = 0.5
-    static let fontSize: Float = 0.741935
-    static let undoverlineLength: Float = 1
+/// The layout of a face, in fractions of its edge. An undoverline is exactly one edge long.
+enum FaceDimensions {
+    /// An undoverline's thickness over its length.
     static let undoverlineThickness: Float = 0.177419
-    static let undoverlineMarginAtLineStartAndEnd: Float = 0.056452
-    static let undoverlineDotWidth: Float = 0.080645
-    static let centerOfUndoverlineToCenterOfFace: Float = 0.41129
-    static let textBaselineY: Float = 0.725806
-    static let charWidth: Float = 0.370968
-    static let charHeight: Float = 0.488194
-    static let spaceBetweenLetterAndDigit: Float = 0.04375
-    static let textRegionWidth: Float = 0.785685
-    static let textRegionHeight: Float = 0.488194
-    /// Where each of the 11 dots sits along an undoverline, as a fraction of its length.
-    static let dotCentersAsFractionOfUndoverline: [Float] = [
-        0.0967745,
-        0.1774195,
-        0.2580645,
-        0.3387095,
-        0.41935449999999996,
-        0.4999995,
-        0.5806445,
-        0.6612894999999999,
-        0.7419344999999999,
-        0.8225795,
-        0.9032244999999999
-    ]
+    /// From the middle of an undoverline to the middle of the face.
+    static let undoverlineCenterToFaceCenter: Float = 0.41129
+    /// Where each of the 11 dots sits along an undoverline, from the letter end.
+    static let dotCenters: [Float] = (0..<11).map { 0.0967745 + 0.080645 * Float($0) }
 }
 
-/// undoverline.h `undoverlineWidthAsFractionOfLength`.
-let undoverlineWidthAsFractionOfLength: Float = FaceDimensionsFractional.undoverlineThickness / FaceDimensionsFractional.undoverlineLength
+/// An undoverline's 11 bits, taken from its letter end, are a 1, the overline flag, the
+/// 8-bit code and a 0. Read from the other end the 1 comes last, which is how the direction
+/// of the line (and so the rotation of the face) is known.
+struct UndoverlineBits: Equatable {
+    let isOverline: Bool
+    let code: UInt8
+    /// True when the bits were read from the digit end.
+    let wasReversed: Bool
 
-// MARK: - decode-die.cpp
-
-/// decode-face.h `UndoverlineTypeOrientationAndEncoding`.
-struct UndoverlineTypeOrientationAndEncoding: Sendable {
-    var isValid = false
-    var wasReadInReverseOrder = false
-    var isOverline = false
-    var letterDigitEncoding: UInt8 = 0
-}
-
-/// decode-die.cpp `decodeUndoverline11Bits`. The 11 bits, most significant first, are:
-/// bit 10 always 1, bit 9 overline flag, bits 8-1 the letter/digit byte, bit 0 always 0.
-/// If the line was read backwards the always-1 bit shows up last instead of first.
-func decodeUndoverline11Bits(_ binaryCodingReadForwardOrBackward: UInt32, isVertical: Bool) -> UndoverlineTypeOrientationAndEncoding {
-    let firstBitRead = (binaryCodingReadForwardOrBackward >> UInt32(DiceKeyFaceSpecification.numberOfDotsInUndoverline - 1)) == 1
-    let lastBitRead = (binaryCodingReadForwardOrBackward & 1) == 1
-    if firstBitRead == lastBitRead {
-        // Exactly one of the two end bits must be set.
-        return UndoverlineTypeOrientationAndEncoding()
+    /// Decodes bits sampled first-dot-first (the first dot is the most significant bit);
+    /// nil unless exactly one end is a 1.
+    init?(_ bits: UInt32) {
+        let first = (bits >> 10) & 1, last = bits & 1
+        guard first != last else { return nil }
+        wasReversed = last == 1
+        var forward = bits
+        if wasReversed {
+            forward = 0
+            for position in 0..<11 where (bits >> position) & 1 == 1 {
+                forward |= 1 << (10 - position)
+            }
+        }
+        isOverline = (forward >> 9) & 1 == 1
+        code = UInt8(truncatingIfNeeded: forward >> 1)
     }
-    let wasReadInReverseOrder = lastBitRead
-    let binaryEncoding = wasReadInReverseOrder
-        ? reverseBits(binaryCodingReadForwardOrBackward, 11)
-        : binaryCodingReadForwardOrBackward
-    let isOverline = ((binaryEncoding >> 9) & 1) == 1
-    let letterDigitEncoding = UInt8((binaryEncoding >> 1) & 0xff)
-    return UndoverlineTypeOrientationAndEncoding(
-        isValid: true,
-        wasReadInReverseOrder: wasReadInReverseOrder,
-        isOverline: isOverline,
-        letterDigitEncoding: letterDigitEncoding
-    )
+
+    /// The face this line names, if any.
+    var face: FaceSpecification? {
+        isOverline ? DiceKeyFaceSpecification.faceByOverlineCode[Int(code)] : DiceKeyFaceSpecification.faceByUnderlineCode[Int(code)]
+    }
 }

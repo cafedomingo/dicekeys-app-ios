@@ -8,7 +8,7 @@
 //   SeededCryptoCXX    DiceKeys lib-seeded (C++), a git subtree under Vendor/
 //   SeededCryptoNative our C-ABI shim over it
 //   SeededCrypto       Swift API used by the app
-//   ReadDiceKey        the DiceKeys scanner, ported to pure Swift (Foundation only)
+//   ReadDiceKey        the DiceKeys scanner, pure Swift (see docs/SCANNING.md)
 //
 // Provenance: Sources/CSodium/VENDOR.md (libsodium copy) and the subtree commit history of
 // Vendor/seeded-crypto (`git log -- Packages/DiceKeysCore/Vendor/seeded-crypto`).
@@ -83,12 +83,11 @@ let package = Package(
             path: "Sources/SeededCrypto"
         ),
 
-        // MARK: DiceKeys scanner, pure Swift. Validated against upstream's photo corpus
-        // and the C++ reference output in Tests/ReadDiceKeyTests.
-        // Always optimized: at -Onone a 1080x1080 camera frame takes ~6 s to scan on an
-        // M2 (49 ms at -O), so a Debug run of the app would be unusable and the corpus
-        // tests take minutes. Unsafe flags are allowed here because the package is a
-        // local path dependency.
+        // MARK: DiceKeys scanner, pure Swift, tested against photos of real keys in
+        // Tests/ReadDiceKeyTests.
+        // Always optimized: at -Onone a 1080x1080 camera frame takes about 830 ms to scan
+        // on an M2 (6.5 ms at -O), too slow for a Debug run of the app to read a key.
+        // Unsafe flags are allowed here because the package is a local path dependency.
         .target(
             name: "ReadDiceKey",
             dependencies: [],

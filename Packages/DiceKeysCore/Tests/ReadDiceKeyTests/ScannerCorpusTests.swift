@@ -2,12 +2,12 @@
 //  ScannerCorpusTests.swift
 //  ReadDiceKeyTests
 //
-//  Runs the scanner over the photo corpus from upstream dicekeys/read-dicekey. Each
-//  file is named after the DiceKey it shows (75 characters with orientations, or 50
-//  as 0-3 clockwise turns), optionally followed by a "-note" or "_note" suffix. The
-//  per-image tolerances mirror upstream's own test file. This is the acceptance test for
-//  any scanner implementation, including the Swift/Vision port: the faces it reads must
-//  match the file name in some rotation.
+//  Runs the scanner over the photo corpus (upstream dicekeys/read-dicekey's photos and the
+//  owner's). Each file is named after the DiceKey it shows (75 characters: letter, digit
+//  and orientation per face, the orientation as t/r/b/l or as 0-3 clockwise turns, and
+//  "---" for a die that cannot be seen), optionally followed by a "-note" or "_note"
+//  suffix; files named "nokey-..." show no DiceKey. Each photo is one frame, so this is
+//  stricter than the app, which merges faces across frames.
 //
 
 import CoreGraphics
@@ -20,23 +20,18 @@ import Testing
 
 struct CorpusImage: Sendable, CustomTestStringConvertible {
     let url: URL
-    /// Expected faces as (letter, digit, orientation as t/r/b/l); nil when upstream only
-    /// requires the image not to crash the scanner.
-    let expected: [(Character, Character, Character)]?
-    /// Faces allowed to disagree with the expectation. Mirrors the `maxErrorAllowed`
-    /// upstream passes for the same photo (their tests tolerate a few bit errors between
-    /// the undoverline codes and the OCR on these).
-    let allowedFaceErrors: Int
+    /// The faces the file name gives (nil for a die that cannot be seen), or nil when it names none.
+    let expected: [ScannedFace?]?
+    /// False for the photos taken outside what the scanning overlay asks for, which are only
+    /// required not to be misread.
+    let mustRead: Bool
+    /// True for photos with no DiceKey in them, which must read nothing.
+    let showsNoKey: Bool
 
     var testDescription: String { url.lastPathComponent }
 
-    /// Photos upstream lists with validation disabled or under "tests we hope to pass".
     static let crashOnlyPrefixes = ["CausedCrash", "G21J20C42", "U5bC4bE1l", "Y6bS2rG4b"]
-    static let crashOnlySuffixes = ["-super-low-res"]
-    static let allowedErrorsByPrefix: [String: Int] = [
-        "A32W41T31": 1, "D2tS2tP2l": 1, "E12U31P11": 1, "R60D50Y32": 4
-    ]
-    static let allowedErrorsBySuffix: [String: Int] = ["-faded": 1]
+    static let crashOnlySuffixes = ["-super-low-res", "-dark-tilted", "-top-row-cut", "-far-glare", "-tilted-lit", "-tilted-dim", "-blurry"]
 
     static let all: [CorpusImage] = {
         let dir = Bundle.module.resourceURL!.appendingPathComponent("Fixtures/images")
@@ -46,41 +41,23 @@ struct CorpusImage: Sendable, CustomTestStringConvertible {
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .map { url in
                 let base = url.deletingPathExtension().lastPathComponent
-                let stem = String(base.prefix(75))
-                let suffix = String(base.dropFirst(75))
-                let crashOnly = crashOnlyPrefixes.contains { base.hasPrefix($0) } || crashOnlySuffixes.contains { suffix == $0 }
-                let expected = crashOnly ? nil : Corpus.faces(of: stem)
-                let allowed = allowedErrorsByPrefix.first { base.hasPrefix($0.key) }?.value
-                    ?? allowedErrorsBySuffix[suffix] ?? 0
-                return CorpusImage(url: url, expected: expected, allowedFaceErrors: allowed)
+                let showsNoKey = base.hasPrefix("nokey")
+                let crashOnly = showsNoKey || crashOnlyPrefixes.contains { base.hasPrefix($0) }
+                    || crashOnlySuffixes.contains { base.dropFirst(75) == $0 }
+                return CorpusImage(url: url, expected: Corpus.faces(of: String(base.prefix(75))), mustRead: !crashOnly, showsNoKey: showsNoKey)
             }
     }()
 }
 
-// MARK: - Scanner JSON
-
-struct ScannedFace: Decodable {
-    struct Point: Decodable { let x: Double; let y: Double }
-    struct Line: Decodable { let start: Point; let end: Point }
-    struct Undoverline: Decodable { let line: Line; let code: UInt8 }
-    let underline: Undoverline?
-    let overline: Undoverline?
-    let center: Point
-    var orientationAsLowercaseLetterTrbl: String?
-    let ocrLetterCharsFromMostToLeastLikely: String
-    let ocrDigitCharsFromMostToLeastLikely: String
-
-    var letter: Character? { ocrLetterCharsFromMostToLeastLikely.first }
-    var digit: Character? { ocrDigitCharsFromMostToLeastLikely.first }
-    var orientation: Character? { orientationAsLowercaseLetterTrbl?.first }
-}
-
-// MARK: - Helpers
-
 enum Corpus {
-    /// Loads an image as tightly packed RGBA8 (premultiplied last), the layout the app's camera path produces.
-    /// The EXIF orientation is applied, as OpenCV's `imread` does for the reference output.
-    static func rgba(from url: URL) throws -> (data: Data, width: Int, height: Int) {
+    enum Size: String, CaseIterable, Sendable {
+        case native
+        /// The whole photo scaled so its shorter side is 1080 pixels, the side of the app's frames.
+        case shorterSide1080
+    }
+
+    /// The photo as gray pixels, EXIF orientation applied.
+    static func gray(from url: URL, size: Size) throws -> GrayImage {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
               let raw = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
@@ -93,66 +70,83 @@ enum Corpus {
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
         }
-        let width = image.width, height = image.height
-        var buffer = Data(count: width * height * 4)
-        try buffer.withUnsafeMutableBytes { raw in
-            guard let context = CGContext(
-                data: raw.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
-                space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-            ) else { throw CorpusError.cannotDecode(url.lastPathComponent) }
-            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        }
-        return (buffer, width, height)
+        let scale = size == .native ? 1 : 1080 / Double(min(image.width, image.height))
+        return try draw(image, width: Int((Double(image.width) * scale).rounded()), height: Int((Double(image.height) * scale).rounded()))
     }
 
-    static let rotationIndexes = [20, 15, 10, 5, 0, 21, 16, 11, 6, 1, 22, 17, 12, 7, 2, 23, 18, 13, 8, 3, 24, 19, 14, 9, 4]
-
-    static func rotateOrientation(_ o: Character) -> Character {
-        switch o {
-        case "t": "r"
-        case "r": "b"
-        case "b": "l"
-        case "l": "t"
-        default: o
+    /// The photo scaled to cover a `side` x `side` square and cropped to its center, as the app frames the camera.
+    static func gray(from url: URL, square side: Int) throws -> GrayImage {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
+                  kCGImageSourceCreateThumbnailWithTransform: true,
+                  kCGImageSourceCreateThumbnailFromImageAlways: true,
+                  kCGImageSourceThumbnailMaxPixelSize: side * 2
+              ] as CFDictionary) else {
+            throw CorpusError.cannotDecode(url.lastPathComponent)
         }
+        let scale = Double(side) / Double(min(image.width, image.height))
+        let drawn = CGSize(width: Double(image.width) * scale, height: Double(image.height) * scale)
+        return try draw(image, width: side, height: side, in: CGRect(
+            origin: CGPoint(x: (Double(side) - drawn.width) / 2, y: (Double(side) - drawn.height) / 2), size: drawn
+        ))
     }
 
-    /// Upstream names faces as letter, digit, orientation; the orientation is either
-    /// t/r/b/l or the number of clockwise turns from upright, 0-3.
-    static func orientationLetter(_ c: Character) -> Character {
-        switch c {
-        case "0": "t"
-        case "1": "r"
-        case "2": "b"
-        case "3": "l"
-        default: c
+    private static func draw(_ image: CGImage, width: Int, height: Int, in rect: CGRect? = nil) throws -> GrayImage {
+        guard let context = CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue
+        ), let data = context.data else {
+            throw CorpusError.cannotDecode("\(width)x\(height)")
         }
+        context.interpolationQuality = .high
+        context.draw(image, in: rect ?? CGRect(x: 0, y: 0, width: width, height: height))
+        let pixels = Array(UnsafeBufferPointer(start: data.assumingMemoryBound(to: UInt8.self), count: width * height))
+        return GrayImage(width: width, height: height, pixels: pixels)
     }
 
-    /// Splits a 75-character name into (letter, digit, orientation letter) per face; nil if malformed.
-    static func faces(of name: String) -> [(Character, Character, Character)]? {
+    /// Splits a 75-character name into faces, nil for "---"; nil if it is not a key's name.
+    static func faces(of name: String) -> [ScannedFace?]? {
         let chars = Array(name)
         guard chars.count == 75 else { return nil }
-        return (0..<25).map { i in (chars[i * 3], chars[i * 3 + 1], orientationLetter(chars[i * 3 + 2])) }
-    }
-
-    static func rotated(_ faces: [(Character, Character, Character)]) -> [(Character, Character, Character)] {
-        rotationIndexes.map { i in (faces[i].0, faces[i].1, rotateOrientation(faces[i].2)) }
-    }
-
-    /// The smallest number of mismatching faces across the four rotations of the expectation.
-    /// Compares the OCR's most likely letter and digit, which is what the reconciled
-    /// reading resolves to whenever the undoverline codes and OCR agree.
-    static func faceErrors(read: [ScannedFace], expected: [(Character, Character, Character)]) -> Int {
-        var candidate = expected
-        var best = Int.max
-        for _ in 0..<4 {
-            var errors = 0
-            for (face, want) in zip(read, candidate) where face.letter != want.0 || face.digit != want.1 || face.orientation != want.2 {
-                errors += 1
+        let turnsByOrientation: [Character: Int] = ["t": 0, "r": 1, "b": 2, "l": 3, "0": 0, "1": 1, "2": 2, "3": 3]
+        var faces: [ScannedFace?] = []
+        for i in 0..<25 {
+            if chars[i * 3...i * 3 + 2] == ["-", "-", "-"] {
+                faces.append(nil)
+                continue
             }
-            best = min(best, errors)
-            candidate = rotated(candidate)
+            guard let turns = turnsByOrientation[chars[i * 3 + 2]] else { return nil }
+            faces.append(ScannedFace(letter: chars[i * 3], digit: chars[i * 3 + 1], clockwiseTurns: turns))
+        }
+        return faces
+    }
+
+    /// The key as it reads after turning the box a quarter turn clockwise.
+    static func turnedClockwise(_ faces: [ScannedFace?]) -> [ScannedFace?] {
+        var turned = faces
+        for row in 0..<5 {
+            for column in 0..<5 {
+                turned[column * 5 + (4 - row)] = faces[row * 5 + column].map {
+                    ScannedFace(letter: $0.letter, digit: $0.digit, clockwiseTurns: ($0.clockwiseTurns + 1) % 4)
+                }
+            }
+        }
+        return turned
+    }
+
+    /// Faces read right and read wrong, in whichever of the key's four rotations reads best.
+    /// A face read where the expectation cannot see a die counts as neither.
+    static func score(_ read: [ScannedFace?], against expected: [ScannedFace?]) -> (right: Int, wrong: Int) {
+        var candidate = expected
+        var best = (right: -1, wrong: 0)
+        for _ in 0..<4 {
+            var right = 0, wrong = 0
+            for (face, want) in zip(read, candidate) {
+                guard let face, let want else { continue }
+                if face == want { right += 1 } else { wrong += 1 }
+            }
+            if right > best.right { best = (right, wrong) }
+            candidate = turnedClockwise(candidate)
         }
         return best
     }
@@ -162,27 +156,51 @@ enum Corpus {
 
 // MARK: - Tests
 
-@Suite("Scanner photo corpus (from upstream read-dicekey)")
+@Suite("Scanner photo corpus")
 struct ScannerCorpusTests {
+    /// The fewest faces the photos that must read may yield between them, one frame each at the
+    /// app's frame size: what the Swift port of upstream's scanner read from them.
+    static let minimumFacesRead = 444
+
+    static let cases = CorpusImage.all.flatMap { image in Corpus.Size.allCases.map { (image, $0) } }
+
     @Test("corpus is present")
     func corpusPresent() {
         #expect(CorpusImage.all.count >= 20)
     }
 
-    @Test("reads the DiceKey in each photo", arguments: CorpusImage.all)
-    func readsPhoto(image: CorpusImage) throws {
-        let (rgba, width, height) = try Corpus.rgba(from: image.url)
-        let scanner = DiceKeyScanner()
-        scanner.process(rgba: rgba, width: width, height: height)
-        let json = scanner.readResultJSON
-        guard let expected = image.expected else {
-            // Crash-regression / not-yet-readable image: reaching here without a crash is the test.
-            #expect(!json.isEmpty)
-            return
+    @Test("never reads a face wrong", arguments: cases)
+    func neverMisreads(image: CorpusImage, size: Corpus.Size) throws {
+        var scanner = DiceKeyScanner()
+        scanner.scan(try Corpus.gray(from: image.url, size: size))
+        guard let expected = image.expected else { return }
+        #expect(Corpus.score(scanner.faces, against: expected).wrong == 0)
+    }
+
+    @Test("reads nothing where there is no key", arguments: cases.filter { $0.0.showsNoKey })
+    func readsNothingWithoutAKey(image: CorpusImage, size: Corpus.Size) throws {
+        var scanner = DiceKeyScanner()
+        #expect(scanner.scan(try Corpus.gray(from: image.url, size: size)).isEmpty)
+        #expect(scanner.faces.allSatisfy { $0 == nil })
+    }
+
+    @Test("reads nearly every face of a photo that must read, at the app's frame size", arguments: CorpusImage.all.filter(\.mustRead))
+    func readsMostFaces(image: CorpusImage) throws {
+        var scanner = DiceKeyScanner()
+        scanner.scan(try Corpus.gray(from: image.url, size: .shorterSide1080))
+        let expected = try #require(image.expected)
+        #expect(Corpus.score(scanner.faces, against: expected).right >= 20)
+    }
+
+    @Test("reads at least the recorded number of faces, at the app's frame size")
+    func readsEnoughFaces() throws {
+        var total = 0
+        for image in CorpusImage.all where image.mustRead {
+            var scanner = DiceKeyScanner()
+            scanner.scan(try Corpus.gray(from: image.url, size: .shorterSide1080))
+            total += Corpus.score(scanner.faces, against: try #require(image.expected)).right
         }
-        let faces = try JSONDecoder().decode([ScannedFace].self, from: Data(json.utf8))
-        #expect(faces.count == 25, "expected 25 faces, got \(faces.count)")
-        let errors = Corpus.faceErrors(read: faces, expected: expected)
-        #expect(errors <= image.allowedFaceErrors, "\(errors) faces differ from \(image.url.lastPathComponent)")
+        print("corpus: \(total) faces read")
+        #expect(total >= Self.minimumFacesRead)
     }
 }
