@@ -4,6 +4,11 @@ seen or was not checked, optionally followed by a `-note` or `_note` suffix. Pho
 `nokey-...` show no DiceKey and must read nothing; `CausedCrashOn2020-09-18.PNG` is a
 crash-regression input with no expected value. The video in `../videos` is named the same way.
 
+`well-framed/` holds the photos taken the way the scanning overlay asks, which must read;
+`other/` holds the rest, which must only never be misread. Two photos in `other/` look well
+framed but read little today, `U5bC4bE1l…` (nothing) and `Y6bS2rG4b…` (17 faces), and are the
+first place to look for a scanner that reads more.
+
 Where they come from:
 
 - The owner's, of test keys, taken on an iPhone and stripped of everything but the picture:

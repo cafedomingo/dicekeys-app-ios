@@ -6,8 +6,10 @@
 //  owner's). Each file is named after the DiceKey it shows (75 characters: letter, digit
 //  and orientation per face, the orientation as t/r/b/l or as 0-3 clockwise turns, and
 //  "---" for a die that cannot be seen), optionally followed by a "-note" or "_note"
-//  suffix; files named "nokey-..." show no DiceKey. Each photo is one frame, so this is
-//  stricter than the app, which merges faces across frames.
+//  suffix; files named "nokey-..." show no DiceKey. The photos in `well-framed` are taken
+//  the way the scanning overlay asks and must read; those in `other` must only never be
+//  misread. Each photo is one frame, so this is stricter than the app, which merges faces
+//  across frames.
 //
 
 import AVFoundation
@@ -24,31 +26,29 @@ struct CorpusImage: Sendable, CustomTestStringConvertible {
     let url: URL
     /// The faces the file name gives (nil for a die that cannot be seen), or nil when it names none.
     let expected: [ScannedFace?]?
-    /// False for the photos taken outside what the scanning overlay asks for, which are only
-    /// required not to be misread.
+    /// True for the photos in `well-framed`; the rest are only required not to be misread.
     let mustRead: Bool
     /// True for photos with no DiceKey in them, which must read nothing.
     let showsNoKey: Bool
 
     var testDescription: String { url.lastPathComponent }
 
-    static let crashOnlyPrefixes = ["CausedCrash", "G21J20C42", "U5bC4bE1l", "Y6bS2rG4b"]
-    static let crashOnlySuffixes = ["-super-low-res", "-dark-tilted", "-top-row-cut", "-far-glare", "-tilted-lit", "-tilted-dim", "-blurry"]
-
-    static let all: [CorpusImage] = {
-        let dir = Bundle.module.resourceURL!.appendingPathComponent("Fixtures/images")
+    static let all: [CorpusImage] = ["well-framed", "other"].flatMap { folder in
+        let dir = Bundle.module.resourceURL!.appendingPathComponent("Fixtures/images/\(folder)")
         let files = (try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []
         return files
             .filter { ["jpg", "png"].contains($0.pathExtension.lowercased()) }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .map { url in
                 let base = url.deletingPathExtension().lastPathComponent
-                let showsNoKey = base.hasPrefix("nokey")
-                let crashOnly = showsNoKey || crashOnlyPrefixes.contains { base.hasPrefix($0) }
-                    || crashOnlySuffixes.contains { base.dropFirst(75) == $0 }
-                return CorpusImage(url: url, expected: Corpus.faces(of: String(base.prefix(75))), mustRead: !crashOnly, showsNoKey: showsNoKey)
+                return CorpusImage(
+                    url: url,
+                    expected: Corpus.faces(of: String(base.prefix(75))),
+                    mustRead: folder == "well-framed",
+                    showsNoKey: base.hasPrefix("nokey")
+                )
             }
-    }()
+    }
 }
 
 enum Corpus {
@@ -159,7 +159,7 @@ struct ScannerCorpusTests {
     /// The fewest faces the photos that must read may yield between them, one frame each at the
     /// app's frame size. It sits a little below what they read (the test prints that), so that
     /// another Mac's JPEG decoder, which can move a face or two, cannot fail it.
-    static let minimumFacesRead = 530
+    static let minimumFacesRead = 553
 
     static let cases = CorpusImage.all.flatMap { image in Corpus.Size.allCases.map { (image, $0) } }
 

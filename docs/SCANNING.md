@@ -143,10 +143,11 @@ which repeats five letters, would otherwise read as a key.
 keys, one of them printed in the DiceKeys booklet), and scenes with no key. The bar depends on
 how a photo was taken, not on who took it:
 
-- **A well-framed key must read** at the app's scale (the shorter side scaled to 1,080 pixels,
-  uncropped, since the photos were not framed through the app's square): at least 20 faces
-  from one frame of each such photo, and a recorded total across them all.
-- **Everything else must only never be misread:** a steep tilt, low light, blur, a key far away
+- **A well-framed key must read** (the photos in `well-framed/`) at the app's scale (the
+  shorter side scaled to 1,080 pixels, uncropped, since the photos were not framed through
+  the app's square): at least 20 faces from one frame of each such photo, and a recorded
+  total across them all.
+- **Everything else must only never be misread** (the photos in `other/`): a steep tilt, low light, blur, a key far away
   under glare, a cropped key, the video at 360 pixels, and scenes with no key at all (loose and
   jumbled dice, printed faces, StickKeys sheets, a sudoku grid), which must read nothing.
 
