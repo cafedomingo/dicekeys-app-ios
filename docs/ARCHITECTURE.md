@@ -2,7 +2,7 @@
 
 Companion documents:
 - `BACKLOG.md`: everything deliberately left undone, sized and explained.
-- `DEPENDENCIES.md`: every component, how it is packaged, drift risk, how to update.
+- `DEPENDENCIES.md`: the vendored C and C++ libraries and how to update them.
 - `SCANNER-PORT-NOTES.md`: the Swift scanner, stage by stage, and its deliberate differences.
 
 ## The app in one paragraph
@@ -104,8 +104,7 @@ Tests/DiceKeysTests/    Swift Testing: CanonicalizeRecipeJsonTests, MnemonicsTes
 ## Working on it
 
 ```
-brew install xcodegen
-xcodegen generate
+swift run --package-path BuildTools xcodegen generate
 open DiceKeys.xcodeproj        # schemes: DiceKeys, DiceKeysCore-Package
 ```
 

@@ -59,11 +59,10 @@ if [[ -n "${ASC_KEY_PATH:-}" ]]; then
           -authenticationKeyIssuerID "$ASC_ISSUER_ID")
 fi
 
-command -v xcodegen >/dev/null || { echo "xcodegen not installed (brew install xcodegen)" >&2; exit 1; }
 grep -q '^DEVELOPMENT_TEAM *= *[A-Z0-9]' Config/Signing.local.xcconfig 2>/dev/null \
     || { echo "Set DEVELOPMENT_TEAM in Config/Signing.local.xcconfig first (see Config/Signing.xcconfig)." >&2; exit 1; }
 
-xcodegen generate
+swift run --package-path BuildTools xcodegen generate
 rm -rf "$ARCHIVE" "$EXPORT_DIR"
 
 xcodebuild archive \

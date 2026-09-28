@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "swift"
-    directory: "/Packages/DiceKeysCore"
+    directory: "/BuildTools"
     schedule:
       interval: "weekly"
     labels: ["dependencies"]
@@ -11,7 +11,10 @@ updates:
       interval: "weekly"
     labels: ["dependencies"]
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories: ["/", "/.github/actions/*"]
     schedule:
       interval: "weekly"
     labels: ["dependencies"]
+    groups:
+      github-actions:
+        patterns: ["*"]

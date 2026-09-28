@@ -1,0 +1,13 @@
+name: Build tools
+description: Resolves BuildTools and puts SwiftLint on PATH.
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache@v6
+      with:
+        path: BuildTools/.build
+        key: build-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('BuildTools/Package.resolved') }}
+    - shell: bash
+      run: |
+        swift package --package-path BuildTools resolve
+        echo "$PWD/BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos" >> "$GITHUB_PATH"

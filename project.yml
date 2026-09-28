@@ -1,7 +1,6 @@
 # XcodeGen spec. The Xcode project is generated, not committed:
 #
-#   brew install xcodegen
-#   xcodegen generate
+#   swift run --package-path BuildTools xcodegen generate
 #   open DiceKeys.xcodeproj
 #
 # Native dependencies come from the local Swift package in Packages/DiceKeysCore
