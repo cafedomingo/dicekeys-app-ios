@@ -3,6 +3,7 @@
 //  ReadDiceKeyTests
 //
 
+import DiceKeySpecification
 import Foundation
 import Testing
 @testable import ReadDiceKey
@@ -114,7 +115,7 @@ struct DiceKeyScannerTests {
     func repeatedLettersAreNotAKey() {
         // A sheet of StickKeys stickers: each row the same five letters, the digit changing by row.
         let sheet = SyntheticDiceKey(faces: (0..<25).map { i in
-            ScannedFace(letter: Array("ABCDE")[i % 5], digit: Character(String(i / 5 + 1)), clockwiseTurns: 0)
+            ScannedFace(letter: FaceLetter.allCases[i % 5], digit: FaceDigit.allCases[i / 5], clockwiseTurns: 0)
         })
         var scanner = DiceKeyScanner()
         scanner.scan(sheet.image(side: 1080))

@@ -87,6 +87,8 @@ targets:
       - package: DiceKeysCore
         product: SeededCrypto
       - package: DiceKeysCore
+        product: DiceKeySpecification
+      - package: DiceKeysCore
         product: ReadDiceKey
     scheme:
       testTargets:
@@ -102,6 +104,8 @@ targets:
       - target: DiceKeys
       - package: DiceKeysCore
         product: SeededCrypto
+      - package: DiceKeysCore
+        product: DiceKeySpecification
       - package: DiceKeysCore
         product: ReadDiceKey
     settings:

@@ -6,6 +6,7 @@
 //  them into the face they name and the direction the face is turned.
 //
 
+import DiceKeySpecification
 import simd
 
 /// An underline or overline read from the image.
@@ -30,15 +31,51 @@ struct Undoverline: Sendable {
 
     /// Where the middle of this line's face is.
     var faceCenter: Point {
-        center + towardFace * (length * FaceDimensions.undoverlineCenterToFaceCenter)
+        center + towardFace * (length * Float(FaceDimensionsFractional.centerOfUndoverlineToCenterOfFace))
     }
 
     /// Where the face's other line should be.
     var oppositeBar: Bar {
-        let offset = towardFace * (2 * length * FaceDimensions.undoverlineCenterToFaceCenter)
+        let offset = towardFace * (2 * length * Float(FaceDimensionsFractional.centerOfUndoverlineToCenterOfFace))
         return Bar(center: bar.center + offset, axis: bar.axis, length: bar.length, width: bar.width)
     }
 }
+
+/// An undoverline's 11 bits, taken from its letter end, are a 1, the overline flag, the
+/// 8-bit code and a 0. Read from the other end the 1 comes last, which is how the direction
+/// of the line (and so the rotation of the face) is known.
+struct UndoverlineBits: Equatable {
+    let isOverline: Bool
+    let code: UInt8
+    /// True when the bits were read from the digit end.
+    let wasReversed: Bool
+
+    /// Decodes bits sampled first-dot-first (the first dot is the most significant bit);
+    /// nil unless exactly one end is a 1.
+    init?(_ bits: UInt32) {
+        let first = (bits >> 10) & 1, last = bits & 1
+        guard first != last else { return nil }
+        wasReversed = last == 1
+        var forward = bits
+        if wasReversed {
+            forward = 0
+            for position in 0..<11 where (bits >> position) & 1 == 1 {
+                forward |= 1 << (10 - position)
+            }
+        }
+        isOverline = (forward >> 9) & 1 == 1
+        code = UInt8(truncatingIfNeeded: forward >> 1)
+    }
+
+    /// The face this line names, if any.
+    var face: FaceWithUnderlineAndOverlineCode? {
+        isOverline ? overlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)] : underlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)]
+    }
+}
+
+/// Where each of the 11 dots sits along an undoverline, as a fraction of its length from the
+/// letter end.
+private let dotCenters = FaceDimensionsFractional.dotCentersAsFractionOfUndoverline.map { Float($0) }
 
 /// Reads the bar in `bar` as an undoverline, or nil when its dots are not a valid code.
 ///
@@ -69,8 +106,8 @@ func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
         end -= step
     }
 
-    let dots = image.samples(from: start, to: end, at: FaceDimensions.dotCenters)
-    let dotThreshold = twoLevelThreshold(dots, minDark: 4, minLight: 4)
+    let dots = image.samples(from: start, to: end, at: dotCenters)
+    let dotThreshold = twoLevelThreshold(dots, minDark: MinNumberOfBlackDotsInUndoverline, minLight: MinNumberOfWhiteDotsInUndoverline)
     let bits = dots.reduce(UInt32(0)) { ($0 << 1) | ($1 > dotThreshold ? 1 : 0) }
     guard let decoded = UndoverlineBits(bits) else { return nil }
     return decoded.wasReversed

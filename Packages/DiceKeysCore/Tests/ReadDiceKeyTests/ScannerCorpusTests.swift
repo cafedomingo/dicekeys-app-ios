@@ -12,6 +12,7 @@
 
 import AVFoundation
 import CoreGraphics
+import DiceKeySpecification
 import Foundation
 import ImageIO
 import Testing
@@ -123,8 +124,10 @@ enum Corpus {
                 faces.append(nil)
                 continue
             }
-            guard let turns = turnsByOrientation[chars[i * 3 + 2]] else { return nil }
-            faces.append(ScannedFace(letter: chars[i * 3], digit: chars[i * 3 + 1], clockwiseTurns: turns))
+            guard let letter = FaceLetter(rawValue: String(chars[i * 3])),
+                  let digit = FaceDigit(rawValue: String(chars[i * 3 + 1])),
+                  let turns = turnsByOrientation[chars[i * 3 + 2]] else { return nil }
+            faces.append(ScannedFace(letter: letter, digit: digit, clockwiseTurns: turns))
         }
         return faces
     }

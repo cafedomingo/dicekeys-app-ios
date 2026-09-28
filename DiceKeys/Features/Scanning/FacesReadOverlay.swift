@@ -5,6 +5,7 @@
 //  Created by Stuart Schechter on 2020/11/20.
 //
 
+import DiceKeySpecification
 import ReadDiceKey
 import SwiftUI
 
@@ -59,8 +60,8 @@ struct FacesReadOverlay: View {
                         scalingFactor: faceSize
                     )
                     let font = Font.custom("Inconsolata-Bold", size: faceSize * FaceDimensionsFractional.fontSize)
-                    draw(String(face.letter), in: context, at: coordinateSystemFromCenterOfDie.pointAt(offset: letterOffset), angle: angle, font: font)
-                    draw(String(face.digit), in: context, at: coordinateSystemFromCenterOfDie.pointAt(offset: digitOffset), angle: angle, font: font)
+                    draw(face.letter.rawValue, in: context, at: coordinateSystemFromCenterOfDie.pointAt(offset: letterOffset), angle: angle, font: font)
+                    draw(face.digit.rawValue, in: context, at: coordinateSystemFromCenterOfDie.pointAt(offset: digitOffset), angle: angle, font: font)
                 }
             }
             .frame(width: renderedSize.width, height: renderedSize.height)
@@ -87,7 +88,7 @@ struct FacesReadOverlay: View {
             center: CGPoint(x: 100 * (index % 5 + 1), y: 100 * (index / 5 + 1)),
             angle: Double(turns) * .pi / 2,
             size: 50,
-            face: ScannedFace(letter: Character(face.letter.rawValue), digit: Character(face.digit.rawValue), clockwiseTurns: turns)
+            face: ScannedFace(letter: face.letter, digit: face.digit, clockwiseTurns: turns)
         )
     }
     FacesReadOverlay(renderedSize: CGSize(width: 600, height: 600), dice: dice, imageFrameSize: CGSize(width: 600, height: 600))

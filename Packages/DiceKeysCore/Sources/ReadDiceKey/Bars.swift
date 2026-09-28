@@ -5,6 +5,7 @@
 //  Finding the undoverlines: every rectangle in the frame shaped and sized like one.
 //
 
+import DiceKeySpecification
 import Foundation
 
 /// The rectangles in the image that could be undoverlines.
@@ -60,7 +61,8 @@ func findBars(in image: GrayImage) -> [Bar] {
 private func isShapedLikeUndoverline(_ bar: Bar) -> Bool {
     guard bar.length > 0 else { return false }
     let thickness = bar.width / bar.length
-    return thickness >= FaceDimensions.undoverlineThickness / 1.5 && thickness <= FaceDimensions.undoverlineThickness * 1.5
+    let printed = Float(FaceDimensionsFractional.undoverlineThickness / FaceDimensionsFractional.undoverlineLength)
+    return thickness >= printed / 1.5 && thickness <= printed * 1.5
 }
 
 /// The area at the middle of the tightest run of 35 consecutive areas (fewer when there are

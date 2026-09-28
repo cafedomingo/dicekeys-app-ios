@@ -5,6 +5,7 @@
 //  Created by Stuart Schechter on 2020/11/12.
 //
 
+import DiceKeySpecification
 import Foundation
 import Synchronization
 import ReadDiceKey
@@ -36,10 +37,6 @@ final class DiceKey: Identifiable, Equatable, Sendable {
         (0..<25).allSatisfy { index in lhs.faces[index] == rhs.faces[index] }
     }
 
-    enum ConstructorError: Error {
-        case invalidFace
-    }
-
     /// The 25 faces that make up a DiceKey, each with a letter, digit, and orientation
     let faces: [Face]
 
@@ -49,16 +46,14 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     }
 
     /// The faces the scanner read, rows top to bottom as the camera saw them.
-    init(_ scanned: [ScannedFace]) throws {
+    init(_ scanned: [ScannedFace]) {
         precondition(scanned.count == 25)
-        let orientations: [FaceOrientationLetterTrbl] = [.Top, .Right, .Bottom, .Left]
-        self.faces = try scanned.map { face in
-            guard let letter = FaceLetter(rawValue: String(face.letter)),
-                  let digit = FaceDigit(rawValue: String(face.digit)),
-                  orientations.indices.contains(face.clockwiseTurns) else {
-                throw ConstructorError.invalidFace
-            }
-            return Face(letter: letter, digit: digit, orientationAsLowercaseLetterTrbl: orientations[face.clockwiseTurns])
+        self.faces = scanned.map { face in
+            Face(
+                letter: face.letter,
+                digit: face.digit,
+                orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.allCases[face.clockwiseTurns]
+            )
         }
     }
 

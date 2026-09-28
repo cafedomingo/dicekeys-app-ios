@@ -13,9 +13,9 @@ strict concurrency, with Liquid Glass chrome. It scans a physical DiceKey with t
 takes one typed by hand, holds it in memory behind Face ID, and derives passwords, keys and
 seeds from it. One local Swift package supplies everything native, with no external package
 dependencies: libsodium as a source copy, DiceKeys' seeded-crypto as an unmodified git
-subtree behind a small C ABI, and a DiceKey scanner written in Swift. No CocoaPods,
-submodules, Objective-C, C++ wrappers or OpenCV remain, and there is not one `#if os(...)`
-left in the app.
+subtree behind a small C ABI, the generated face specification, and a DiceKey scanner written
+in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or OpenCV remain, and there is
+not one `#if os(...)` left in the app.
 
 ## Goals, in priority order
 
@@ -45,7 +45,7 @@ DiceKeys/
   App/            DiceKeysApp (entry), AppModel (composition root), AppRouter (Route + path),
                   RootView (NavigationStack + destinations + API sheet), HomeView
   Model/          value types and domain logic; nothing here knows about SwiftUI state
-    DiceKey/      DiceKey, Face, FaceSpecification, PartialFace,
+    DiceKey/      DiceKey, Face, PartialFace,
                   FaceOrientationLetterTrbl+Rotation
     Recipes/      DerivationRecipe (was Derivables), CanonicalizeJsonRecipe,
                   DerivationRecipeTemplates, DerivedValue (was DerivedValueView)

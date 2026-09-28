@@ -8,6 +8,7 @@
 //
 
 import CoreGraphics
+import DiceKeySpecification
 import Foundation
 @testable import ReadDiceKey
 
@@ -16,14 +17,14 @@ struct SyntheticDiceKey {
     let faces: [ScannedFace]
 
     /// 25 different letters, with digits and turns varied across the grid.
-    static let sample = SyntheticDiceKey(faces: Array("ABCDEFGHIJKLMNOPRSTUVWXYZ").enumerated().map { i, letter in
-        ScannedFace(letter: letter, digit: Character(String((i * 5) % 6 + 1)), clockwiseTurns: (i * 3) % 4)
+    static let sample = SyntheticDiceKey(faces: FaceLetter.allCases.enumerated().map { i, letter in
+        ScannedFace(letter: letter, digit: FaceDigit.allCases[(i * 5) % 6], clockwiseTurns: (i * 3) % 4)
     })
 
     /// The same dice, each with its digit moved on by one: a different key face for face.
     var withOtherDigits: SyntheticDiceKey {
         SyntheticDiceKey(faces: faces.map { face in
-            ScannedFace(letter: face.letter, digit: Character(String(Int(String(face.digit))! % 6 + 1)), clockwiseTurns: face.clockwiseTurns)
+            ScannedFace(letter: face.letter, digit: FaceDigit.allCases[(FaceDigit.allCases.firstIndex(of: face.digit)! + 1) % 6], clockwiseTurns: face.clockwiseTurns)
         })
     }
 
@@ -78,13 +79,12 @@ struct SyntheticDiceKey {
             context.fill(CGRect(x: -pitch * 0.45, y: -pitch * 0.45, width: pitch * 0.9, height: pitch * 0.9))
             // From here on x runs from the letter to the digit and y points down the face.
             context.rotate(by: Double(face.clockwiseTurns) * .pi / 2)
-            let specs = DiceKeyFaceSpecification.faces
-            let spec = specs.firstIndex {
-                $0.letter == face.letter.asciiValue! && $0.digit == face.digit.asciiValue!
-            }!
+            let specs = letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes
+            let spec = specs.firstIndex { $0.letter == face.letter && $0.digit == face.digit }!
             let overline = specs[unreadable.contains(index) ? (spec + 1) % specs.count : spec].overlineCode
-            drawLine(in: context, code: specs[spec].underlineCode, isOverline: false, centerY: faceSize * 0.41129, faceSize: faceSize)
-            drawLine(in: context, code: overline, isOverline: true, centerY: -faceSize * 0.41129, faceSize: faceSize)
+            let lineOffset = faceSize * FaceDimensionsFractional.centerOfUndoverlineToCenterOfFace
+            drawLine(in: context, code: specs[spec].underlineCode, isOverline: false, centerY: lineOffset, faceSize: faceSize)
+            drawLine(in: context, code: overline, isOverline: true, centerY: -lineOffset, faceSize: faceSize)
             context.restoreGState()
         }
         let data = context.data!.assumingMemoryBound(to: UInt8.self)
@@ -93,14 +93,14 @@ struct SyntheticDiceKey {
 
     /// One bar: 11 bits from the letter end, a 1, the overline flag, the 8-bit code, a 0.
     private func drawLine(in context: CGContext, code: UInt8, isOverline: Bool, centerY: Double, faceSize: Double) {
-        let thickness = faceSize * 0.177419
+        let thickness = faceSize * FaceDimensionsFractional.undoverlineThickness
         context.setFillColor(gray: 0, alpha: 1)
         context.fill(CGRect(x: -faceSize / 2, y: centerY - thickness / 2, width: faceSize, height: thickness))
         let bits = (1 << 10) | ((isOverline ? 1 : 0) << 9) | (Int(code) << 1)
-        let dot = faceSize * 0.080645
+        let dot = faceSize * FaceDimensionsFractional.undoverlineDotWidth
         context.setFillColor(gray: 1, alpha: 1)
         for position in 0..<11 where (bits >> (10 - position)) & 1 == 1 {
-            let x = -faceSize / 2 + faceSize * (0.0967745 + 0.080645 * Double(position))
+            let x = -faceSize / 2 + faceSize * FaceDimensionsFractional.dotCentersAsFractionOfUndoverline[position]
             context.fill(CGRect(x: x - dot / 2, y: centerY - dot / 2, width: dot, height: dot))
         }
     }

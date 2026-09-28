@@ -26,9 +26,9 @@ final class DiceKeyScanModel {
             imageFrameSize = frame.size
         }
         dice = frame.dice
-        guard completedDiceKey == nil, let faces = frame.diceKey, let diceKey = try? DiceKey(faces) else {
+        guard completedDiceKey == nil, let faces = frame.diceKey else {
             return
         }
-        completedDiceKey = diceKey
+        completedDiceKey = DiceKey(faces)
     }
 }

@@ -22,17 +22,18 @@
 // To add additional definitions or help functions, create a new file
 // that reads the constants you need from this file.
 //
+// The declarations are public and Sendable so that the app and the scanner share this one
+// copy; the generator emits them internal.
+//
 
-import Foundation
-// SwiftUI required for CGFloat
-import SwiftUI
+import CoreGraphics
 
-enum FaceLetter: String, Codable, CaseIterable {
+public enum FaceLetter: String, Codable, CaseIterable, Sendable {
   case A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, R, S, T, U, V, W, X, Y, Z
 }
-let FaceLetters = Array(FaceLetter.allCases)
+public let FaceLetters = Array(FaceLetter.allCases)
 
-enum FaceDigit: String, Codable, CaseIterable {
+public enum FaceDigit: String, Codable, CaseIterable, Sendable {
   case _1 = "1"
   case _2 = "2"
   case _3 = "3"
@@ -40,9 +41,9 @@ enum FaceDigit: String, Codable, CaseIterable {
   case _5 = "5"
   case _6 = "6"
 }
-let FaceDigits = Array(FaceDigit.allCases)
+public let FaceDigits = Array(FaceDigit.allCases)
 
-let faceLetterIndexes: [FaceLetter: UInt] = [
+public let faceLetterIndexes: [FaceLetter: UInt] = [
     FaceLetter.A: 0,
     FaceLetter.B: 1,
     FaceLetter.C: 2,
@@ -70,7 +71,7 @@ let faceLetterIndexes: [FaceLetter: UInt] = [
     FaceLetter.Z: 24
 ]
 
-let faceDigitIndexes: [FaceDigit: UInt8] = [
+public let faceDigitIndexes: [FaceDigit: UInt8] = [
     FaceDigit._1: 0,
     FaceDigit._2: 1,
     FaceDigit._3: 2,
@@ -79,7 +80,7 @@ let faceDigitIndexes: [FaceDigit: UInt8] = [
     FaceDigit._6: 5
 ]
 
-let faceDigitValues: [FaceDigit: UInt8] = [
+public let faceDigitValues: [FaceDigit: UInt8] = [
     FaceDigit._1: 1,
     FaceDigit._2: 2,
     FaceDigit._3: 3,
@@ -88,57 +89,57 @@ let faceDigitValues: [FaceDigit: UInt8] = [
     FaceDigit._6: 6
 ]
 
-enum FaceOrientationLetterTrbl: String, Codable, CaseIterable {
+public enum FaceOrientationLetterTrbl: String, Codable, CaseIterable, Sendable {
   case Top = "t"
   case Right = "r"
   case Bottom = "b"
   case Left = "l"
 }
-let FaceOrientationLettersTrbl = Array(FaceOrientationLetterTrbl.allCases)
+public let FaceOrientationLettersTrbl = Array(FaceOrientationLetterTrbl.allCases)
 
-let NumberOfDotsInUndoverline: Int = 11
-let MinNumberOfBlackDotsInUndoverline: Int = 4
-let MinNumberOfWhiteDotsInUndoverline: Int = 4
+public let NumberOfDotsInUndoverline: Int = 11
+public let MinNumberOfBlackDotsInUndoverline: Int = 4
+public let MinNumberOfWhiteDotsInUndoverline: Int = 4
 
-struct FaceWithUnderlineAndOverlineCode {
-  let letter: FaceLetter
-  let digit: FaceDigit
-  let underlineCode: UInt8
-  let overlineCode: UInt8
+public struct FaceWithUnderlineAndOverlineCode: Sendable {
+  public let letter: FaceLetter
+  public let digit: FaceDigit
+  public let underlineCode: UInt8
+  public let overlineCode: UInt8
 }
 
-class FaceDimensionsFractional {
-    static let size: CGFloat = 1
-    static let margin: CGFloat = 0
-    static let linearSizeOfFace: CGFloat = 1
-    static let linearSizeOfFacesPrintArea: CGFloat = 1
-    static let center: CGFloat = 0.5
-    static let fontSize: CGFloat = 0.741935
-    static let undoverlineLength: CGFloat = 1
-    static let undoverlineThickness: CGFloat = 0.177419
-    static let overlineTop: CGFloat = 0
-    static let overlineBottom: CGFloat = 0.177419
-    static let underlineBottom: CGFloat = 1
-    static let underlineTop: CGFloat = 0.822581
-    static let undoverlineMarginAtLineStartAndEnd: CGFloat = 0.056452
-    static let undoverlineMarginAlongLength: CGFloat = 0.048387
-    static let undoverlineLeftEdge: CGFloat = 0
-    static let undoverlineFirstDotLeftEdge: CGFloat = 0.056452
-    static let undoverlineDotWidth: CGFloat = 0.080645
-    static let undoverlineDotHeight: CGFloat = 0.080645
-    static let centerOfUndoverlineToCenterOfFace: CGFloat = 0.41129
-    static let underlineDotTop: CGFloat = 0.870968
-    static let overlineDotTop: CGFloat = 0.048387
-    static let textBaselineY: CGFloat = 0.725806
-    static let charWidth: CGFloat = 0.370968
-    static let charHeight: CGFloat = 0.488194
-    static let spaceBetweenLetterAndDigit: CGFloat = 0.04375
-    static let textRegionWidth: CGFloat = 0.785685
-    static let textRegionHeight: CGFloat = 0.488194
-    static let dotCentersAsFractionOfUndoverline: [CGFloat] = [0.0967745, 0.1774195, 0.2580645, 0.3387095, 0.41935449999999996, 0.4999995, 0.5806445, 0.6612894999999999, 0.7419344999999999, 0.8225795, 0.9032244999999999]
+public class FaceDimensionsFractional {
+    public static let size: CGFloat = 1
+    public static let margin: CGFloat = 0
+    public static let linearSizeOfFace: CGFloat = 1
+    public static let linearSizeOfFacesPrintArea: CGFloat = 1
+    public static let center: CGFloat = 0.5
+    public static let fontSize: CGFloat = 0.741935
+    public static let undoverlineLength: CGFloat = 1
+    public static let undoverlineThickness: CGFloat = 0.177419
+    public static let overlineTop: CGFloat = 0
+    public static let overlineBottom: CGFloat = 0.177419
+    public static let underlineBottom: CGFloat = 1
+    public static let underlineTop: CGFloat = 0.822581
+    public static let undoverlineMarginAtLineStartAndEnd: CGFloat = 0.056452
+    public static let undoverlineMarginAlongLength: CGFloat = 0.048387
+    public static let undoverlineLeftEdge: CGFloat = 0
+    public static let undoverlineFirstDotLeftEdge: CGFloat = 0.056452
+    public static let undoverlineDotWidth: CGFloat = 0.080645
+    public static let undoverlineDotHeight: CGFloat = 0.080645
+    public static let centerOfUndoverlineToCenterOfFace: CGFloat = 0.41129
+    public static let underlineDotTop: CGFloat = 0.870968
+    public static let overlineDotTop: CGFloat = 0.048387
+    public static let textBaselineY: CGFloat = 0.725806
+    public static let charWidth: CGFloat = 0.370968
+    public static let charHeight: CGFloat = 0.488194
+    public static let spaceBetweenLetterAndDigit: CGFloat = 0.04375
+    public static let textRegionWidth: CGFloat = 0.785685
+    public static let textRegionHeight: CGFloat = 0.488194
+    public static let dotCentersAsFractionOfUndoverline: [CGFloat] = [0.0967745, 0.1774195, 0.2580645, 0.3387095, 0.41935449999999996, 0.4999995, 0.5806445, 0.6612894999999999, 0.7419344999999999, 0.8225795, 0.9032244999999999]
 }
 
-let letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes: [FaceWithUnderlineAndOverlineCode] = [
+public let letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes: [FaceWithUnderlineAndOverlineCode] = [
     FaceWithUnderlineAndOverlineCode(letter: FaceLetter.A, digit: FaceDigit._1, underlineCode: 7, overlineCode: 233),
     FaceWithUnderlineAndOverlineCode(letter: FaceLetter.A, digit: FaceDigit._2, underlineCode: 11, overlineCode: 241),
     FaceWithUnderlineAndOverlineCode(letter: FaceLetter.A, digit: FaceDigit._3, underlineCode: 13, overlineCode: 224),
@@ -291,7 +292,7 @@ let letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes: [FaceWithUnderlin
     FaceWithUnderlineAndOverlineCode(letter: FaceLetter.Z, digit: FaceDigit._6, underlineCode: 221, overlineCode: 48)
 ]
 
-let underlineCodeToFaceWithUnderlineAndOverlineCode: [FaceWithUnderlineAndOverlineCode?] = [
+public let underlineCodeToFaceWithUnderlineAndOverlineCode: [FaceWithUnderlineAndOverlineCode?] = [
     nil,
     nil,
     nil,
@@ -550,7 +551,7 @@ let underlineCodeToFaceWithUnderlineAndOverlineCode: [FaceWithUnderlineAndOverli
     nil
 ]
 
-let overlineCodeToFaceWithUnderlineAndOverlineCode: [FaceWithUnderlineAndOverlineCode?] = [
+public let overlineCodeToFaceWithUnderlineAndOverlineCode: [FaceWithUnderlineAndOverlineCode?] = [
     nil,
     nil,
     nil,

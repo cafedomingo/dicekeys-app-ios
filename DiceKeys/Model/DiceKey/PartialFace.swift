@@ -5,6 +5,8 @@
 //  Created by Stuart Schechter on 2021/01/20.
 //
 
+import DiceKeySpecification
+
 /// A face being entered by hand: any of letter, digit, or orientation may
 /// still be missing.
 struct PartialFace: Identifiable, Equatable, Sendable {

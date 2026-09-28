@@ -8,17 +8,16 @@
 //
 
 import CoreGraphics
+import DiceKeySpecification
 
 /// One face of a DiceKey.
 public struct ScannedFace: Sendable, Hashable {
-    /// A to Z, without Q.
-    public let letter: Character
-    /// 1 to 6.
-    public let digit: Character
+    public let letter: FaceLetter
+    public let digit: FaceDigit
     /// Quarter turns clockwise from upright, 0 to 3, relative to the top of the key.
     public let clockwiseTurns: Int
 
-    public init(letter: Character, digit: Character, clockwiseTurns: Int) {
+    public init(letter: FaceLetter, digit: FaceDigit, clockwiseTurns: Int) {
         self.letter = letter
         self.digit = digit
         self.clockwiseTurns = clockwiseTurns
@@ -71,8 +70,8 @@ public struct DiceKeyScanner: Sendable {
             guard let face = slot.face, let angle = slot.angle else { return nil }
             let turns = Int(((angle - gridAngle) / (.pi / 2)).rounded())
             return ScannedFace(
-                letter: Character(UnicodeScalar(face.letter)),
-                digit: Character(UnicodeScalar(face.digit)),
+                letter: face.letter,
+                digit: face.digit,
                 clockwiseTurns: (turns % 4 + 4) % 4
             )
         }

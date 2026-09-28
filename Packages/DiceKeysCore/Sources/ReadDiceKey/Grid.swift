@@ -6,6 +6,7 @@
 //  fitting the grid, and placing every line in it.
 //
 
+import DiceKeySpecification
 import simd
 
 /// The lines read at one position of the grid.
@@ -39,9 +40,9 @@ struct Slot: Sendable {
     }
 
     /// The face, when its two lines name the same one.
-    var face: FaceSpecification? {
+    var face: FaceWithUnderlineAndOverlineCode? {
         guard let fromUnderline = underline?.bits.face, let fromOverline = overline?.bits.face,
-              fromUnderline == fromOverline else { return nil }
+              fromUnderline.letter == fromOverline.letter, fromUnderline.digit == fromOverline.digit else { return nil }
         return fromUnderline
     }
 }
