@@ -71,19 +71,6 @@ struct DiceKeySizeModel {
     var stepSize: CGFloat { (1 + distanceBetweenFacesAsFractionOfFaceSize) * faceSize }
 }
 
-private struct DieLidView: View {
-    let radius: CGFloat
-    let color: Color
-
-    var body: some View {
-        return Path { path in
-            path.addArc(center: CGPoint(x: radius, y: 0), radius: radius, startAngle: Angle(degrees: 0), endAngle: Angle(degrees: 180), clockwise: false)
-        }
-        .fill(color)
-        .frame(width: 2 * radius, height: radius)
-    }
-}
-
 struct DiceKeyView: View {
     var diceKey: DiceKey?
     var partialFaces: [PartialFace]?
@@ -92,11 +79,11 @@ struct DiceKeyView: View {
     var hideFaces: Bool = false
     var withShowDiceLabel: Bool = false
     var leaveSpaceForTab: Bool = false
-    var diceBoxColor: Color = Color.diceBox
-    var diceBoxDieSlotColor: Color = Color.diceBoxDieSlot
-    var diceBoxDieSlotHiddenColor: Color = Color.diceBox.opacity(0.8)
-    var diePenColor: Color = Color.black
-    var faceSurfaceColor: Color = Color.white
+    var diceBoxColor: Color = Color.Depiction.diceBox
+    var diceBoxDieSlotColor: Color = Color.Depiction.diceBoxDieSlot
+    private let diceBoxDieSlotHiddenColor: Color = Color.Depiction.diceBox.opacity(0.8)
+    var diePenColor: Color = Color.Depiction.diePen
+    var faceSurfaceColor: Color = Color.Depiction.dieFace
     var highlightIndexes: Set<Int> = Set()
     var showDiceAtIndexes: Set<Int>?
     var aspectRatioMatchStickeys: Bool = false
@@ -146,6 +133,17 @@ struct DiceKeyView: View {
     var dieStepSize: CGFloat { sizeModel.stepSize }
     var linearSizeOfBox: CGFloat { sizeModel.linearSizeOfBox }
 
+    private var drawsLidTab: Bool { showLidTab && (!hideFaces || hideDiceExceptCenterDie) }
+
+    private var boxOutline: Path {
+        DiceKeyOutline.path(
+            box: CGRect(x: hCenter - linearSizeOfBox / 2, y: vCenterOfBox - linearSizeOfBox / 2,
+                        width: linearSizeOfBox, height: linearSizeOfBox),
+            cornerRadius: sizeModel.boxCornerRadius,
+            tabRadius: drawsLidTab ? sizeModel.lidTabRadius : nil
+        )
+    }
+
     private struct DiePosition: Identifiable {
         let indexInArray: Int
         var partialFace: PartialFace
@@ -171,22 +169,17 @@ struct DiceKeyView: View {
         VStack {
             CalculateBounds(bounds: self.$viewSize) {
                 ZStack(alignment: .center) {
-                    // The box
-                    RoundedRectangle(cornerRadius: sizeModel.boxCornerRadius)
-                        .size(width: linearSizeOfBox, height: linearSizeOfBox)
-                        .fill(diceBoxColor)
-                        .frame(width: linearSizeOfBox, height: linearSizeOfBox)
-                        .position(x: hCenter, y: vCenterOfBox)
-                    // The lid
-                    if showLidTab && (!hideFaces || hideDiceExceptCenterDie) {
-                        DieLidView(radius: sizeModel.lidTabRadius, color: diceBoxColor)
-                            .position(x: hCenter, y: vCenterOfBox + sizeModel.linearSizeOfBox/2 + sizeModel.lidTabRadius/2)
-                    }
+                    // The box and its lid tab
+                    boxOutline.fill(diceBoxColor)
+                    // The edge that keeps the box visible on a dark background
+                    boxOutline
+                        .stroke(Color.Interface.objectEdge, lineWidth: DiceKeyOutline.edgeWidth(forBoxSize: linearSizeOfBox))
+                        .allowsHitTesting(false)
                     // The dice
                     ForEach(facePositions) { facePosition in
                         let dieIsCenterDie = (facePosition.indexInArray == 12)
                         if computedShowDiceAtIndexes.contains(facePosition.id) && (!hideFaces || !hideDiceExceptCenterDie || dieIsCenterDie) {
-                            DieView(partialFace: facePosition.partialFace, dieSize: faceSize, penColor: diePenColor, faceSurfaceColor: highlightIndexes.contains(facePosition.indexInArray) ? Color.highlighter : faceSurfaceColor )
+                            DieView(partialFace: facePosition.partialFace, dieSize: faceSize, penColor: diePenColor, faceSurfaceColor: highlightIndexes.contains(facePosition.indexInArray) ? Color.Depiction.highlighter : faceSurfaceColor )
                                 .position(
                                     x: hCenter + CGFloat(-2 + facePosition.column) * dieStepSize,
                                     y: vCenterOfBox + CGFloat(-2 + facePosition.row) * dieStepSize
@@ -243,6 +236,5 @@ struct DiceKeyView: View {
         DiceKeyView(diceKey: DiceKey.createFromRandom(), showLidTab: false)
         DiceKeyView(diceKey: DiceKey.createFromRandom(), showDiceAtIndexes: Set<Int>(0..<12))
         DiceKeyView(diceKey: DiceKey.createFromRandom(), showLidTab: true)
-            .background(Color.yellow)
     }
 }

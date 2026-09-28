@@ -43,7 +43,7 @@ struct DerivedValueOutputView: View {
             DerivedFromDiceKey(diceKey: diceKey) {
                 Text(valueText)
                     .padding(3)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.Depiction.funnelText)
                     .font(.body)
                     .multilineTextAlignment(.center)
                     .lineLimit(8)

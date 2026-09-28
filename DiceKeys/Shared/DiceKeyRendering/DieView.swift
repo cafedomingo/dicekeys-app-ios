@@ -12,8 +12,8 @@ struct UndoverlineView: View {
     let faceSize: CGFloat
     let isOverline: Bool
     let numberOfDots: CGFloat = 11
-    var penColor: Color = Color.black
-    var holeColor: Color = Color.white
+    var penColor: Color = Color.Depiction.diePen
+    var holeColor: Color = Color.Depiction.dieFace
 
     var width: CGFloat { faceSize * FaceDimensionsFractional.undoverlineLength }
     var height: CGFloat { faceSize * FaceDimensionsFractional.undoverlineThickness }
@@ -65,10 +65,9 @@ struct DieFaceUprightView: View {
     let face: PartialFace
     let dieSize: CGFloat
     let linearFractionOfFaceRenderedToDieSize: CGFloat
-
-    var penColor: Color = Color.black
-    var faceSurfaceColor: Color = Color.white
-    var faceBorderColor: Color?
+    let penColor: Color
+    let faceSurfaceColor: Color
+    let faceBorderColor: Color?
 
     var sizeOfRenderedFace: CGFloat { dieSize * linearFractionOfFaceRenderedToDieSize }
 
@@ -136,8 +135,8 @@ struct DieFaceView: View {
     let face: PartialFace
     let dieSize: CGFloat
     var linearFractionOfFaceRenderedToDieSize: CGFloat = CGFloat(1)
-    var penColor: Color = Color.black
-    var faceSurfaceColor: Color = Color.white
+    var penColor: Color = Color.Depiction.diePen
+    var faceSurfaceColor: Color = Color.Depiction.dieFace
     var faceBorderColor: Color?
 
     var body: some View {
@@ -172,24 +171,18 @@ struct DieView: View {
     let partialFace: PartialFace
     let dieSize: CGFloat
     let linearFractionOfFaceRenderedToDieSize: CGFloat = CGFloat(5)/8
-    var penColor: Color = Color.black
-    var faceSurfaceColor: Color = Color.white
+    var penColor: Color = Color.Depiction.diePen
+    var faceSurfaceColor: Color = Color.Depiction.dieFace
     var faceBorderColor: Color?
-
-    init(face: Face, dieSize: CGFloat, penColor: Color = .black, faceSurfaceColor: Color = .white, faceBorderColor: Color? = nil) {
-        self.init(partialFace: PartialFace(face), dieSize: dieSize, penColor: penColor, faceSurfaceColor: faceSurfaceColor, faceBorderColor: faceBorderColor)
-    }
-
-    init(partialFace: PartialFace, dieSize: CGFloat, penColor: Color = .black, faceSurfaceColor: Color = .white, faceBorderColor: Color? = nil) {
-        self.partialFace = partialFace
-        self.dieSize = dieSize
-        self.penColor = penColor
-        self.faceSurfaceColor = faceSurfaceColor
-        self.faceBorderColor = faceBorderColor
-    }
 
     var body: some View {
         DieFaceView(face: partialFace, dieSize: dieSize, linearFractionOfFaceRenderedToDieSize: linearFractionOfFaceRenderedToDieSize, penColor: penColor, faceSurfaceColor: faceSurfaceColor, faceBorderColor: faceBorderColor)
+    }
+}
+
+extension DieView {
+    init(face: Face, dieSize: CGFloat, penColor: Color = Color.Depiction.diePen, faceSurfaceColor: Color = Color.Depiction.dieFace, faceBorderColor: Color? = nil) {
+        self.init(partialFace: PartialFace(face), dieSize: dieSize, penColor: penColor, faceSurfaceColor: faceSurfaceColor, faceBorderColor: faceBorderColor)
     }
 }
 

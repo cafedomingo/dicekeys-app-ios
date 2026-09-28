@@ -120,20 +120,20 @@ struct DiceKeyCenterFaceOnlyView: View {
                     path.addLine(to: magnifiedFaceCornerBottomLeft)
                     path.move(to: originalFaceCornerBottomRight)
                     path.addLine(to: magnifiedFaceCornerBottomRight)
-                }.stroke(Color(red: 1.0, green: 1.0, blue: 1.0, opacity: 0.5), lineWidth: max(diceKeySizeModel.linearSizeOfBox / 75, 2))
+                }.stroke(Color.Depiction.magnifierLine, lineWidth: max(diceKeySizeModel.linearSizeOfBox / 75, 2))
                     .frame(width: totalWidth, height: totalHeight)
                 .background(
                     // The DiceKey box
-                    DiceKeyView(centerFace: centerFace, showLidTab: true, diceBoxColor: Color.alexandrasBlue, diceBoxDieSlotColor: Color.alexandrasBlue,
-                                diePenColor: Color(red: 0, green: 0, blue: 0, opacity: 0.3),
-                                faceSurfaceColor: .alexandrasBlueLighter
+                    DiceKeyView(centerFace: centerFace, showLidTab: true, diceBoxColor: Color.Depiction.kitBlue, diceBoxDieSlotColor: Color.Depiction.kitBlue,
+                                diePenColor: Color.Depiction.kitPenFaded,
+                                faceSurfaceColor: Color.Depiction.kitBlueLighter
                     )
                     .frame(width: diceKeySizeModel.width, height: diceKeySizeModel.height)
                     .offset(x: offsetLeftForCenteredObjects, y: offsetTopForCenteredObjects )
                 ).overlay(
                     // )
                     // The magnfified die
-                    DieView(face: centerFace, dieSize: magnifiedFaceSize, faceBorderColor: Color.black)
+                    DieView(face: centerFace, dieSize: magnifiedFaceSize, faceBorderColor: Color.Depiction.diePen)
                         .offset(
                             x: offsetLeftForCenteredObjects + magnifiedFaceFractionalOffset.x * magnifiedFaceSize,
                             y: offsetTopForCenteredObjects + diceKeySizeModel.offsetToBoxCenterY + magnifiedFaceFractionalOffset.y * magnifiedFaceSize )
