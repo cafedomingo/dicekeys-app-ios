@@ -161,60 +161,6 @@ recipe is hashed into the secret. A recipe that differs by one character is a di
 secret, so anyone already using a secret from a web address recipe must still be able to
 reproduce it, and raw JSON is how.
 
-## Dark mode
-
-**Why it exists.** The app follows the system appearance (nothing forces light mode), but
-most screens were drawn for a white background: hard-coded white and black fills, the
-DiceKey and sticker illustrations, and the navy funnel behind derived values. In dark mode
-they range from off-palette to unreadable. The privacy cover is the only screen designed
-for both.
-
-**There is no one place colors live, which is the real work.** They are in three:
-`Colors.xcassets` holds fourteen named colors and not one of them has a dark appearance
-variant; thirty-four literals are written inline across fourteen files; and four brand blues
-are private constants inside `PrivacyCoverView`, which is the only component that was drawn
-for both appearances.
-
-**Two kinds of color, which the theme has to tell apart.** Interface colors describe a
-role: `formHeadingBackground`, `navigationBarForeground`, text on a surface. They have to
-change with the appearance. Depiction colors describe a physical object: the blue of the
-case, the white of the dice, the white of the sticker sheets. They are closer to a photograph
-than to a surface, and re-tinting them for dark mode would be drawing a DiceKey nobody owns.
-For those, naming the hue is naming the role, so `alexandrasBlue` is a correct name rather
-than a lazy one.
-
-**The split does not follow the existing names.** `alexandrasBlue` is doing both jobs today.
-It is the `diceBoxColor` and `diePenColor` that depict the case and its lid, and it is also
-the color of headings such as "Use a Stickeys Kit" in `ChooseBackupTargetView`. As a
-depiction it should hold still in dark mode; as heading text it cannot, because a mid blue on
-a dark background is unreadable. So the work is not renaming entries, it is deciding at each
-use site which of the two a color is being asked to be.
-
-**Which means the dark appearance has to be chosen around the fixed colors, not the other
-way round.** That is the reverse of how this usually goes, and the numbers already rule out
-the obvious answer. The DiceKey is itself a dark navy object: `diceBox` is rgb(10, 12, 112),
-`diceBoxDieSlot` rgb(4, 2, 64), `funnelBackground` rgb(5, 3, 55). The dark palette already
-sitting in `PrivacyCoverView` is navy rgb(22, 28, 72) and midnight rgb(10, 12, 34). The box
-and midnight share their red and green exactly and differ only in blue; the die slots land on
-top of navy. A navy dark mode would dissolve the DiceKey into its own background, so the
-appearance probably has to be neutral, dark gray rather than dark blue, precisely so that a
-navy object still reads as an object.
-
-The other half of the same problem is at the light end. `alexandrasBlue` is rgb(85, 118, 197),
-a mid blue, which is why it works as heading text on white. On any dark background it is
-heading text that has to be lifted, while the same value used as the case has to stay exactly
-where it is.
-
-**What is left.** Build the theme first and let dark mode fall out of it. One place that
-holds both kinds, distinguishes them, absorbs the brand blues currently hidden in a view, and
-replaces the inline literals. Dark mode then becomes filling in a second column for the
-interface half, and a screen that looks wrong later is one wrong entry rather than a hunt
-through fourteen files.
-
-Every screen still has to be looked at in both appearances, because a theme makes colors
-consistent without making contrast correct, and the depiction colors stay put while
-everything behind them moves.
-
 ## The QR code sheet
 
 **Why it exists.** The sheet that shows a derived value as a QR code first asks which
@@ -299,6 +245,10 @@ done for the iPad carries over.
 - **The Python generators in Swift.** `generate-app-icon.py` and
   `generate-ocr-font-tables.py` could be Swift scripts (CoreGraphics in place of Pillow),
   dropping Pillow and scripts/requirements.txt. Both run rarely and their output is committed.
+- **Three small interface bugs** found while screenshotting every screen for dark mode:
+  the raw JSON recipe warning shows two Cancel buttons; the assembly warning banner is
+  clipped at both edges on the backup-choice step; "OpenSSH Private Key" wraps to three lines
+  in the output format picker.
 - Two `VERIFY` comments remain in the scanner (`OCR.swift` on unstable sort ties,
   `DiceKeyReader.swift` on the four-second error-correction budget). Both describe
   faithfully ported upstream behavior and need a key with a persistent bit error to
