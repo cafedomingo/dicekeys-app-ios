@@ -10,6 +10,7 @@
 //  stricter than the app, which merges faces across frames.
 //
 
+import AVFoundation
 import CoreGraphics
 import Foundation
 import ImageIO
@@ -159,8 +160,9 @@ enum Corpus {
 @Suite("Scanner photo corpus")
 struct ScannerCorpusTests {
     /// The fewest faces the photos that must read may yield between them, one frame each at the
-    /// app's frame size: what the Swift port of upstream's scanner read from them.
-    static let minimumFacesRead = 444
+    /// app's frame size. Today they read 539; the floor sits a little lower so that another
+    /// Mac's JPEG decoder, which can move a face or two, cannot fail it.
+    static let minimumFacesRead = 530
 
     static let cases = CorpusImage.all.flatMap { image in Corpus.Size.allCases.map { (image, $0) } }
 
@@ -202,5 +204,34 @@ struct ScannerCorpusTests {
         }
         print("corpus: \(total) faces read")
         #expect(total >= Self.minimumFacesRead)
+    }
+
+    /// Every video, played through one scanner a frame at a time the way the app feeds it:
+    /// the centered square of each frame's luma plane.
+    static let videos: [URL] = {
+        let dir = Bundle.module.resourceURL!.appendingPathComponent("Fixtures/videos")
+        return ((try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? [])
+            .filter { $0.pathExtension.lowercased() == "mov" }
+    }()
+
+    @Test("never reads a face wrong across a video", arguments: videos)
+    func neverMisreadsAVideo(url: URL) async throws {
+        let asset = AVURLAsset(url: url)
+        let track = try #require(try await asset.loadTracks(withMediaType: .video).first)
+        let reader = try AVAssetReader(asset: asset)
+        let output = AVAssetReaderTrackOutput(track: track, outputSettings: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+        ])
+        reader.add(output)
+        #expect(reader.startReading())
+        var scanner = DiceKeyScanner()
+        while let sample = output.copyNextSampleBuffer() {
+            guard let frame = sample.imageBuffer, let image = GrayImage(centeredSquareOf: frame) else { continue }
+            scanner.scan(image)
+            let expected = try #require(Corpus.faces(of: String(url.deletingPathExtension().lastPathComponent.prefix(75))))
+            #expect(Corpus.score(scanner.faces, against: expected).wrong == 0)
+        }
+        print("video \(url.lastPathComponent.suffix(12)): \(scanner.faces.compactMap { $0 }.count) faces known after the last frame")
+        #expect(scanner.faces.compactMap { $0 }.count >= 17)
     }
 }
