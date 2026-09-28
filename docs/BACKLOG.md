@@ -61,6 +61,92 @@ which can appear", and recommends moving them off the main thread or bounding th
 `kSecUseAuthenticationContext`. If the toggle ever stalls on a device, that is why, and the
 fix is to make `setStored` async rather than to weaken the access control.
 
+## A better scanner, built on Vision
+
+**Why it exists.** The scanner is a faithful port of upstream's OpenCV pipeline, kept
+output-identical to the C++ so the port could be proven correct photo by photo
+(`docs/SCANNER-PORT-NOTES.md`). Nobody chose it as the best way to find a DiceKey. It is
+brute force: every frame is thresholded at twelve fixed brightness levels plus one Canny
+edge image, every border at every level is traced and fitted with a rectangle (about 2,100
+per frame), and filtering then keeps the 25 to 50 that are shaped like undoverlines. Nearly
+all of the work is spent on things that are not a DiceKey, so an ordinary busy scene is the
+worst case. The goal is a dramatically better scanner, and with it deleting code the system
+frameworks already provide.
+
+**The direction: Apple's Vision framework.** The port notes rejected Vision because its
+results cannot be compared with the C++ reference. That constraint goes away once matching
+C++ stops being the goal. Vision is maintained by Apple, is built for camera frames of
+arbitrary scenes, and takes the camera's `CVPixelBuffer` directly with an orientation and a
+region of interest.
+
+**What Vision would replace**, counted in `Packages/DiceKeysCore/Sources/ReadDiceKey/`:
+
+- **Finding candidates.** `DetectRectanglesRequest` (the Swift Vision API) finds
+  quadrilaterals, narrowed by `minimumAspectRatio`, `maximumAspectRatio`, `minimumSize` and
+  `maximumObservations`. That replaces the contour tracer (`Contours.swift`, 344 lines), the
+  blur, Canny, dilate and threshold filters in `GrayImage.swift` (most of its 445), the
+  rectangle fitting in `Geometry.swift`, and the thirteen-level search in
+  `FindUndoverlines.swift`.
+- **Reading the letter and digit.** `RecognizeTextRequest` could replace the template OCR:
+  `OCR.swift` (189 lines), the generated `OcrFontTables.swift` (3,741), and with them
+  `scripts/generate-ocr-font-tables.py` and `scripts/ocr-font-source/`. Worth knowing: the
+  letter and digit are also encoded in both the underline and the overline, and OCR is the
+  third vote that decides which line is wrong when the two disagree (`FaceRead.error()`). So
+  the question is whether Vision reads single rotated characters well enough to be that
+  vote, or whether the two codes alone are enough.
+- **Converting the frame.** Each frame is oriented, cropped to a square, turned into a
+  `CGImage`, redrawn into an RGBA buffer and converted to gray (`rgbaCenteredSquare` in the
+  app, `GrayImage(rgba:)` in the package). Vision needs none of that. Whatever still samples
+  pixels (the undoverline dots) could read the camera's luma plane directly.
+
+**What stays**, because it is the DiceKey rather than image processing: reading the eleven
+dots of an undoverline and decoding them (`Undoverline.swift`, `FaceSpecification.swift`),
+assembling the 5x5 grid (`AssembleDiceKey.swift`), merging reads across frames and deciding
+when to stop (`FaceRead.swift`, `DiceKeyReader.swift`).
+
+**Removable now, whatever is decided.** Two things are left over from the C++ interface
+rather than needed by the app:
+
+- **The overlay renderer.** `DiceKeyScanner.renderOverlay` and `augment`, with the drawing
+  code behind them in `DiceKeyReader.swift`, are called only by tests. The app draws its own
+  overlay in SwiftUI (`FacesReadOverlay`).
+- **The JSON round trip.** The scanner encodes its result as a JSON string and the app
+  decodes it again with `FaceRead.fromJson`, a boundary that existed because the scanner was
+  C++ behind a C ABI. A Swift scanner can hand back typed values.
+
+**Unknowns, to settle with a spike before committing.** Whether `DetectRectanglesRequest`
+reliably finds bars as thin as undoverlines (width 0.177 of their length) at the angles and
+distances a DiceKey is held; whether text recognition reads isolated single characters in
+four rotations; and whether Vision runs on the GPU or Neural Engine here rather than the CPU
+cores, which is where a battery and heat win would come from. The spike runs Vision over the
+corpus and reports what it finds, before any code is removed.
+
+**Correctness without the reference.** Leaving the C++ comparison behind means correctness
+rests on the 23 photos in the corpus test still reading correctly, and on scans of real keys.
+Grow the corpus before the switch, especially with hard cases: glare, angle, low light, a
+key partly out of frame, and busy backgrounds with no key at all.
+
+**Measure first, on a phone.** The 20 ms per frame and the memory figures are from an M2.
+Take per-frame time, peak memory and energy on an iPhone for the current scanner before
+changing it, so the Vision version is judged against the same numbers.
+
+**Alternatives, if Vision falls short.** Each keeps more of the current code:
+
+- **Scan a smaller frame.** No capture resolution is set, so the full 1080-pixel square is
+  scanned. Undoverlines are large at the distance a DiceKey is held, and cost falls roughly
+  with area, at some risk to the OCR.
+- **Track the key between frames.** Once the grid is found, search near it and fall back to
+  the full frame when it is lost; with nothing found, scan every few frames.
+- **One pass across all brightness levels.** The twelve thresholds approximate what MSER
+  (maximally stable extremal regions) computes directly, with a component tree in
+  near-linear time over one pass. The real algorithmic fix within the current design.
+- **`DetectContoursRequest`.** Vision's own contour detection in place of the tracer,
+  keeping the rectangle fitting and filtering. A smaller step than rectangles, and a smaller
+  deletion.
+- **A trained detector.** A Core ML model that finds whole faces, trained with Create ML.
+  The most capable and the most work, and it needs labelled photos this project does not
+  have yet.
+
 ## Simpler recipes
 
 **Why it exists.** A recipe can be built from a web address, a purpose, or raw JSON. The web
@@ -157,22 +243,54 @@ update: set `deploymentTarget` to 27.0 in `project.yml`, drop the `#else` branch
 else in the app wants a 27-only API, and the app already compiles against the 27 SDK
 locally while keeping 26 as its minimum, so there is no urgency.
 
-## iPad, and later the foldable
+## iPad, the Mac, and later the foldable
 
-No iPad has ever run this. The iPad declares all four interface orientations, which makes
-item 1 more than cosmetic there, and several screens were laid out against a phone-shaped
-canvas. The backup and validation illustrations already run off the right edge on a phone.
+**Why it exists.** The app is built for iPhone and iPad (`TARGETED_DEVICE_FAMILY` is
+`1,2`), but no iPad has ever run it. Several screens were laid out against a phone-shaped
+canvas, and the backup and validation illustrations already run off the right edge on a
+phone.
 
-The iPhone Duo, Apple's foldable, ships 23 October 2026 with a 5.4-inch outer and a 7.6-inch
-inner display, and no simulator for it exists in Xcode 27.0. Nothing to do yet. When it
-matters, the portrait lock is the first thing to revisit, and the fold transition resizes the
-app live, which is the same class of problem as rotation: the preview and the overlay have to
-stay agreed through a size change.
+**What proper iPad support covers.** Four things, roughly in order:
+
+- **Rotation.** The iPad declares all four interface orientations, so item 1 stops being
+  cosmetic here: the camera and the interface have to turn together.
+- **Wider layouts.** Screens that stretch a phone column across a tablet, and the
+  illustrations that already overflow, need layouts that use the width.
+- **Resizable windows.** `Info.plist` does not set `UIRequiresFullScreen`, so the app
+  already opts into iPad multitasking and its window can be resized freely. Every screen
+  has to survive a live resize, and the scanner is the hard case: the preview and the
+  overlay have to stay agreed through a size change.
+- **Keyboard and pointer.** Hover states and shortcuts for the common actions. The least
+  urgent of the four, and the one to drop first if the rest is enough.
+
+**The Mac is the cheap place to test it.** `SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD` is on
+(the Xcode default), so an Apple silicon Mac runs the unmodified app with the iPad interface,
+in a resizable window, with no extra target; Mac Catalyst stays off because nothing needs
+it. It has never been run. Three things make it worth doing:
+
+- It is an iPad-idiom, landscape, resizable window, which is most of the list above.
+- It has a real camera. The camera fallback for machines with no back camera and the
+  unmirrored preview are already in place, so a real DiceKey can be scanned with the
+  built-in camera or an iPhone as a Continuity Camera, without installing on a phone.
+- It may enforce the keychain's access control, which the Simulator ignores. Unverified.
+
+It is not a replacement for the Simulator, which remains the closer match for an iPhone.
+
+The first run needs the Mac registered as a development device, once. Unlike the Simulator,
+real hardware runs only builds whose development profile lists that machine, and this Mac is
+not on the team's list yet. TestFlight never needed this because distribution profiles do not
+list devices. Either sign into Xcode's Accounts and run the app on My Mac (Designed for iPad),
+which registers it automatically, or add the Mac's provisioning UDID by hand in the developer
+account. After that the destination is `platform=macOS,variant=Designed for iPad`.
+
+**The iPhone Duo**, Apple's foldable, ships 23 October 2026 with a 5.4-inch outer and a
+7.6-inch inner display, and no simulator for it exists in Xcode 27.0. Nothing to do yet.
+When it matters, the portrait lock is the first thing to revisit, and the fold transition
+resizes the app live, which is the resizable-window problem above arriving on a phone. Work
+done for the iPad carries over.
 
 ## Smaller items, not worth their own change
 
-- **Mac as Designed for iPad** has never been run, though the camera fallback for machines
-  with no back camera and the unmirrored preview are both in place for it.
 - **Swift/C++ interop** could replace the hand-written C ABI over seeded-crypto.
 - **Modernizing the vendored C++** in the subtree is possible now that it is a git subtree;
   the golden vectors would catch any change to derived output.
@@ -348,13 +466,3 @@ implementation to check against, so the vectors are not one cross-check among se
 **Related.** Removing Argon2id would leave exactly one hash function to reimplement, and
 would retire the internal header include on its own. The two smaller items about Swift and
 C++ interop and about modernising the vendored C++ are the incremental version of this.
-
-## Frame conversion performance
-
-The scanner itself went from 49 ms to 20 ms per 1080-pixel frame on an M2 and the owner
-found on-device speed fine, so this is opportunistic. What has never been measured is the
-work *before* the scanner: each frame is oriented, turned into a `CGImage`, and redrawn into
-a byte buffer, which is two passes over every pixel where `CIContext.render(toBitmap:)`
-would do one. There is also no capture resolution set, so the session takes its default and
-the full square is scanned; a smaller frame would cut scan cost roughly with area, at some
-risk to the OCR. Measure before changing either.
