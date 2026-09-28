@@ -8,7 +8,7 @@ that were measured.
 
 The reference implementation is DiceKeys' own scanner,
 [read-dicekey](https://github.com/dicekeys/read-dicekey), written in C++ on OpenCV. This
-scanner began as a port of it and still finds and decodes the bars the way it does. No code
+scanner began as a port of it and still follows its approach to finding and decoding the bars. No code
 from it is included, and where this scanner departs from it is described below.
 
 ## What it is built for
@@ -62,7 +62,7 @@ Each camera frame goes through five steps.
 ```mermaid
 flowchart LR
     A["Camera frame (Y'CbCr)"] -->|"1. centered square of the luma plane"| B[Gray image]
-    B -->|"2. trace 12 thresholds, keep bar-shaped borders"| C[Bars]
+    B -->|"2. 12 thresholds, keep bar-shaped dark regions"| C[Bars]
     C -->|"3. sample 11 dots, decode"| D[Undoverlines]
     D -->|"4. pair lines, fit the 5x5 grid"| E[Faces in 25 slots]
     E -->|"5. merge with earlier frames"| F[DiceKey]
@@ -75,21 +75,21 @@ image the scanner needs, so the scanner takes the centered square of it (what th
 preview shows) with one copy per row. AVFoundation rotates the buffers to match the preview
 before they arrive, so the scanner works in the coordinates the user sees.
 
-### 2. Finding bars (`Bars.swift`, `Borders.swift`)
+### 2. Finding bars (`Bars.swift`, `Regions.swift`)
 
 A bar is dark against its own die, but the light across a key is rarely even: glare on one
 corner, a shadow over another. No single brightness threshold separates every bar from its
 die, but for each bar some threshold does. So the frame is thresholded at twelve levels
 (`k * 255 / 13` for k = 2 to 13, skipping levels above the brightest pixel), and at each the
-border of every bright region is traced (Suzuki and Abe's border following). The bars show up
-as holes in their dice.
+dark pixels are grouped into regions: runs of dark pixels along each row, joined where runs in
+neighboring rows share a column. At the right level, each bar is a region of its own.
 
-Each border more than 50 pixels around is fitted with its smallest enclosing rectangle, and kept if
-it has an undoverline's proportions: 0.177 as thick as it is long, with 50% slack either way.
-The levels are independent, so they are traced in parallel, each in its own byte-per-pixel
-label plane.
+Each region of at least 50 pixels is fitted with its smallest enclosing rectangle (one side
+lies along an edge of its convex hull), and kept if it has an undoverline's proportions: 0.177
+as thick as it is long, with 50% slack either way. The levels are independent, so they run in
+parallel.
 
-Most borders are not bars (paper texture, the box, letters, the scene), so two facts about a
+Most regions are not bars (paper texture, the box, letters, the scene), so two facts about a
 key thin them out:
 
 - **All 50 bars are the same size.** The areas are sorted and the tightest run of 35 found;
@@ -160,7 +160,7 @@ photos far outside what the scanning overlay asks for are there to prove that, n
 | Constant | Value | Why |
 |---|---|---|
 | Threshold levels | `k * 255 / 13`, k = 2...13 | Upstream's choice. Spans the range evenly; fewer was never measured |
-| Minimum border length | 50 px | Drops specks before rectangle fitting; a bar is far longer at any usable distance |
+| Minimum region size | 50 pixels | Drops specks before rectangle fitting; a bar is far larger at any usable distance |
 | Bar proportions | 0.177 thick per length, within a factor of 1.5 | The printed geometry, with slack for blur and perspective |
 | Size mode | tightest run of 35, keep within 25% | 50 bars of one size; 35 leaves room for missed and extra bars |
 | Pairing tolerance | a quarter face | A partner on a neighboring die is about two faces away |
@@ -185,7 +185,7 @@ the job with less code. Measured on the 23 corpus photos at 1080 pixels on an M2
 | Vision `RecognizeTextRequest` as the reader | 20 to 49% of faces found in a full frame (56 to 770 ms); given each face's location, 85 to 91% read, with wrong but plausible reads | Built for lines of words, not isolated rotated pairs of characters. It has no error check, needs a detector anyway, and the fast level only reads upright text |
 | Template OCR as a third vote (upstream) | Could only veto good reads | Whenever the two codes agreed they were right (all 417 times, on the corpus cropped to the app's 1080-pixel square), and the app already required all three to agree, so OCR added nothing but vetoes. It cost 3,900 lines of glyph tables and matching code |
 | The Canny edge level (upstream) | One face more, of 550, from the well-framed photos at the app's frame size | It closes the outline of a bar printed against the edge of its die, and rescued one photo at full photo resolution, which the app never scans. Rendered by Core Image it cost 2.6 ms and ~120 MB per frame; on the CPU (the port's code), 9 ms. Not worth either |
-| OpenCV | Would shrink step 2 to a few calls | A large binary dependency to replace the border tracer and rectangle fitting, about 250 lines |
+| OpenCV | Would shrink step 2 to a few calls | A large binary dependency to replace the region labeling and rectangle fitting, under 200 lines |
 | AprilTag, zxing-cpp | The right family of problem (fiducials, barcodes) | Their decoders are for their own tags and symbologies |
 | Core ML detector trained on rendered keys | The only framework route aimed at this problem | Needs a training pipeline and a model to maintain, accuracy unknown, and the bars would still be needed to guarantee correctness |
 

@@ -12,7 +12,7 @@ import Foundation
 ///
 /// An undoverline is a dark bar on a light die. However the light falls across the key,
 /// some brightness separates each bar from its own die, so the image is thresholded at
-/// twelve levels and every border traced at each. A border whose smallest enclosing
+/// twelve levels and its dark regions found at each. A region whose smallest enclosing
 /// rectangle has an undoverline's proportions (0.177 as thick as it is long, with 50%
 /// slack) is a candidate. All 50 undoverlines of a key are nearly the same size, so only
 /// candidates within 25% of the most common area are kept, and of a bar found at several
@@ -31,7 +31,7 @@ func findBars(in image: GrayImage) -> [Bar] {
     }
     nonisolated(unsafe) let results = perLevel
     DispatchQueue.concurrentPerform(iterations: thresholds.count) { level in
-        results[level] = traceBorders(in: image, atLeast: thresholds[level], minPerimeter: 50)
+        results[level] = darkRegions(in: image, darkerThan: thresholds[level], minPixels: 50)
             .compactMap(smallestRectangle(around:))
             .filter(isShapedLikeUndoverline)
     }

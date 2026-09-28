@@ -42,8 +42,8 @@ Owner:     DiceKeys, LLC
 License:   NONE GRANTED (same placeholder as above).
 Where in this repo:
     Packages/ReadDiceKey/Sources/ReadDiceKey began as a Swift port of
-    upstream's lib-read-dicekey and still finds and decodes the bars its way
-    (see docs/SCANNING.md), so it is a derivative work.
+    upstream's lib-read-dicekey and still follows its approach to finding and
+    decoding the bars (see docs/SCANNING.md), so it is a derivative work.
     Packages/ReadDiceKey/Tests/ReadDiceKeyTests/Fixtures/images holds upstream's
     test photographs alongside the owner's; its README.md says which are which.
 

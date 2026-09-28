@@ -67,16 +67,16 @@ fix is to make `setStored` async rather than to weaken the access control.
 Apple's Vision framework was measured and ruled out along the way; `SCANNING.md` has both. On
 an M2 it scans a frame in 5.4 ms against the original's 21.7, largely by spreading its work
 over more cores, and needs about 8 MB more while scanning. It still thresholds the whole frame
-twelve times and traces every border at each level, and no phone has measured it.
+twelve times and labels every dark region at each level, and no phone has measured it.
 
 **What is left, in order.**
 
 - **A phone baseline.** Time, peak memory and energy per frame on an iPhone.
 - **A cheaper step 2.** Adaptive thresholding (each pixel against the mean of its neighborhood,
-  a box blur vImage provides) and connected components could replace the twelve thresholds
-  and the border tracer, the standard design for fiducial markers such as QR codes and
-  AprilTags, touching each pixel about once with one label plane. Spike it against the
-  corpus, and keep it only if it reads at least as many faces with none wrong.
+  a box blur vImage provides) could replace the twelve thresholds with one, labeling the
+  regions once rather than twelve times, the standard design for fiducial markers such as QR
+  codes and AprilTags. Spike it against the corpus, and keep it only if it reads at least as
+  many faces with none wrong.
 - **Then, only if the phone needs it,** a smaller frame (on the corpus cropped to the app's
   square, the port read 412 faces at 540 pixels against 417 at 1080, for about a third of the
   work) or following the key between frames and searching

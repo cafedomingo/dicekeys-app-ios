@@ -220,8 +220,8 @@ implementation shared with the web app; any byte-level divergence in a rewrite s
 changes every derived secret, and the golden vectors can only cover cases someone wrote
 down. `lib-read-dicekey` was the exception, because it needed OpenCV: it was ported to Swift
 stage by stage and checked face by face against the C++ output, then rewritten around the two
-bar codes once the port showed what mattered (`SCANNING.md`). It still finds and decodes the
-bars the way upstream does, so it is covered by the licensing question below.
+bar codes once the port showed what mattered (`SCANNING.md`). It still follows upstream's
+approach to finding and decoding the bars, so it is covered by the licensing question below.
 Rust would add a second toolchain and an FFI layer for no gain on a
 single-platform personal app. What *was* removed is every line of Objective-C: the shims are
 C++ behind a C header, which Swift imports natively.
