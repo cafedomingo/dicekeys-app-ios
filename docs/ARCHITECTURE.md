@@ -104,8 +104,7 @@ Tests/DiceKeysTests/    Swift Testing: CanonicalizeRecipeJsonTests, MnemonicsTes
 ## Working on it
 
 ```
-brew install xcodegen
-xcodegen generate
+swift run --package-path BuildTools xcodegen generate
 open DiceKeys.xcodeproj        # schemes: DiceKeys, DiceKeysCore-Package
 ```
 
@@ -144,12 +143,17 @@ permissions error until it is accepted.
 
 ## What CI covers
 
-GitHub-hosted macOS runners, currently Xcode 26.6:
+GitHub-hosted macOS runners with the image's default Xcode, currently 26.6:
 
 - `swift test -c release` for `Packages/DiceKeysCore`: the golden derivation vectors, the
   scanner over upstream's 23 photos, a face-by-face comparison against the C++ scanner's
   recorded output, and concurrent first use of libsodium.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
+- `swiftlint analyze` for unused code in the app target, from its own clean build.
+- SwiftLint, ruff, shellcheck and actionlint, at the versions pinned in
+  `BuildTools/Package.resolved` and `scripts/requirements-lint.txt`.
+- Monthly, a check of vendored libsodium and seeded-crypto against upstream, which opens an
+  issue when either is behind.
 
 The runners have no iOS 27 SDK, which is why the deployment target is 26 and the one
 27-only API in use sits behind a compile-time SDK gate rather than a runtime `#available`.

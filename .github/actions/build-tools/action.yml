@@ -1,0 +1,23 @@
+name: Build tools
+description: Puts the SwiftLint and XcodeGen pinned in BuildTools/Package.resolved on PATH.
+runs:
+  using: composite
+  steps:
+    - id: cache
+      uses: actions/cache@v6
+      with:
+        path: ${{ runner.temp }}/build-tools
+        key: build-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('BuildTools/Package.resolved') }}
+    # XcodeGen builds from source (about a minute); SwiftLint is a prebuilt binary target.
+    # xcodegen reads its setting presets from the resource bundle beside the executable.
+    - if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        dest="$RUNNER_TEMP/build-tools" && mkdir -p "$dest"
+        swift build --package-path BuildTools -c release --product xcodegen
+        bin=$(swift build --package-path BuildTools -c release --show-bin-path)
+        cp -R "$bin/xcodegen" "$bin/XcodeGen_XcodeGenKit.bundle" "$dest/"
+        cp BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos/swiftlint "$dest/"
+    - shell: bash
+      run: echo "$RUNNER_TEMP/build-tools" >> "$GITHUB_PATH"

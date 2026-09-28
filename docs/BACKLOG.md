@@ -298,7 +298,7 @@ done for the iPad carries over.
   runs it.
 - **The Python generators in Swift.** `generate-app-icon.py` and
   `generate-ocr-font-tables.py` could be Swift scripts (CoreGraphics in place of Pillow),
-  dropping Python and scripts/requirements.txt. Both run rarely and their output is committed.
+  dropping Pillow and scripts/requirements.txt. Both run rarely and their output is committed.
 - Two `VERIFY` comments remain in the scanner (`OCR.swift` on unstable sort ties,
   `DiceKeyReader.swift` on the four-second error-correction budget). Both describe
   faithfully ported upstream behaviour and need a key with a persistent bit error to

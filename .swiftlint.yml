@@ -16,7 +16,7 @@ opt_in_rules:
   - closure_spacing
   - vertical_whitespace_closing_braces
   - vertical_whitespace_opening_braces
-# Run by `swiftlint analyze` in CI's apps job against the clean build's log, with
+# Run by `swiftlint analyze` in CI's unused-code job against the clean build's log, with
 # .swiftlint-analyze.yml limiting it to the app target.
 analyzer_rules:
   - unused_declaration

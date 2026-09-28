@@ -1,17 +1,22 @@
 version: 2
 updates:
+  # SwiftLint and XcodeGen, pinned in BuildTools/Package.resolved.
   - package-ecosystem: "swift"
-    directory: "/Packages/DiceKeysCore"
+    directory: "/BuildTools"
     schedule:
       interval: "weekly"
     labels: ["dependencies"]
+  # requirements.txt for the scripts, requirements-lint.txt for CI's linters.
   - package-ecosystem: "pip"
     directory: "/scripts"
     schedule:
       interval: "weekly"
     labels: ["dependencies"]
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories: ["/", "/.github/actions/*"]
     schedule:
       interval: "weekly"
     labels: ["dependencies"]
+    groups:
+      github-actions:
+        patterns: ["*"]

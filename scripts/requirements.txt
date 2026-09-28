@@ -1,3 +1,2 @@
-# Python dependencies of scripts/. Dependabot bumps these; CI reads the ruff version from here.
+# Python dependencies of scripts/. Dependabot bumps these.
 pillow==11.3.0
-ruff==0.16.9

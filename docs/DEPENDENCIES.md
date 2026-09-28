@@ -21,8 +21,9 @@ Two ways of carrying upstream code are used, chosen by whether we intend to chan
 | OpenCV | opencv.org | **Removed.** | | none | |
 | Inconsolata | Google Fonts (OFL 1.1) | `DiceKeys/fonts/Inconsolata-Bold.otf`, 60 KB, registered in `Info.plist`. | none | none | The physical dice are printed in this face, so the on-screen replicas match what you compare them against. A system monospaced fallback is already wired in. |
 | Icon Composer document | Apple `.icon` schema 1.x | `DiceKeys/Resources/AppIcon.icon`, generated from `scripts/app-icon-source/original-mark-1024.png`. | | Apple may extend the schema; validated against the 1.x/2.0 schema. | `python3 scripts/generate-app-icon.py` |
-| XcodeGen | yonaskolb/XcodeGen (brew) | build-time tool only; the `.xcodeproj` is generated, not committed. | | Spec format is stable; CI installs the latest. | |
-| GitHub Actions | actions/checkout, upload-artifact | `.github/workflows/build.yml` | | Dependabot bumps them. | |
+| XcodeGen, SwiftLint | yonaskolb/XcodeGen, SimplyDanny/SwiftLintPlugins | `BuildTools/Package.swift`, build-time tools only; the `.xcodeproj` is generated, not committed. | | Dependabot bumps them. | `swift run --package-path BuildTools xcodegen generate` |
+| ruff, shellcheck, actionlint | PyPI (`shellcheck-py`, `actionlint-py` wrap the upstream binaries) | `scripts/requirements-lint.txt`, CI only. | | Dependabot bumps them. | |
+| GitHub Actions | actions/checkout, cache, upload-artifact | `.github/workflows/`, `.github/actions/` | | Dependabot bumps them. | |
 | dicekeys-app-ios (this app) | dicekeys/dicekeys-app-ios `main` @ `543a1b0` | this repository | complete restructure | **Merging upstream is no longer practical**; upstream has been idle since 2022. Cherry-pick by hand if they ever ship a fix. | |
 
 ## What to fork
