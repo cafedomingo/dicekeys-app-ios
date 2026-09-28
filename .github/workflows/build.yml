@@ -13,7 +13,6 @@ on:
 permissions:
   contents: read
 
-# Cancel superseded PR runs only.
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -28,7 +27,7 @@ jobs:
       - name: Install linters
         run: |
           python3 -m venv "$RUNNER_TEMP/lint"
-          "$RUNNER_TEMP/lint/bin/pip" install -q --disable-pip-version-check -r scripts/requirements-lint.txt
+          "$RUNNER_TEMP/lint/bin/pip" install -r scripts/requirements-lint.txt
           echo "$RUNNER_TEMP/lint/bin" >> "$GITHUB_PATH"
       - name: SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
@@ -56,7 +55,6 @@ jobs:
         working-directory: Packages/DiceKeysCore
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
-  # Builds on its own: the analyzer needs this build's DerivedData.
   unused-code:
     runs-on: macos-latest
     timeout-minutes: 45
@@ -64,7 +62,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/build-tools
       - name: Generate project
-        run: xcodegen generate
+        run: swift run --package-path BuildTools xcodegen generate
       - name: Build iOS app (simulator)
         run: |
           set -o pipefail
@@ -73,7 +71,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep -E 'error:|warning: unre|BUILD|\*\*' || true
           grep -q 'BUILD SUCCEEDED' build-ios.log
       # .swiftlint-analyze.yml limits it to the app target.
-      - name: swiftlint analyze
+      - name: Unused code (swiftlint analyze)
         run: |
           swiftlint analyze --strict --config .swiftlint.yml --config .swiftlint-analyze.yml \
             --compiler-log-path build-ios.log --reporter github-actions-logging
@@ -94,15 +92,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/build-tools
       - name: Generate project
-        run: xcodegen generate
-      # Ad-hoc signing, or every keychain call fails with -34018.
-      - name: Build for testing (simulator)
-        run: |
-          set -o pipefail
-          xcodebuild build-for-testing -project DiceKeys.xcodeproj -scheme DiceKeys \
-            -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData \
-            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep -E 'error:|BUILD|\*\*' || true
-          grep -q 'TEST BUILD SUCCEEDED' build-ios.log
+        run: swift run --package-path BuildTools xcodegen generate
       - name: App unit tests (simulator)
         run: |
           set -o pipefail
@@ -123,10 +113,12 @@ jobs:
           print(best[1] if best else "")')
           echo "Simulator: $UDID"
           test -n "$UDID"
-          xcodebuild test-without-building -project DiceKeys.xcodeproj -scheme DiceKeys \
-            -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath DerivedData \
-            2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
-          grep -q 'TEST EXECUTE SUCCEEDED' test-ios.log
+          # Ad-hoc signing: with no entitlements the app has no keychain access at all and
+          # every SecItem call fails with errSecMissingEntitlement (-34018).
+          xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
+          grep -q 'TEST SUCCEEDED' test-ios.log
       - name: Upload logs
         if: always()
         continue-on-error: true

@@ -152,8 +152,6 @@ GitHub-hosted macOS runners with the image's default Xcode, currently 26.6:
 - `swiftlint analyze` for unused code in the app target, from its own clean build.
 - SwiftLint, ruff, shellcheck and actionlint, at the versions pinned in
   `BuildTools/Package.resolved` and `scripts/requirements-lint.txt`.
-- Monthly, a check of vendored libsodium and seeded-crypto against upstream, which opens an
-  issue when either is behind.
 
 The runners have no iOS 27 SDK, which is why the deployment target is 26 and the one
 27-only API in use sits behind a compile-time SDK gate rather than a runtime `#available`.

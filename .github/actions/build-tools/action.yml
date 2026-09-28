@@ -1,23 +1,13 @@
 name: Build tools
-description: Puts the SwiftLint and XcodeGen pinned in BuildTools/Package.resolved on PATH.
+description: Resolves BuildTools and puts SwiftLint on PATH.
 runs:
   using: composite
   steps:
-    - id: cache
-      uses: actions/cache@v6
+    - uses: actions/cache@v6
       with:
-        path: ${{ runner.temp }}/build-tools
-        key: build-tools-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('BuildTools/Package.resolved') }}
-    # Without presets in ../share/xcodegen, xcodegen silently drops default build settings.
-    - if: steps.cache.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        dest="$RUNNER_TEMP/build-tools" && mkdir -p "$dest/bin" "$dest/share/xcodegen"
-        swift build --package-path BuildTools -c release --product xcodegen
-        bin=$(swift build --package-path BuildTools -c release --show-bin-path)
-        cp "$bin/xcodegen" "$dest/bin/"
-        cp -R BuildTools/.build/checkouts/XcodeGen/SettingPresets "$dest/share/xcodegen/"
-        cp BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos/swiftlint "$dest/bin/"
+        path: BuildTools/.build
+        key: build-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('BuildTools/Package.resolved') }}
     - shell: bash
-      run: echo "$RUNNER_TEMP/build-tools/bin" >> "$GITHUB_PATH"
+      run: |
+        swift package --package-path BuildTools resolve
+        echo "$PWD/BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos" >> "$GITHUB_PATH"
