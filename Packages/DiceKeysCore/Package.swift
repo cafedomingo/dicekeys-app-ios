@@ -83,11 +83,9 @@ let package = Package(
             path: "Sources/SeededCrypto"
         ),
 
-        // MARK: DiceKeys scanner, pure Swift, tested against photos of real keys in
-        // Tests/ReadDiceKeyTests.
-        // Always optimized: at -Onone a 1080x1080 camera frame takes about 830 ms to scan
-        // on an M2 (6.5 ms at -O), too slow for a Debug run of the app to read a key.
-        // Unsafe flags are allowed here because the package is a local path dependency.
+        // MARK: DiceKeys scanner, pure Swift.
+        // Always optimized, because unoptimized it is too slow for a Debug build to read a
+        // key. Unsafe flags are allowed here because the package is a local path dependency.
         .target(
             name: "ReadDiceKey",
             dependencies: [],
