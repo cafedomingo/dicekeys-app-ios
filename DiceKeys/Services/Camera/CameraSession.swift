@@ -150,24 +150,36 @@ final class CameraSession {
         return videoOutput
     }
 
-    /// Zooms in just enough that a DiceKey lined up with the scanning target is farther away
-    /// than the camera's minimum focus distance. The target's squares span the middle two
-    /// thirds of the frame's square, so the square covers 7.5 dice pitches: DiceKey dice are
-    /// 12 mm cubes about 17 mm apart in the box (1.35 to 1.5 die widths, measured in the corpus
-    /// photos). A quarter of the minimum distance again leaves room for that estimate and for
-    /// autofocus, which is slow near its limit.
+    /// Zooms `camera` in just enough that a DiceKey lined up with the scanning target is
+    /// farther away than it can focus, if it reports how close that is.
     private nonisolated static func zoomForScanning(_ camera: AVCaptureDevice) {
-        let minimumFocusDistance = Double(camera.minimumFocusDistance)  // millimeters; -1 if unknown
+        let minimumFocusDistance = Double(camera.minimumFocusDistance)  // -1 if unknown
         guard minimumFocusDistance > 0, (try? camera.lockForConfiguration()) != nil else { return }
         defer { camera.unlockForConfiguration() }
         let format = camera.activeFormat
         let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-        // The field of view is across the frame's long side; the scanned square spans its short side.
-        let longSide = Double(max(size.width, size.height)), shortSide = Double(min(size.width, size.height))
-        let halfAngleOfSquare = atan(tan(Double(format.videoFieldOfView) * .pi / 360) * shortSide / longSide)
-        let distanceToTarget = 7.5 * 17 / 2 / tan(halfAngleOfSquare)
-        let zoom = 1.25 * minimumFocusDistance / distanceToTarget
+        let zoom = zoomForScanning(
+            minimumFocusDistance: minimumFocusDistance,
+            fieldOfView: Double(format.videoFieldOfView),
+            frameSize: CGSize(width: Int(size.width), height: Int(size.height))
+        )
         camera.videoZoomFactor = min(max(zoom, camera.minAvailableVideoZoomFactor), format.videoMaxZoomFactor)
+    }
+
+    /// The zoom at which a DiceKey lined up with the scanning target is a quarter again as far
+    /// away as `minimumFocusDistance` (in millimeters), for a camera whose field of view (in
+    /// degrees) spans the long side of `frameSize`; under 1 when no zoom is needed.
+    ///
+    /// The target's squares span the middle two thirds of the frame's square, so the square,
+    /// which spans the frame's short side, covers 7.5 dice pitches: DiceKey dice are 12 mm
+    /// cubes about 17 mm apart in the box (1.35 to 1.5 die widths, measured in the corpus
+    /// photos). The extra quarter leaves room for that estimate and for autofocus, which is
+    /// slow near its limit.
+    nonisolated static func zoomForScanning(minimumFocusDistance: Double, fieldOfView: Double, frameSize: CGSize) -> Double {
+        let longSide = max(frameSize.width, frameSize.height), shortSide = min(frameSize.width, frameSize.height)
+        let halfAngleOfSquare = atan(tan(fieldOfView * .pi / 360) * shortSide / longSide)
+        let distanceToTarget = 7.5 * 17 / 2 / tan(halfAngleOfSquare)
+        return 1.25 * minimumFocusDistance / distanceToTarget
     }
 
     private func makePreviewLayer(for camera: AVCaptureDevice) {
