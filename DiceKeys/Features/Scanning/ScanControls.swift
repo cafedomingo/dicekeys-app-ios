@@ -32,9 +32,9 @@ struct ScanControls: View {
             HStack(spacing: 12) {
                 if cameras.count > 1 {
                     Menu {
-                        ForEach(cameras, id: \.uniqueID) { camera in
-                            Button(camera.localizedName) {
-                                selectedCameraID = camera.uniqueID
+                        Picker("Camera", selection: $selectedCameraID) {
+                            ForEach(cameras, id: \.uniqueID) { camera in
+                                Text(camera.localizedName).tag(String?.some(camera.uniqueID))
                             }
                         }
                     } label: {
@@ -86,7 +86,7 @@ struct ScanControls: View {
     }
 }
 
-/// Interactive glass for one floating control, honouring the accessibility
+/// Interactive glass for one floating control, honoring the accessibility
 /// settings: a plain material when transparency is reduced, and no morphing
 /// between controls when motion is reduced.
 private struct GlassControl: ViewModifier {
