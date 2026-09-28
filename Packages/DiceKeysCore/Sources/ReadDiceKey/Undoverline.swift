@@ -166,7 +166,7 @@ private let undoverlineWhiteDarkSamplePoints: [Float] = [
     0.93333, 0.9666, 1.0
 ]
 
-/// find-undoverlines.cpp `undoverlineRectToLine`: the centre line of the rectangle along
+/// find-undoverlines.cpp `undoverlineRectToLine`: the center line of the rectangle along
 /// its long axis, extended 3% and then trimmed back until it starts and ends on dark pixels.
 func undoverlineRectToLine(_ image: GrayImage, _ lineBoundaryRect: RotatedRect) -> Line {
     let corners = RRectCorners(lineBoundaryRect)
@@ -296,7 +296,7 @@ struct Undoverline: Sendable {
     }
 }
 
-/// find-undoverlines.cpp `readUndoverline`: reads the 11 dots along the rectangle's centre
+/// find-undoverlines.cpp `readUndoverline`: reads the 11 dots along the rectangle's center
 /// line, thresholds them so at least four are black and four are white, and decodes them.
 func readUndoverline(_ image: GrayImage, rectEncompassingLine: RotatedRect) -> Undoverline {
     let undoverlineStartingAtImageLeft = undoverlineRectToLine(image, rectEncompassingLine)

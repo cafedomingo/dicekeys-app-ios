@@ -61,7 +61,7 @@ func findFacesAndStrayUndoverlines(_ gray: GrayImage) -> FaceAndStrayUndoverline
 
 // MARK: - assemble-dicekey.cpp DiceKeyGridModel
 
-/// The 5x5 grid: spacing, rotation and centre, from which every face centre follows.
+/// The 5x5 grid: spacing, rotation and center, from which every face center follows.
 struct DiceKeyGridModel: Sendable {
     var valid = false
     var distanceBetweenRows: Float = 0
@@ -96,7 +96,7 @@ struct DiceKeyGridModel: Sendable {
         expectedCenterOfFace(column: faceIndex % 5, row: faceIndex / 5)
     }
 
-    /// The index 0-24 of the face whose centre this is, or -1 when the point is not close
+    /// The index 0-24 of the face whose center this is, or -1 when the point is not close
     /// enough (within `maxFractionFromCenter` of a face width) to any grid position.
     func inferFaceIndexFromCenterPoint(_ candidateFaceCenter: Point2f, maxFractionFromCenter: Float = 0.25) -> Int {
         let rotatedPoint = rotatePointClockwise(candidateFaceCenter, around: centerPoint, angleInRadians)
@@ -176,7 +176,7 @@ func calculateDiceKeyGrid(_ found: FaceAndStrayUndoverlinesFound, maxFractionOfF
             columnOfIntersectionFace += 1
         }
 
-        // The centre face is at row 2, column 2.
+        // The center face is at row 2, column 2.
         let centerX = candidateCenter.x
             + (Float(2 - rowOfIntersectionFace) * meanXDistanceBetweenRows)
             + (Float(2 - columnOfIntersectionFace) * meanXDistanceBetweenColumns)
@@ -243,8 +243,8 @@ func orderFacesAndInferMissingUndoverlines(_ gray: GrayImage, _ found: FaceAndSt
             }
         }
     }
-    // The C++ replaces faces with neither line by a centre-only subclass, but storing it in
-    // a vector<FaceUndoverlines> slices that away, so such faces keep centre (0, 0). Kept
+    // The C++ replaces faces with neither line by a center-only subclass, but storing it in
+    // a vector<FaceUndoverlines> slices that away, so such faces keep center (0, 0). Kept
     // as upstream behaves.
     return FacesOrderedWithMissingFacesInferredFromUnderlines(
         valid: true,

@@ -85,7 +85,7 @@ func findContours(
     }
     var contours: [Contour] = []
     var nbd: Int32 = 1
-    // Neighbour offsets in the label plane for direction codes 0...7.
+    // Neighbor offsets in the label plane for direction codes 0...7.
     let offsets: [Int] = [1, -stride + 1, -stride, -stride - 1, -1, stride - 1, stride, stride + 1]
     scratch.labels.withUnsafeMutableBufferPointer { fBuf in
         offsets.withUnsafeBufferPointer { off in
@@ -99,14 +99,14 @@ func findContours(
                     if v == 0 { continue }
                     let startDir: Int
                     if v == 1 && f[p - 1] == 0 {
-                        startDir = 4  // outer border: the clockwise search starts at the left neighbour
+                        startDir = 4  // outer border: the clockwise search starts at the left neighbor
                     } else if v >= 1 && f[p + 1] == 0 {
-                        startDir = 0  // hole border: it starts at the right neighbour
+                        startDir = 0  // hole border: it starts at the right neighbor
                     } else {
                         continue
                     }
                     nbd += 1
-                    // Step 3.1: clockwise search (decreasing direction index) for a non-zero neighbour.
+                    // Step 3.1: clockwise search (decreasing direction index) for a non-zero neighbor.
                     var found = false
                     var firstDirection = 0
                     var i1 = 0
@@ -160,7 +160,7 @@ func findContours(
                         } else if prevDir != d {
                             points.append(Point2i(i3 % stride - 1, i3 / stride - 1))
                         }
-                        // Step 3.5: back at the start, entering it from the same first neighbour.
+                        // Step 3.5: back at the start, entering it from the same first neighbor.
                         if i4 == p && i3 == i1 {
                             if d != outgoingFromStart {
                                 points.insert(Point2i(x - 1, y - 1), at: 0)
@@ -256,7 +256,7 @@ func convexHull(_ contour: Contour) -> [Point2f] {
 
 /// `cv::minAreaRect`: the smallest rectangle (any rotation) enclosing the points. It is
 /// found by rotating calipers over the convex hull: for each hull edge, the bounding box
-/// aligned with it; the smallest wins. The angle is normalised to [0, 90) as OpenCV 4.5.1+
+/// aligned with it; the smallest wins. The angle is normalized to [0, 90) as OpenCV 4.5.1+
 /// does (swapping width and height when rotating by 90 degrees).
 ///
 /// When two edges give exactly the same area OpenCV's calipers may pick the other one; the

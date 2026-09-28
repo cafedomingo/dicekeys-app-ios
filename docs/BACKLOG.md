@@ -144,7 +144,7 @@ changing it, so the Vision version is judged against the same numbers.
   keeping the rectangle fitting and filtering. A smaller step than rectangles, and a smaller
   deletion.
 - **A trained detector.** A Core ML model that finds whole faces, trained with Create ML.
-  The most capable and the most work, and it needs labelled photos this project does not
+  The most capable and the most work, and it needs labeled photos this project does not
   have yet.
 
 ## Simpler recipes
@@ -169,15 +169,15 @@ DiceKey and sticker illustrations, and the navy funnel behind derived values. In
 they range from off-palette to unreadable. The privacy cover is the only screen designed
 for both.
 
-**There is no one place colours live, which is the real work.** They are in three:
-`Colors.xcassets` holds fourteen named colours and not one of them has a dark appearance
+**There is no one place colors live, which is the real work.** They are in three:
+`Colors.xcassets` holds fourteen named colors and not one of them has a dark appearance
 variant; thirty-four literals are written inline across fourteen files; and four brand blues
 are private constants inside `PrivacyCoverView`, which is the only component that was drawn
 for both appearances.
 
-**Two kinds of colour, which the theme has to tell apart.** Interface colours describe a
+**Two kinds of color, which the theme has to tell apart.** Interface colors describe a
 role: `formHeadingBackground`, `navigationBarForeground`, text on a surface. They have to
-change with the appearance. Depiction colours describe a physical object: the blue of the
+change with the appearance. Depiction colors describe a physical object: the blue of the
 case, the white of the dice, the white of the sticker sheets. They are closer to a photograph
 than to a surface, and re-tinting them for dark mode would be drawing a DiceKey nobody owns.
 For those, naming the hue is naming the role, so `alexandrasBlue` is a correct name rather
@@ -185,19 +185,19 @@ than a lazy one.
 
 **The split does not follow the existing names.** `alexandrasBlue` is doing both jobs today.
 It is the `diceBoxColor` and `diePenColor` that depict the case and its lid, and it is also
-the colour of headings such as "Use a Stickeys Kit" in `ChooseBackupTargetView`. As a
+the color of headings such as "Use a Stickeys Kit" in `ChooseBackupTargetView`. As a
 depiction it should hold still in dark mode; as heading text it cannot, because a mid blue on
 a dark background is unreadable. So the work is not renaming entries, it is deciding at each
-use site which of the two a colour is being asked to be.
+use site which of the two a color is being asked to be.
 
-**Which means the dark appearance has to be chosen around the fixed colours, not the other
+**Which means the dark appearance has to be chosen around the fixed colors, not the other
 way round.** That is the reverse of how this usually goes, and the numbers already rule out
 the obvious answer. The DiceKey is itself a dark navy object: `diceBox` is rgb(10, 12, 112),
 `diceBoxDieSlot` rgb(4, 2, 64), `funnelBackground` rgb(5, 3, 55). The dark palette already
 sitting in `PrivacyCoverView` is navy rgb(22, 28, 72) and midnight rgb(10, 12, 34). The box
 and midnight share their red and green exactly and differ only in blue; the die slots land on
 top of navy. A navy dark mode would dissolve the DiceKey into its own background, so the
-appearance probably has to be neutral, dark grey rather than dark blue, precisely so that a
+appearance probably has to be neutral, dark gray rather than dark blue, precisely so that a
 navy object still reads as an object.
 
 The other half of the same problem is at the light end. `alexandrasBlue` is rgb(85, 118, 197),
@@ -211,8 +211,8 @@ replaces the inline literals. Dark mode then becomes filling in a second column 
 interface half, and a screen that looks wrong later is one wrong entry rather than a hunt
 through fourteen files.
 
-Every screen still has to be looked at in both appearances, because a theme makes colours
-consistent without making contrast correct, and the depiction colours stay put while
+Every screen still has to be looked at in both appearances, because a theme makes colors
+consistent without making contrast correct, and the depiction colors stay put while
 everything behind them moves.
 
 ## The QR code sheet
@@ -301,7 +301,7 @@ done for the iPad carries over.
   dropping Pillow and scripts/requirements.txt. Both run rarely and their output is committed.
 - Two `VERIFY` comments remain in the scanner (`OCR.swift` on unstable sort ties,
   `DiceKeyReader.swift` on the four-second error-correction budget). Both describe
-  faithfully ported upstream behaviour and need a key with a persistent bit error to
+  faithfully ported upstream behavior and need a key with a persistent bit error to
   exercise, not a code change.
 
 # Ideas
@@ -409,7 +409,7 @@ field, so the only route to it is typing raw JSON.
 is the flagship, has no reference to Argon2 at all, and neither does the Android app. The
 upstream iOS app has exactly one, a `Codable` enum mirroring the JSON format with no control
 that sets it. This port dropped even that. So the feature appears to be a library capability
-the apps modelled and never surfaced, usable only by someone who read the library's own
+the apps modeled and never surfaced, usable only by someone who read the library's own
 documentation.
 
 **What keeping it costs.** It is the sole reason `recipe.cpp` reaches past libsodium's

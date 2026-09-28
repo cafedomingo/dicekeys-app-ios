@@ -47,7 +47,7 @@ struct RectangleDetected: Sendable {
         pointPolygonTest(points, point) >= 0
     }
 
-    /// A cheap overlap test with no false positives: one centre lies inside the other rectangle.
+    /// A cheap overlap test with no false positives: one center lies inside the other rectangle.
     func overlaps(_ other: RectangleDetected) -> Bool {
         other.contains(center) || contains(other.center)
     }
@@ -140,7 +140,7 @@ func isRectangleShapedLikeUndoverline(_ rect: RectangleDetected) -> Bool {
     return shortToLongRatio >= minWidthOverLength && shortToLongRatio <= maxWidthOverLength
 }
 
-/// `findTighestModalAreaOfRects`: the area at the centre of the tightest cluster of
+/// `findTighestModalAreaOfRects`: the area at the center of the tightest cluster of
 /// `numberInMode` areas (25 undoverlines of one DiceKey have near-identical areas).
 func findTighestModalAreaOfRects(_ rects: [RectangleDetected], numberInMode: Int = 35) -> Float {
     let halfModeSize = max(0, min(rects.count / 2 - 1, numberInMode / 2))
@@ -148,9 +148,9 @@ func findTighestModalAreaOfRects(_ rects: [RectangleDetected], numberInMode: Int
     areas.sort()
     var tightestModeRange = Float.greatestFiniteMagnitude
     var areaAtTightestMode = Float.nan
-    // The last centre whose window fits is count - 1 - halfModeSize. The reference C++
-    // subtracts (halfModeSize + 2), which skips the last two centres and, for 26 to 36
-    // candidates, every centre, returning NaN.
+    // The last center whose window fits is count - 1 - halfModeSize. The reference C++
+    // subtracts (halfModeSize + 2), which skips the last two centers and, for 26 to 36
+    // candidates, every center, returning NaN.
     let endIndex = areas.count - halfModeSize
     var i = halfModeSize
     while i < endIndex {
@@ -210,7 +210,7 @@ struct UnderlinesAndOverlines: Sendable {
 }
 
 /// `findReadableUndoverlines`: reads every candidate rectangle and keeps the ones whose
-/// 11 bits decode, sorted by the y of the face centre they imply.
+/// 11 bits decode, sorted by the y of the face center they imply.
 func findReadableUndoverlines(_ gray: GrayImage) -> UnderlinesAndOverlines {
     var underlines: [Undoverline] = []
     var overlines: [Undoverline] = []

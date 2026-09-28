@@ -28,13 +28,13 @@ frameworks, but the port uses none: it compiles and runs with the Linux Swift 6.
 2. **The Swift port** was then run on Linux over the same RGBA frames (decoded by OpenCV, as
    the reference was). Result on all 23 photos: identical human-readable read, `complete`
    and `totalError`; every undoverline code, orientation and first OCR choice identical;
-   endpoints within 6.4 px and centres within 1.9 px of the reference (the tie-break effect).
+   endpoints within 6.4 px and centers within 1.9 px of the reference (the tie-break effect).
    One second-choice OCR character differs on five faces.
 
 Speed (x86 VM, `-O`): 250 ms for a 1768x1772 frame, 30-40 ms for a 550x550 one; a 1080x1080
 frame extrapolates to ~95 ms on that VM. Measured on an Apple M2 with Xcode 27.0
 (`SCANNER_BENCHMARK=1 swift test -c release --filter ScannerBenchmark`, corpus photo scaled
-to the app's 1080x1080 centred square, median of 11 runs): **49 ms at `-O`, 5.8 s at
+to the app's 1080x1080 centered square, median of 11 runs): **49 ms at `-O`, 5.8 s at
 `-Onone`** as first ported. Because of the second number `Package.swift` compiles
 `ReadDiceKey` with `-O` in Debug too; before that a Debug run from Xcode could not scan.
 
@@ -80,11 +80,11 @@ land on performance cores.
 | Perimeter >= 50 filter, minAreaRect, contourArea | `findRectangles`, `RectangleDetected` | `find-rectangles.cpp` lines 94-100, `graphics/rectangle.h` |
 | Shape filter (width/length within 1.5x of 0.177), modal area (35-wide mode, 25% band), modal angle, overlap removal with penalty | `findCandidateUndoverlines`, `findTighestModalAreaOfRects`, `removeOverlappingRectangles` | `find-undoverlines.cpp` lines 20-108, `find-rectangles.cpp` lines 10-44 |
 | Rectangle to line: integer corners, 31 samples, bimodal threshold (4/4), 3% extension, trim to dark pixels | `undoverlineRectToLine`, `RRectCorners`, `samplePoint*`, `bimodalThreshold` | `find-undoverlines.cpp` lines 111-198, `graphics/sample-point.h`, `utilities/statistics.h` |
-| 11 dot samples, bimodal threshold (4 black/4 white), bits, 11-bit decode, face code lookup, inferred face centre and opposite line | `readUndoverline`, `Undoverline.init`, `decodeUndoverline11Bits`, `DiceKeyFaceSpecification` | `find-undoverlines.cpp` lines 200-217, `undoverline.cpp`, `decode-die.cpp`, `dicekey-face-specification.cpp` |
-| Sort by inferred centre y; pair underlines with overlines within a quarter face | `findReadableUndoverlines`, `findFacesAndStrayUndoverlines` | `find-undoverlines.cpp` lines 219-256, `find-faces.cpp` |
+| 11 dot samples, bimodal threshold (4 black/4 white), bits, 11-bit decode, face code lookup, inferred face center and opposite line | `readUndoverline`, `Undoverline.init`, `decodeUndoverline11Bits`, `DiceKeyFaceSpecification` | `find-undoverlines.cpp` lines 200-217, `undoverline.cpp`, `decode-die.cpp`, `dicekey-face-specification.cpp` |
+| Sort by inferred center y; pair underlines with overlines within a quarter face | `findReadableUndoverlines`, `findFacesAndStrayUndoverlines` | `find-undoverlines.cpp` lines 219-256, `find-faces.cpp` |
 | Grid model: a face with 4 others in its row and column (within 1.0 face width, see below), even spacing (5% or 1/5 of the perpendicular step) | `calculateDiceKeyGrid`, `GridProximity`, `findAndValidateMeanDifference` | `assemble-dicekey.cpp` lines 90-200, `graphics/geometry.h`, `statistics.h` |
 | Place faces and strays into the 25 slots (within 0.25 of a face), read the opposite line of a stray where it should be | `orderFacesAndInferMissingUndoverlines`, `DiceKeyGridModel.inferFaceIndexFromCenterPoint` | `assemble-dicekey.cpp` lines 202-271 |
-| Per face: threshold = mean of the two lines' thresholds, rotate/crop text region (warpAffine), binary threshold, split at the centre gap, template OCR | `readFaces`, `readCharactersOnFace`, `GrayImage.copyRotatedRectangle`, `findClosestMatchingCharacter` | `read-faces.cpp`, `read-face-characters.cpp`, `graphics/rotate.h`, `simple-ocr.cpp` |
+| Per face: threshold = mean of the two lines' thresholds, rotate/crop text region (warpAffine), binary threshold, split at the center gap, template OCR | `readFaces`, `readCharactersOnFace`, `GrayImage.copyRotatedRectangle`, `findClosestMatchingCharacter` | `read-faces.cpp`, `read-face-characters.cpp`, `graphics/rotate.h`, `simple-ocr.cpp` |
 | Orientation = round((faceAngle - gridAngle) / 90 degrees) mod 4 | `readFaces` | `read-faces.cpp` lines 54-62 |
 | Face error (0 / hamming distance / 2 / 8 / 255), majority letter and digit | `FaceRead.error()`, `letter`, `digit` | `face-read.cpp` |
 | Merge with the previous frame (potential match in one of four rotations, keep the lower-error face) | `DiceKeyRead.mergePrevious`, `isPotentialMatch`, `rotate` | `lib-dicekey/dicekey.hpp` |
@@ -103,7 +103,7 @@ from zero, where the code calls `round` explicitly).
 
 Suzuki and Abe border following, written directly (`Contours.swift`), not Vision.
 `VNDetectContoursRequest` applies its own contrast/blur preprocessing, simplifies the
-polygons and returns normalised coordinates, so its rectangles would not match the C++
+polygons and returns normalized coordinates, so its rectangles would not match the C++
 scanner's and nothing downstream (modal area, overlap removal, integer corners) could be
 compared against the reference. The tracer reproduces `cv::findContours(RETR_LIST,
 CHAIN_APPROX_SIMPLE)` exactly on the corpus: same borders, same point sequences (including
@@ -125,10 +125,10 @@ across the 13 binarisations of a frame.
   (a box rotated 90 degrees with width/height swapped is the same box, but some ties are
   different boxes of equal area). This changes which of several overlapping candidate
   rectangles wins and moves the fitted line by a few pixels; decoded bits, codes and OCR
-  were unaffected on the corpus. The `minAreaRect` angle is normalised to [0, 90) as OpenCV
+  were unaffected on the corpus. The `minAreaRect` angle is normalized to [0, 90) as OpenCV
   4.5.1+ does; the scanner only uses angles modulo 90 or through `points()`.
 * **`FaceRead.error()` guards `ocr...[1]`** (the C++ indexes it unconditionally; strings are
-  always two characters when non-empty, so behaviour is the same).
+  always two characters when non-empty, so behavior is the same).
 * **`writeFaceCharacters` clips every pixel.** The C++ bounds check used `||` and could write
   outside the buffer.
 * **Thick overlay lines** use a square brush; OpenCV's thick `LINE_8` polylines have slightly
@@ -137,13 +137,13 @@ across the 13 binarisations of a frame.
   and 11 samples) it returns 0 rather than throwing; the C ABI shim swallowed the exception
   anyway.
 * **`getImageOfFace` / `FaceRead::imageData` is not ported**: the C ABI never exposed the
-  colour crops of error faces, and the app never used them.
+  color crops of error faces, and the app never used them.
 * **`DiceKeyScanner.reader` is internal** (not private) so tests can inspect the pipeline.
 * **Non-finite arithmetic never traps.** Where the C++ would have converted NaN/inf to `int`
-  (undefined behaviour), the Swift maps it to 0 or treats the face as unreadable
+  (undefined behavior), the Swift maps it to 0 or treats the face as unreadable
   (`cvRound`, `cRoundToInt`, `readCharactersOnFace`, `inferFaceIndexFromCenterPoint`).
-* **`findTighestModalAreaOfRects` searches every centre.** The C++ loop bound
-  (`count - (halfModeSize + 2)`) skipped the last two centres, and for 26, 28, ... 36
+* **`findTighestModalAreaOfRects` searches every center.** The C++ loop bound
+  (`count - (halfModeSize + 2)`) skipped the last two centers, and for 26, 28, ... 36
   candidates it skipped all of them and returned NaN, which then filtered out every
   undoverline in the frame. The corpus and reference comparison are unchanged by the fix.
 
@@ -155,7 +155,7 @@ across the 13 binarisations of a frame.
 * `orderFacesAndInferMissingUndoverlines` passes its `maxMmFromRowOrColumnLine = 1.0` into
   `calculateDiceKeyGrid` as a *fraction of a face width*, so the row/column tolerance is a
   whole face width rather than the 0.1 default. Kept.
-* Faces with neither line keep centre (0, 0): the C++ constructs a centre-only subclass but
+* Faces with neither line keep center (0, 0): the C++ constructs a center-only subclass but
   slices it when storing it in `vector<FaceUndoverlines>`. Kept (the overlay draws that
   box at the origin, as before).
 * `inferredSizeInPixels` halves only the overline length (C++ operator precedence). Kept;
@@ -175,7 +175,7 @@ across the 13 binarisations of a frame.
   attached. If it were ever over budget, the profile is dominated by the 13 contour passes
   and Canny (`GrayImage.canny5`, `findContours`); the tracer's label plane and the Sobel
   planes are the memory-bound loops.
-* `ReferenceScannerComparisonTests` tolerances (10 px endpoints, 4 px centres) were set from
+* `ReferenceScannerComparisonTests` tolerances (10 px endpoints, 4 px centers) were set from
   frames decoded by OpenCV's libjpeg; ImageIO decodes the corpus JPEGs slightly differently,
   which may move a tie-break or two. A failure there that is *only* an endpoint distance
   with identical codes, orientation and OCR is that effect, not a port bug.
@@ -184,7 +184,7 @@ across the 13 binarisations of a frame.
 
 * `ScannerCorpusTests` (acceptance): unchanged.
 * `ReferenceScannerComparisonTests` (new): per face, compares undoverline codes, presence,
-  endpoints, centre, orientation and first OCR characters against
+  endpoints, center, orientation and first OCR characters against
   `reference-cpp-scanner.json`, and names the face and field that diverged.
 * `DiceKeyScannerTests` (smoke): unchanged.
 * `ModalAreaTests` (new): the modal-area search returns an area for every candidate count.
