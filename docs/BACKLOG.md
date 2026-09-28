@@ -236,6 +236,22 @@ content inside a secure text field's layer, which genuinely blocks screenshots, 
 snapshots, but is undocumented, can break with any iOS release, and would also stop the user
 photographing a derived value to move it somewhere.
 
+## Type only the dice the scanner cannot read
+
+**Not decided.** A die whose underline or overline is damaged can never be scanned, because
+a face is read only when both lines agree, and today that means typing in the whole key.
+Scanning what it can and asking only for the rest would save typing 24 dice to fix one.
+
+**Why it looks cheap.** The scanner knows which slots it has read and never guesses at the
+others, and manual entry already holds a key of partially entered faces
+(`EditableDiceKeyState`, `PartialFace`). Handing the scanned faces over would leave the user
+only the gaps.
+
+**What to settle first.** A typed face has no second line to check it against, so the screen
+should make plain which dice were typed. And scanned rotations are relative to the top of the
+key as the camera saw it, so the partial key has to be shown that way up for typed rotations
+to agree with it.
+
 ## A password AutoFill provider
 
 **Not decided.** Today a derived password has to be copied by hand. iOS has a first class

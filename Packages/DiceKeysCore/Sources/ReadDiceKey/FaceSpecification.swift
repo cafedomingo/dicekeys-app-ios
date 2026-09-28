@@ -184,6 +184,8 @@ enum DiceKeyFaceSpecification {
 }
 
 /// The layout of a face, in fractions of its edge. An undoverline is exactly one edge long.
+/// These are the dimensions the scanner needs; the whole printed layout is in the app's
+/// generated DiceKeys/Model/DiceKey/FaceSpecification.swift.
 enum FaceDimensions {
     /// An undoverline's thickness over its length.
     static let undoverlineThickness: Float = 0.177419
