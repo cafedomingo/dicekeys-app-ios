@@ -7,17 +7,19 @@ runs:
       uses: actions/cache@v6
       with:
         path: ${{ runner.temp }}/build-tools
-        key: build-tools-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('BuildTools/Package.resolved') }}
+        key: build-tools-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('BuildTools/Package.resolved') }}
     # XcodeGen builds from source (about a minute); SwiftLint is a prebuilt binary target.
-    # xcodegen reads its setting presets from the resource bundle beside the executable.
+    # Without its setting presets xcodegen still succeeds but leaves out every default build
+    # setting; it finds them at ../share/xcodegen/SettingPresets, the layout of its releases.
     - if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         set -euo pipefail
-        dest="$RUNNER_TEMP/build-tools" && mkdir -p "$dest"
+        dest="$RUNNER_TEMP/build-tools" && mkdir -p "$dest/bin" "$dest/share/xcodegen"
         swift build --package-path BuildTools -c release --product xcodegen
         bin=$(swift build --package-path BuildTools -c release --show-bin-path)
-        cp -R "$bin/xcodegen" "$bin/XcodeGen_XcodeGenKit.bundle" "$dest/"
-        cp BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos/swiftlint "$dest/"
+        cp "$bin/xcodegen" "$dest/bin/"
+        cp -R BuildTools/.build/checkouts/XcodeGen/SettingPresets "$dest/share/xcodegen/"
+        cp BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos/swiftlint "$dest/bin/"
     - shell: bash
-      run: echo "$RUNNER_TEMP/build-tools" >> "$GITHUB_PATH"
+      run: echo "$RUNNER_TEMP/build-tools/bin" >> "$GITHUB_PATH"
