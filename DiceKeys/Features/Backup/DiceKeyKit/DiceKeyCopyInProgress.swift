@@ -10,10 +10,9 @@ import SwiftUI
 struct DiceKeyCopyInProgress: View {
     let diceKey: DiceKey
     var atDieIndex: Int?
-    // var foregroundColor: Color?
 
-    var diceBoxColor: Color = Color.diceBox
-    var diePenColor: Color = Color.black
+    var diceBoxColor: Color = Color.Depiction.diceBox
+    var diePenColor: Color = Color.Depiction.diePen
 
     @State private var bounds: CGSize = .zero
     var faceSizeModel: DiceKeySizeModel { DiceKeySizeModel(bounds) }
@@ -57,7 +56,7 @@ struct DiceKeyCopyInProgress: View {
                 // Highlight-colored box
                 RoundedRectangle(cornerRadius: faceSize / 8)
                     .size(width: faceSize * 1.1, height: faceSize * 1.1)
-                    .fill(Color.highlighter)
+                    .fill(Color.Depiction.highlighter)
                     .offset(self.offset(forFaceIndex: atDieIndex))
                     .frame(width: faceSize * 1.1, height: faceSize * 1.1)
                 // Hand image
@@ -67,7 +66,6 @@ struct DiceKeyCopyInProgress: View {
                     .frame(width: faceSizeModel.width, height: faceSizeModel.height)
                     .offset(handImageOffsetToCenterOfDie)
                     .offset(self.offset(forFaceIndex: atDieIndex))
-                    // .mask(foregroundColor)
                 // Face being placed
                 DieView(face: diceKey.faces[atDieIndex], dieSize: faceSize, penColor: diePenColor, faceSurfaceColor: Color.clear)
                     .offset(self.offset(forFaceIndex: atDieIndex))

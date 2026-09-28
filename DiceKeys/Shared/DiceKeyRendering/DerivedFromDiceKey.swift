@@ -55,29 +55,28 @@ struct DerivedFromDiceKey<Content: View>: View {
 
     var arrowSize: CGFloat { min( funnelHeight, bottleneckWidth * 0.8 ) }
 
+    private var funnel: Funnel {
+        Funnel(topWidth: diceKeySize, bottomWidth: bottomWidth, bottleneckWidth: bottleneckWidth, paddingBottom: contentHeight, bottleneckFractionFromTop: bottleneckFractionFromTop)
+    }
+
     var body: some View {
         CalculateBounds(bounds: $bounds) {
             VStack(alignment: .center, spacing: 0) {
                 DiceKeyView(
                     diceKey: diceKey ?? DiceKey.createFromRandom(),
                     showLidTab: false,
-                    hideFaces: true,
-                    leaveSpaceForTab: false,
-                    diceBoxColor: Color.diceBox
+                    hideFaces: true
                 )
                 // Frame to size
                 .frame(width: diceKeySize, height: diceKeySize)
                 // Remove the part to hide
                 .frame(height: diceKeySize - verticalOverlap, alignment: .top).clipped()
                 ZStack(alignment: Alignment(horizontal: .center, vertical: .bottom)) {
-                    Funnel(topWidth: diceKeySize, bottomWidth: bottomWidth, bottleneckWidth: bottleneckWidth, paddingBottom: contentHeight, bottleneckFractionFromTop: bottleneckFractionFromTop)
-                        .fill(LinearGradient(gradient: Gradient(colors: [Color.diceBox, Color.funnelBackground]), startPoint: .top, endPoint: .bottom))
+                    funnel
+                        .fill(LinearGradient(gradient: Gradient(colors: [Color.Depiction.diceBox, Color.Depiction.funnelBottom]), startPoint: .top, endPoint: .bottom))
+                        .overlay(funnel.stroke(Color.Interface.objectEdge, lineWidth: 1))
                         .frame(width: width, height: totalFunnelHeight, alignment: .center)
-                    Funnel(topWidth: diceKeySize, bottomWidth: bottomWidth, bottleneckWidth: bottleneckWidth, paddingBottom: contentHeight, bottleneckFractionFromTop: bottleneckFractionFromTop)
-                        .stroke(lineWidth: 1)
-                        .foregroundStyle(Color.diceBox)
-                        .frame(width: width, height: totalFunnelHeight, alignment: .center)
-                    Image(systemName: "arrow.down").resizable().frame(width: arrowSize, height: arrowSize).foregroundStyle(.yellow)
+                    Image(systemName: "arrow.down").resizable().frame(width: arrowSize, height: arrowSize).foregroundStyle(Color.Depiction.funnelArrow)
                         .offset(
                             x: 0,
                             y: -contentHeight - funnelBottomPadding + (arrowSize - funnelHeight) / 2
@@ -85,7 +84,6 @@ struct DerivedFromDiceKey<Content: View>: View {
                     ChildSizeReader<Content>(size: $contentSize, content: content)
                         .frame(maxWidth: bounds.width > 0 ? bounds.width : CGFloat.infinity)
                         .offset(x: 0, y: -funnelBottomPadding )
-//                        Text("ContentHight: \(contentHeight), fh:\(totalFunnelHeight) height: \(totalHeight)").foregroundColor(.red).background(Color.black)
                 }.if(aspectRatio != nil) { $0.frame(height: funnelHeight + contentHeight) }
             }
     }.if(aspectRatio != nil) { $0.aspectRatio(aspectRatio, contentMode: .fit) }
@@ -98,13 +96,10 @@ struct DerivedFromDiceKey<Content: View>: View {
         DerivedFromDiceKey(diceKey: DiceKey.createFromRandom()) {
             Text("Something short").multilineTextAlignment(.center).padding(.horizontal, 5)
         }
-        .background(Color.green)
         Spacer()
         DerivedFromDiceKey(diceKey: DiceKey.createFromRandom()) {
             Text("some random words constitute your password and some more random words to be copied").multilineTextAlignment(.center).padding(.horizontal, 5)
         }
-        .background(Color.green)
         Spacer()
     }
-    .background(Color.yellow)
 }

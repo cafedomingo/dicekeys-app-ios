@@ -67,8 +67,8 @@ targets:
         excludes:
           - "**/.DS_Store"
           - "Resources/AppIcon.icon"
-      # Icon Composer package: the layered Liquid Glass icon (iOS/macOS 26+). The
-      # AppIcon.appiconset with the same name is the flat fallback for older tooling.
+      # Icon Composer package: the layered Liquid Glass icon, which Xcode compiles into every
+      # size and the light, dark and tinted appearances.
       - path: DiceKeys/Resources/AppIcon.icon
         type: file
         buildPhase: resources
@@ -107,3 +107,28 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).Tests-iOS
 
+
+  # Screenshots of every screen for visual review, run by scripts/screen-walk.sh. Kept out
+  # of the DiceKeys scheme so CI does not run it.
+  DiceKeysUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/DiceKeysUITests
+    dependencies:
+      - target: DiceKeys
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).UITests
+        TEST_TARGET_NAME: DiceKeys
+
+schemes:
+  DiceKeysScreenWalk:
+    build:
+      targets:
+        DiceKeys: all
+        DiceKeysUITests: [test]
+    test:
+      targets:
+        - DiceKeysUITests

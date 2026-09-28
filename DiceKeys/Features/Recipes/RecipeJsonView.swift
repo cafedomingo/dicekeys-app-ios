@@ -18,7 +18,7 @@ struct RecipeJsonView: View {
                 .foregroundStyle(.secondary)
         case .error(let errorString):
             monospaced(errorString)
-                .foregroundStyle(.red)
+                .foregroundStyle(Color.Interface.errorText)
         case .ready(let recipe):
             monospaced(recipe.recipe)
         }

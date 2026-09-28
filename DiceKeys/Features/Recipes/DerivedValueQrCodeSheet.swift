@@ -48,7 +48,7 @@ struct DerivedValueQrCodeSheet: View {
                 .interpolation(.none)
                 .scaledToFit()
                 .padding(8)
-                .background(Color.white)
+                .background(Color.Depiction.qrBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         } else {
             Text("This value cannot be encoded as a QR code.")

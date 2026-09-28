@@ -8,13 +8,14 @@ by color so Icon Composer can light them as Liquid Glass:
   frame.png   the box (body, hinge tabs, latch)      -> DiceKeys blue, glass
   dice.png    the 25 dice inside the box             -> white, glass, in front
 
-Colors are applied in icon.json (layer fills), so the layer PNGs are white silhouettes.
+Colors are applied in icon.json (layer fills), so the layer PNGs are white silhouettes. The
+box colors are read from Brand/iconFrame in DiceKeys/Resources/Colors.xcassets, so the icon
+and the app share one source.
 Light appearance: system light background, blue box, white dice (the original look).
 Dark appearance: system dark background, lighter blue box, white dice.
 
 Outputs
-  DiceKeys/Resources/AppIcon.icon/                                Icon Composer package
-  DiceKeys/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png        flat fallback
+  DiceKeys/Resources/AppIcon.icon/    Icon Composer package
 
 Run:  python3 scripts/generate-app-icon.py   (needs `pip install -r scripts/requirements.txt`)
 """
@@ -29,12 +30,45 @@ ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "scripts" / "app-icon-source" / "original-mark-1024.png"
 RESOURCES = ROOT / "DiceKeys" / "Resources"
 SIZE = 1024
-BLUE = (52, 65, 141)  # the mark's blue
-BLUE_DARK_MODE = (99, 116, 204)  # lighter so the box reads on a dark background
-WHITE = (255, 255, 255)
+ICON_FRAME = RESOURCES / "Colors.xcassets" / "Brand" / "iconFrame.colorset" / "Contents.json"
+DIE_FACE = RESOURCES / "Colors.xcassets" / "Depiction" / "dieFace.colorset" / "Contents.json"
+WHITE = (255, 255, 255)  # the layer silhouettes; icon.json supplies the real fills
 # The mark fills 144..893 x 64..959 of its 1024 canvas; scale it to sit inside the
 # icon's safe area with even margins.
 CONTENT_SCALE = 0.80
+
+
+def catalog_rgb(entry):
+    """(r, g, b) bytes from one color entry of an asset catalog color set.
+
+    Xcode writes a component as hex ("0x34"), a fraction ("0.204") or an 8-bit integer ("52"),
+    depending on the input method chosen in its color inspector.
+    """
+
+    def byte(v):
+        if v.startswith("0x"):
+            return int(v, 16)
+        if "." in v:
+            return round(float(v) * 255)
+        return int(v)
+
+    components = entry["color"]["components"]
+    return tuple(byte(components[k]) for k in ("red", "green", "blue"))
+
+
+def icon_frame_colors():
+    """The box color in light and dark, from Brand/iconFrame in the app's color catalog.
+
+    Dark is lighter so the box reads on a dark background.
+    """
+    colors = json.loads(ICON_FRAME.read_text())["colors"]
+    light = next(c for c in colors if "appearances" not in c)
+    dark = next(c for c in colors if any(a["value"] == "dark" for a in c.get("appearances", [])))
+    return catalog_rgb(light), catalog_rgb(dark)
+
+
+BLUE, BLUE_DARK_MODE = icon_frame_colors()
+DICE = catalog_rgb(json.loads(DIE_FACE.read_text())["colors"][0])
 
 
 def load_mark():
@@ -124,7 +158,7 @@ def write_icon_package(frame_alpha, dice_alpha):
                         "name": "dice",
                         "image-name": "dice.png",
                         "glass": True,
-                        "fill": {"solid": color_string(WHITE)},
+                        "fill": {"solid": color_string(DICE)},
                     }
                 ],
                 "lighting": "individual",
@@ -156,30 +190,11 @@ def write_icon_package(frame_alpha, dice_alpha):
     (pkg / "icon.json").write_text(json.dumps(document, indent=2, sort_keys=True) + "\n")
 
 
-def flat_icon(frame_alpha, dice_alpha):
-    """The original look, for tooling that cannot render the layered document."""
-    out = Image.new("RGBA", (SIZE, SIZE), WHITE + (255,))
-    out = Image.alpha_composite(out, silhouette(frame_alpha, BLUE))
-    return Image.alpha_composite(out, silhouette(dice_alpha, WHITE))
-
-
-def write_appiconset(name, image):
-    folder = RESOURCES / "Assets.xcassets" / name
-    for old in folder.glob("*.png"):
-        old.unlink()
-    image.save(folder / "AppIcon-1024.png")
-    entry = {"filename": "AppIcon-1024.png", "idiom": "universal", "platform": "ios", "size": "1024x1024"}
-    (folder / "Contents.json").write_text(
-        json.dumps({"images": [entry], "info": {"author": "xcode", "version": 1}}, indent=2) + "\n"
-    )
-
-
 def main():
     frame_alpha, dice_alpha = split_layers(load_mark())
     frame_alpha, dice_alpha = fit_to_canvas(frame_alpha), fit_to_canvas(dice_alpha)
     write_icon_package(frame_alpha, dice_alpha)
-    write_appiconset("AppIcon.appiconset", flat_icon(frame_alpha, dice_alpha))
-    print("wrote AppIcon.icon and AppIcon.appiconset")
+    print("wrote AppIcon.icon")
 
 
 if __name__ == "__main__":

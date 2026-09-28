@@ -37,8 +37,8 @@ struct ValidateBackupView: View {
         invalidIndexes.count > 5
     }
 
-    private var scanningBackupImageName: String {
-        return target == .Stickeys ? "Scanning a Stickey" : "Scanning a DiceKey PNG"
+    private var scanningBackupImage: ImageResource {
+        target == .Stickeys ? .scanningAStickey : .scanningADiceKey
     }
 
     var body: some View {
@@ -85,11 +85,11 @@ struct ValidateBackupView: View {
                     .minimumScaleFactor(0.01)
                     .scaledToFit()
                     .lineLimit(1)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.Interface.successText)
             } else if totalMismatch {
-                Text("That key doesn't look at all like the key you scanned before.").font(.title).foregroundStyle(.red)
+                Text("That key doesn't look at all like the key you scanned before.").font(.title).foregroundStyle(Color.Interface.errorText)
             } else {
-                Text("You incorrectly copied the highlighted \(invalidIndexes.count == 1 ? "die" : "dice"). You can fix the copy to match the original, or change the original to match the copy.").font(.title).foregroundStyle(.red)
+                Text("You incorrectly copied the highlighted \(invalidIndexes.count == 1 ? "die" : "dice"). You can fix the copy to match the original, or change the original to match the copy.").font(.title).foregroundStyle(Color.Interface.errorText)
             }
             Spacer()
         } else {
@@ -99,7 +99,7 @@ struct ValidateBackupView: View {
                     PrimaryButton("Scan DiceKey") { scanningOriginal = true }.hidden()
                 }
                 VStack {
-                    Image(scanningBackupImageName)
+                    Image(scanningBackupImage)
                         .resizable().scaledToFit()
                         .offset(x: 0, y: -50)
                     PrimaryButton("Scan copy to validate") { scanningCopy = true }

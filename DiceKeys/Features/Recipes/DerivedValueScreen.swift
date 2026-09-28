@@ -48,7 +48,7 @@ struct DerivedValueScreen: View {
                 )
             } else if let derivationError {
                 Text(derivationError)
-                    .foregroundStyle(.red)
+                    .foregroundStyle(Color.Interface.errorText)
                     .padding()
             }
         }

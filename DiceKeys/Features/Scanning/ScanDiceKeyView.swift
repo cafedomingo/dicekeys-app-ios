@@ -97,8 +97,9 @@ struct ScanDiceKeyView: View {
             .frame(width: size.width, height: size.height)
         }
         .aspectRatio(1, contentMode: .fit)
-        .background(Color.black)
+        .background(Color.Camera.backdrop)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.Interface.objectEdge, lineWidth: 1))
         .padding(.vertical, 5)
     }
 }

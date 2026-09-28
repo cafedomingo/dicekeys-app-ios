@@ -30,7 +30,7 @@ struct HomeView: View {
                     router.push(.loadDiceKey)
                 } label: {
                     VStack(alignment: .center) {
-                        Image("Scanning a DiceKey PNG")
+                        Image(.scanningADiceKey)
                             .resizable().scaledToFit()
                         Text("Load your DiceKey").font(.title2)
                     }

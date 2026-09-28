@@ -3,6 +3,16 @@
     {
       "filename" : "Scanning a DiceKey.svg",
       "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Scanning a DiceKey Dark.svg",
+      "idiom" : "universal"
     }
   ],
   "info" : {

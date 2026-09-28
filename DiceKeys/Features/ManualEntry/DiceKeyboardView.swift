@@ -18,7 +18,7 @@ private struct KeyboardKey<Content: View>: View {
             label()
                 .frame(width: size.width * 0.95, height: size.height * 0.95)
                 .clipped()
-                .background(withBackground ? Color.gray : Color.clear)
+                .background(withBackground ? Color.Interface.keyBackground : Color.clear)
                 .padding(.horizontal, size.width * 0.025)
                 .padding(.vertical, size.height * 0.025)
         }
@@ -39,7 +39,7 @@ private struct CharacterKey: View {
                 .font(.system(size: 256, design: .monospaced))
                 .padding(.top, 2)
                 .padding(.bottom, 2)
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .scaledToFit()
                 .minimumScaleFactor(0.01)
                 .lineLimit(1)

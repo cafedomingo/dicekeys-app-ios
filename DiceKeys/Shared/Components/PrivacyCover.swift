@@ -9,22 +9,13 @@ import SwiftUI
 /// mark. Opaque on purpose: a blur of the screen underneath can still show the shape of
 /// a password or QR code in the snapshot.
 struct PrivacyCoverView: View {
-    @Environment(\.colorScheme) private var colorScheme
-
-    private static let iconBlue = Color(red: 52 / 255, green: 65 / 255, blue: 141 / 255)
-    private static let iconBlueLight = Color(red: 99 / 255, green: 116 / 255, blue: 204 / 255)
-    private static let navy = Color(red: 22 / 255, green: 28 / 255, blue: 72 / 255)
-    private static let midnight = Color(red: 10 / 255, green: 12 / 255, blue: 34 / 255)
-
-    private var colors: [Color] {
-        colorScheme == .dark
-            ? [Self.iconBlue, Self.navy, Self.midnight,
-               Self.navy, Self.iconBlue, Self.navy,
-               Self.midnight, Self.navy, Self.iconBlue]
-            : [Self.iconBlueLight, Self.iconBlue, Self.navy,
-               Self.iconBlue, Self.iconBlueLight, Self.iconBlue,
-               Self.navy, Self.iconBlue, Self.iconBlueLight]
-    }
+    /// A diagonal of highlight through the body, shadow in the other two corners. Each role
+    /// has its own value per appearance in the catalog.
+    private static let meshColors: [Color] = [
+        Color.Brand.coverHighlight, Color.Brand.coverBody, Color.Brand.coverShadow,
+        Color.Brand.coverBody, Color.Brand.coverHighlight, Color.Brand.coverBody,
+        Color.Brand.coverShadow, Color.Brand.coverBody, Color.Brand.coverHighlight
+    ]
 
     var body: some View {
         ZStack {
@@ -36,7 +27,7 @@ struct PrivacyCoverView: View {
                     [0, 0.5], [0.6, 0.4], [1, 0.5],
                     [0, 1], [0.5, 1], [1, 1]
                 ],
-                colors: colors
+                colors: Self.meshColors
             )
             .ignoresSafeArea()
 
@@ -45,12 +36,12 @@ struct PrivacyCoverView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 64, height: 64)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.Brand.coverForeground)
                     .padding(28)
                     .glassEffect(.regular, in: .rect(cornerRadius: 32))
                 Text("DiceKeys")
                     .font(.title2.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.Brand.coverForeground)
             }
         }
         .accessibilityHidden(true)
