@@ -102,11 +102,10 @@ public struct DiceKeyScanner: Sendable {
 /// its grid been read that way) since the known faces were read: they are tried in all four
 /// turns, and the turn that agrees with this frame on the most faces and disagrees on none
 /// is kept. When every turn disagrees somewhere, the camera is on a different key and reading
-/// starts over. Two faces in common are needed to call it the same key; with fewer there is
-/// no telling, and whichever read has more faces stands, so one key is never mixed into
-/// another. Every frame that finds a grid has found both lines of a whole row and column of
-/// dice, and two such crosses share at least two dice in any turn, so frames of the same key
-/// almost always read faces in common.
+/// starts over. Five faces in common are needed to call it the same key, because two keys can
+/// share a face or two by chance. With fewer, whichever read has more faces stands, so one key
+/// is not mixed into another on a coincidence. Successive frames of a key in view read most of
+/// its faces, so they share far more than five.
 func merge(known: [ScannedFace?], read: [ScannedFace?]) -> [ScannedFace?]? {
     let knownCount = known.compactMap { $0 }.count
     guard knownCount > 0 else { return read }
@@ -120,7 +119,7 @@ func merge(known: [ScannedFace?], read: [ScannedFace?]) -> [ScannedFace?]? {
         turned = turnedClockwise(turned)
     }
     guard let best else { return read }
-    guard best.agreements >= 2 else {
+    guard best.agreements >= 5 else {
         return read.compactMap { $0 }.count > knownCount ? read : nil
     }
     return zip(best.turned, read).map { $1 ?? $0 }

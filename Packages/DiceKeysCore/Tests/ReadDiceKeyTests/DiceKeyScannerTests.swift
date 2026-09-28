@@ -84,6 +84,22 @@ struct DiceKeyScannerTests {
         #expect(scanner.diceKey == other.faces)
     }
 
+    @Test("a second key that shares two faces with the first is not mixed into it")
+    func twoSharedFacesDoNotMerge() {
+        // The top rows of the first key are read.
+        var scanner = DiceKeyScanner()
+        scanner.scan(key.image(side: 1080, unreadable: Set(14..<25)))
+        // The same dice turned over in place, except the first two, so every letter stays in
+        // its slot; only those two and the bottom rows are read.
+        var other = key.withOtherDigits
+        for index in [0, 1] {
+            other = other.replacingFace(at: index, with: key.faces[index])
+        }
+        scanner.scan(other.image(side: 1080, unreadable: Set(2..<14)))
+        #expect(scanner.diceKey == nil)
+        #expect(scanner.faces[20] == nil)
+    }
+
     @Test("a frame that cannot be lined up with what is known shows only what it read")
     func unalignedFrameShowsItsOwnReads() {
         var scanner = DiceKeyScanner()
