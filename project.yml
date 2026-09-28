@@ -107,3 +107,28 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).Tests-iOS
 
+
+  # Screenshots of every screen for visual review, run by scripts/screen-walk.sh. Kept out
+  # of the DiceKeys scheme so CI does not run it.
+  DiceKeysUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/DiceKeysUITests
+    dependencies:
+      - target: DiceKeys
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).UITests
+        TEST_TARGET_NAME: DiceKeys
+
+schemes:
+  DiceKeysScreenWalk:
+    build:
+      targets:
+        DiceKeys: all
+        DiceKeysUITests: [test]
+    test:
+      targets:
+        - DiceKeysUITests
