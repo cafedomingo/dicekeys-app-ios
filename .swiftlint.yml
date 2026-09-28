@@ -41,3 +41,27 @@ unused_import:
   allowed_transitive_imports:
     - module: Foundation
       allowed_transitive_imports: [CoreFoundation, CoreGraphics, Darwin, Dispatch, ObjectiveC]
+# Colors come from Colors.xcassets (see docs/ARCHITECTURE.md, "Colors"). The package in
+# Packages/ is outside these rules: it cannot see the app's catalog, and its scanner overlay
+# writes bytes, not UI.
+custom_rules:
+  color_literal:
+    name: "Color literal"
+    message: "Use a color from Colors.xcassets, or a system style such as .primary or .tint."
+    included: "^(.*/)?(DiceKeys|Tests/DiceKeys\\w*)/.*\\.swift$"
+    excluded: "/Packages/"
+    excluded_match_kinds: [comment, doccomment, string]
+    # Color initializers with components (including the color-space and .init forms, typed
+    # or inferred), the named hues on each color type, and a bare hue wherever a color value
+    # can appear. Font weights share the name .black, so a bare .black after weight: or
+    # fontWeight( is allowed.
+    regex: '(\b(Color|UIColor|CGColor|CIColor|NSColor)(\.init)?|(?<![\w)\]])\.init)\(\s*(\.\w+\s*,\s*)?(red|white|hue|gray|srgbRed|displayP3Red|cgColor)\s*:|#colorLiteral|(\b(Color|UIColor|CGColor|NSColor)|(?<![wW]eight)(:|=|\?|\(|\[|,|\breturn)\s*)\.(white|black|gray|darkGray|lightGray|red|green|blue|yellow|orange|purple|pink|cyan|mint|teal|indigo|brown|magenta)\b'
+    severity: error
+  system_color:
+    name: "System color in the app"
+    message: "Reference the system color from an Interface color set in Colors.xcassets."
+    included: "^(.*/)?DiceKeys/.*\\.swift$"
+    excluded: "/Packages/"
+    excluded_match_kinds: [comment, doccomment, string]
+    regex: '(\b(Color|UIColor)|\bColor\(\s*(uiColor:\s*)?)\.(system|secondarySystem|tertiarySystem|quaternarySystem|label|secondaryLabel|tertiaryLabel|quaternaryLabel|placeholderText|separator|opaqueSeparator|link|lightText|darkText)\w*'
+    severity: error
