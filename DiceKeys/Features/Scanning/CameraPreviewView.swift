@@ -13,7 +13,6 @@ import AVFoundation
 struct CameraPreviewView {
     let camera: AVCaptureDevice?
     let size: CGSize
-    let processor: DiceKeyFrameProcessor
     let onFrame: @MainActor @Sendable (ScannedFrame) -> Void
     /// Called when the session cannot start, so the screen can say so rather than
     /// showing a black rectangle with no explanation.
@@ -26,8 +25,8 @@ struct CameraPreviewView {
         private var startTask: Task<Void, Never>?
         var onFailure: (@MainActor @Sendable (any Error) -> Void)?
 
-        init(processor: DiceKeyFrameProcessor, onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
-            session = CameraSession(processor: processor, onFrame: onFrame)
+        init(onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
+            session = CameraSession(onFrame: onFrame)
         }
 
         func update(camera: AVCaptureDevice?, in view: UIView, size: CGSize) {
@@ -72,7 +71,7 @@ struct CameraPreviewView {
 
     @MainActor
     func makeCoordinator() -> Coordinator {
-        let coordinator = Coordinator(processor: processor, onFrame: onFrame)
+        let coordinator = Coordinator(onFrame: onFrame)
         coordinator.onFailure = onFailure
         return coordinator
     }

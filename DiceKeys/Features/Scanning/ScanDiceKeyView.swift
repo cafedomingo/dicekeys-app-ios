@@ -16,7 +16,6 @@ struct ScanDiceKeyView: View {
     var onCancel: (() -> Void)?
 
     @State private var scanModel = DiceKeyScanModel()
-    @State private var processor = DiceKeyFrameProcessor()
     @State private var cameraAuthorized: Bool?
     @State private var selectedCameraID: String?
     @State private var cameraError: PresentableError?
@@ -81,7 +80,6 @@ struct ScanDiceKeyView: View {
                 CameraPreviewView(
                     camera: selectedCamera,
                     size: size,
-                    processor: processor,
                     onFrame: { [scanModel] frame in scanModel.apply(frame) },
                     onFailure: { error in
                         cameraError = PresentableError(title: "Camera Unavailable", error: error)

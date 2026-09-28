@@ -53,8 +53,7 @@ DiceKeys/
     Settings.swift
   Services/       things that talk to the OS
     Keychain/     DiceKeyKeychain (was EncryptedDiceKeyStore)
-    Camera/       CameraSession, CameraSampleBufferDelegate, DiceKeyFrameProcessor (actor),
-                  ActiveCameras
+    Camera/       CameraSession, CameraSampleBufferDelegate, ActiveCameras
   Features/       one folder per user-facing feature; views are thin over stores/models
     DiceKey/      DiceKeyMemoryStore, KnownDiceKeysStore, UnlockedDiceKeyState,
                   DiceKeyScreen, SaveDiceKeySheet, SavedDiceKeysView
@@ -93,8 +92,8 @@ Tests/DiceKeysUITests/  ScreenWalk, run by scripts/screen-walk.sh, not by CI
   `.presentationDetents([.medium, .large])`.
 - **Errors**: caught into a `PresentableError?` and shown with `.errorAlert(_:)`.
   `UnlockedDiceKeyState.lastError` is the store-side example.
-- **Async**: `async/await`, `Task`, one actor (`DiceKeyFrameProcessor`), `Mutex` for the
-  frame-drop flag. The only `DispatchQueue` is the serial queue AVFoundation requires.
+- **Async**: `async/await` and `Task`, and no actors of our own. The only `DispatchQueue`
+  is the serial queue AVFoundation requires, where camera frames are scanned.
 - **Liquid Glass**: primary CTAs `.buttonStyle(.glassProminent)`, secondary `.glass`
   (`PrimaryButton`/`SecondaryButton`, `StepFooterView`). Camera controls in one
   `GlassEffectContainer` with `.glassEffect(.regular.interactive())` + `.glassEffectID`

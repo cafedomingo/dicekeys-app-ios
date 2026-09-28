@@ -18,13 +18,14 @@ public struct GrayImage: Sendable {
         self.pixels = pixels
     }
 
-    /// The largest centered square of a camera frame's luma (brightness) plane. The camera
-    /// delivers bi-planar Y'CbCr, whose first plane already is the grayscale image, so this
-    /// is a copy of rows. Nil for frames in any other format.
+    /// The camera formats a frame can be read from: bi-planar Y'CbCr, whose first plane
+    /// already is the grayscale image.
+    public static let lumaPixelFormats = [kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
+
+    /// The largest centered square of a camera frame's luma (brightness) plane, a copy of
+    /// rows. Nil for frames in a format other than `lumaPixelFormats`.
     public init?(centeredSquareOf frame: CVPixelBuffer) {
-        let format = CVPixelBufferGetPixelFormatType(frame)
-        guard format == kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
-                || format == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange else { return nil }
+        guard Self.lumaPixelFormats.contains(CVPixelBufferGetPixelFormatType(frame)) else { return nil }
         CVPixelBufferLockBaseAddress(frame, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(frame, .readOnly) }
         guard let luma = CVPixelBufferGetBaseAddressOfPlane(frame, 0) else { return nil }

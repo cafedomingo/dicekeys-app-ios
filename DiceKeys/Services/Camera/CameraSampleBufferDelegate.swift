@@ -8,31 +8,45 @@
 import AVFoundation
 import ReadDiceKey
 
-/// The one `NSObject` subclass in the app: AVFoundation requires an
-/// `AVCaptureVideoDataOutputSampleBufferDelegate`, which must be an `NSObject`.
+/// The scanner's output for one camera frame.
+nonisolated struct ScannedFrame: Sendable {
+    /// The dice found in the frame, in frame pixels.
+    let dice: [DieInFrame]
+    let size: CGSize
+    /// All 25 faces, once every one has been read.
+    let diceKey: [ScannedFace]?
+}
+
+/// Scans each camera frame and hands the result to the main actor. The one `NSObject`
+/// subclass in the app: AVFoundation requires an `AVCaptureVideoDataOutputSampleBufferDelegate`,
+/// which must be an `NSObject`.
 ///
-/// `@unchecked Sendable` because AVFoundation calls `captureOutput` on the serial
-/// queue handed to `setSampleBufferDelegate`, while the session is configured
-/// from a background task. All of its state is either immutable or an actor.
+/// Frames are scanned where AVFoundation delivers them, on the serial queue handed to
+/// `setSampleBufferDelegate`. While a scan runs that queue is busy, and the output, which
+/// discards late frames, drops the frames that arrive meanwhile. `@unchecked Sendable`
+/// because the scanner is only ever touched on that queue.
 ///
 /// `nonisolated` so the delegate method is never main-actor-isolated even if the
 /// module is built with main-actor default isolation.
 nonisolated final class CameraSampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, @unchecked Sendable {
-    private let processor: DiceKeyFrameProcessor
+    private var scanner = DiceKeyScanner()
     private let onFrame: @MainActor @Sendable (ScannedFrame) -> Void
 
-    init(processor: DiceKeyFrameProcessor, onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
-        self.processor = processor
+    init(onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
         self.onFrame = onFrame
     }
 
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        // Skip the copy when the previous frame is still being scanned. The buffers arrive
-        // rotated by AVFoundation (see CameraSession.applyCaptureRotation), so the square
-        // is already the way the user sees it.
-        guard !processor.isBusy,
-              let imageBuffer = sampleBuffer.imageBuffer,
+        // The buffers arrive rotated by AVFoundation (see CameraSession.applyCaptureRotation),
+        // so the square is already the way the user sees it.
+        guard let imageBuffer = sampleBuffer.imageBuffer,
               let image = GrayImage(centeredSquareOf: imageBuffer) else { return }
-        processor.trySubmit(image, onResult: onFrame)
+        let frame = ScannedFrame(
+            dice: scanner.scan(image),
+            size: CGSize(width: image.width, height: image.height),
+            diceKey: scanner.diceKey
+        )
+        let onFrame = self.onFrame
+        Task { @MainActor in onFrame(frame) }
     }
 }

@@ -8,6 +8,7 @@
 
 import AVFoundation
 import Foundation
+import ReadDiceKey
 
 /// Owns the `AVCaptureSession` for scanning, its preview layer, and (on iOS)
 /// the `RotationCoordinator` that keeps the preview and the scanned frames
@@ -28,8 +29,8 @@ final class CameraSession {
     private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
     private var rotationObservations: [NSKeyValueObservation] = []
 
-    init(processor: DiceKeyFrameProcessor, onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
-        self.delegate = CameraSampleBufferDelegate(processor: processor, onFrame: onFrame)
+    init(onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
+        self.delegate = CameraSampleBufferDelegate(onFrame: onFrame)
     }
 
     /// Bumped by every `start` and `stop`; a `start` that finds it changed after an await
@@ -136,14 +137,12 @@ final class CameraSession {
 
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.alwaysDiscardsLateVideoFrames = true
-        // Bi-planar Y'CbCr, whose luma plane the scanner reads as it is.
-        let lumaFormats = [kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
-        if let format = lumaFormats.first(where: videoOutput.availableVideoPixelFormatTypes.contains) {
+        if let format = GrayImage.lumaPixelFormats.first(where: videoOutput.availableVideoPixelFormatTypes.contains) {
             videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
         }
         // The single DispatchQueue in the app: AVFoundation requires a serial queue
-        // for sample-buffer delivery.
-        videoOutput.setSampleBufferDelegate(delegate, queue: DispatchQueue(label: "com.dicekeys.sampleBuffers"))
+        // for sample-buffer delivery, and the frames are scanned on it while the user waits.
+        videoOutput.setSampleBufferDelegate(delegate, queue: DispatchQueue(label: "com.dicekeys.sampleBuffers", qos: .userInitiated))
         if session.canAddOutput(videoOutput) {
             session.addOutput(videoOutput)
         }
@@ -166,10 +165,9 @@ final class CameraSession {
         rotationCoordinator = coordinator
         // One angle drives both the preview and the frames. AVFoundation publishes two,
         // and its own documentation warns they differ "in certain combinations of device
-        // and interface orientations"; feeding the preview one and the frames the other
-        // is what left landscape scans a quarter turn out while portrait looked fine.
-        // Which angle is used matters far less than that both get the same one: the
-        // overlay is drawn in frame coordinates over the preview, so they have to agree.
+        // and interface orientations". Which angle is used matters far less than that both
+        // get the same one: the overlay is drawn in frame coordinates over the preview, so
+        // they have to agree.
         rotationObservations = [
             coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]) { [weak self] coordinator, _ in
                 let angle = coordinator.videoRotationAngleForHorizonLevelPreview
@@ -189,8 +187,6 @@ final class CameraSession {
     /// Rotates the frames by the same angle as the preview. `AVCaptureVideoDataOutput`
     /// physically rotates its buffers, so the scanner and the overlay work in the
     /// coordinates the user is looking at, whatever AVFoundation's angle convention is.
-    /// This replaced a hand-written angle-to-`CGImagePropertyOrientation` table that was
-    /// only correct in portrait.
     private func applyCaptureRotation(_ angle: CGFloat) {
         guard let connection = videoOutput?.connection(with: .video),
               connection.isVideoRotationAngleSupported(angle) else { return }

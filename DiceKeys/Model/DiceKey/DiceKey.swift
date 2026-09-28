@@ -31,7 +31,7 @@ func nicknameForDiceKey(centerFace: Face) -> String {
 }
 
 /// `final` + `Sendable`: every stored property is an immutable value, and DiceKeys
-/// cross actor boundaries (keychain reads, the scanner actor).
+/// cross actor boundaries (keychain reads).
 final class DiceKey: Identifiable, Equatable, Sendable {
     static func == (lhs: DiceKey, rhs: DiceKey) -> Bool {
         (0..<25).allSatisfy { index in lhs.faces[index] == rhs.faces[index] }
