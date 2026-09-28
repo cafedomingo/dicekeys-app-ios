@@ -49,8 +49,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
-      # Release build: the scanner corpus is 23 twelve-megapixel photos, which takes
-      # minutes at -Onone and seconds optimized.
+      # Release build: the scanner corpus is full-size photos, which take minutes at
+      # -Onone and seconds optimized.
       - name: Build and test package
         working-directory: Packages/DiceKeysCore
         run: swift test -c release -Xswiftc -enable-testing --parallel
