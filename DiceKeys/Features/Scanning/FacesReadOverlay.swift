@@ -43,7 +43,7 @@ struct FacesReadOverlay: View {
         if facesRead.isEmpty || imageFrameSize.width == 0 || imageFrameSize.height == 0 {
             Image("Scanning Overlay")
                 .resizable()
-                .foregroundStyle(Color(red: 0, green: 0, blue: 0, opacity: 0.75))
+                .foregroundStyle(Color.Camera.dim)
                 .frame(width: renderedSize.width, height: renderedSize.height)
         } else {
             // VERIFY: the rotation direction matches the old CoreText drawing on iOS
@@ -90,7 +90,7 @@ struct FacesReadOverlay: View {
         rotated.translateBy(x: point.x, y: point.y)
         rotated.rotate(by: angle)
         rotated.draw(
-            Text(string).font(font).foregroundStyle(Color.green),
+            Text(string).font(font).foregroundStyle(Color.Camera.faceRead),
             at: .zero,
             anchor: .center
         )
@@ -103,7 +103,7 @@ struct FacesReadOverlay: View {
         facesRead: FaceRead.fromJson(sampleFacesReadJson) ?? [],
         imageFrameSize: CGSize(width: 600, height: 600)
     )
-    .background(Color.black)
+    .background(Color.Camera.backdrop)
 }
 
 /// Scanner output for a sample frame, for previews.

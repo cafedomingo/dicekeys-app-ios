@@ -210,8 +210,8 @@ struct AssemblyInstructionsScreen: View {
                 Warning(message: "Do not close the box before the final Step.")
                     .padding(.vertical, 5)
                     .frame(maxWidth: .infinity)
-                    .foregroundStyle(.white)
-                    .background(Color.warningBackground)
+                    .foregroundStyle(Color.Interface.onWarning)
+                    .background(Color.Interface.warningBackground)
             }
         }
         .navigationTitle("Assemble a DiceKey")

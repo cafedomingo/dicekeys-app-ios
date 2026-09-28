@@ -21,7 +21,7 @@ private final class Reported {
 private struct SelfMeasuring: View {
     @State private var bounds: CGSize = .zero
     var body: some View {
-        CalculateBounds(bounds: $bounds) { Color.red }
+        CalculateBounds(bounds: $bounds) { Color.clear }
     }
 }
 

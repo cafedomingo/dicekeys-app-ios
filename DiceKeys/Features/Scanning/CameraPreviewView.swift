@@ -81,7 +81,7 @@ struct CameraPreviewView {
 extension CameraPreviewView: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: CGRect(origin: .zero, size: size))
-        view.backgroundColor = .black
+        view.backgroundColor = UIColor.Camera.backdrop
         view.clipsToBounds = true
         context.coordinator.update(camera: camera, in: view, size: size)
         return view

@@ -22,7 +22,7 @@ struct SaveDiceKeySheet: View {
                     Image("Phonelet")
                         .resizable().scaledToFit()
                         .background(
-                            DiceKeyView(diceKey: diceKeyState.diceKey, diceBoxColor: .alexandrasBlue, diePenColor: .alexandrasBlue)
+                            DiceKeyView(diceKey: diceKeyState.diceKey, diceBoxColor: Color.Depiction.kitBlue, diePenColor: Color.Depiction.kitBlue)
                                 .scaleEffect(0.8)
                         )
                         .frame(maxHeight: 220)

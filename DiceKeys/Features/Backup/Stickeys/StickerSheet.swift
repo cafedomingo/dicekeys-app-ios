@@ -14,7 +14,6 @@ private let lettersPerStickySheet = 5
 struct StickerSheet: View {
     var showLetter: FaceLetter = FaceLetter.A
     var highlightFaceWithDigit: FaceDigit?
-    let penColorOfHighlightedFace: Color = Color(CGColor(red: 0, green: 0, blue: 0, alpha: 0.2))
 
     @State private var bounds: CGSize = .zero
 
@@ -45,18 +44,20 @@ struct StickerSheet: View {
             // The sheet
             Rectangle()
                 .size(width: width, height: height)
-                .fill(Color.white)
-                .border(Color.black)
+                .fill(Color.Depiction.stickerSheet)
+                .border(Color.Depiction.stickerSheetEdge)
                 .frame(width: width, height: height)
             // The dice
             ForEach(0..<5, id: \.self) { letterIndexOnPage in
                 ForEach(0..<6, id: \.self) { digitIndex in
+                    let letter = FaceLetters[firstLetterIndex + letterIndexOnPage]
+                    let isHighlighted = showLetter == letter && highlightFaceWithDigit == FaceDigits[digitIndex]
                     DieView(
-                        face: Face(letter: FaceLetters[firstLetterIndex + letterIndexOnPage], digit: FaceDigits[digitIndex], orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.Top),
+                        face: Face(letter: letter, digit: FaceDigits[digitIndex], orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.Top),
                         dieSize: faceSize,
-                        penColor: (showLetter == FaceLetters[firstLetterIndex + letterIndexOnPage] && highlightFaceWithDigit == FaceDigits[digitIndex]) ? penColorOfHighlightedFace : Color.black,
-                        faceSurfaceColor: (showLetter == FaceLetters[firstLetterIndex + letterIndexOnPage] && highlightFaceWithDigit == FaceDigits[digitIndex]) ? Color.highlighter : Color.white,
-                        faceBorderColor: Color.gray
+                        penColor: isHighlighted ? Color.Depiction.stickerPenFaded : Color.Depiction.diePen,
+                        faceSurfaceColor: isHighlighted ? Color.Depiction.highlighter : Color.Depiction.dieFace,
+                        faceBorderColor: Color.Depiction.stickerFaceBorder
                     ).offset(
                         x: CGFloat(-2 + (letterIndexOnPage)) * faceStepSize,
                         y: CGFloat(-2.5 + CGFloat(digitIndex)) * faceStepSize

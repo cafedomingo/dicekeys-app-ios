@@ -85,11 +85,11 @@ struct ValidateBackupView: View {
                     .minimumScaleFactor(0.01)
                     .scaledToFit()
                     .lineLimit(1)
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.Interface.successText)
             } else if totalMismatch {
-                Text("That key doesn't look at all like the key you scanned before.").font(.title).foregroundStyle(.red)
+                Text("That key doesn't look at all like the key you scanned before.").font(.title).foregroundStyle(Color.Interface.errorText)
             } else {
-                Text("You incorrectly copied the highlighted \(invalidIndexes.count == 1 ? "die" : "dice"). You can fix the copy to match the original, or change the original to match the copy.").font(.title).foregroundStyle(.red)
+                Text("You incorrectly copied the highlighted \(invalidIndexes.count == 1 ? "die" : "dice"). You can fix the copy to match the original, or change the original to match the copy.").font(.title).foregroundStyle(Color.Interface.errorText)
             }
             Spacer()
         } else {

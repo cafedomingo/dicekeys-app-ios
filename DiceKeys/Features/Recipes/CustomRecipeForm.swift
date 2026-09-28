@@ -51,7 +51,7 @@ struct CustomRecipeForm: View {
                     .foregroundStyle(.secondary)
 
                 if case let .error(errorString) = model.progress {
-                    Text(errorString).font(.footnote).foregroundStyle(.red)
+                    Text(errorString).font(.footnote).foregroundStyle(Color.Interface.errorText)
                 }
             }
 

@@ -130,7 +130,7 @@ struct TransferSticker: View {
                 Path { path in
                     path.move(to: lineStart)
                     path.addLine(to: lineEnd)
-                }.stroke(Color.blue, lineWidth: 2.0)
+                }.stroke(Color.Depiction.kitBlue, lineWidth: 2.0)
             )
         }.aspectRatio(aspectRatio, contentMode: .fit)
     }
