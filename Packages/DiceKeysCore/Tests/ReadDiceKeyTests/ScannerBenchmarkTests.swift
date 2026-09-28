@@ -7,7 +7,7 @@
 //
 //      SCANNER_BENCHMARK=1 swift test -c release --filter ScannerBenchmark
 //
-//  The app feeds the scanner the centred square of a 1920x1080 session, so the
+//  The app feeds the scanner the centered square of a 1920x1080 session, so the
 //  frame here is a corpus photo scaled to 1080x1080. The first call warms up the
 //  allocator; the median of the rest is the number to compare against the notes in
 //  docs/SCANNER-PORT-NOTES.md.
@@ -45,7 +45,7 @@ struct ScannerBenchmarkTests {
 }
 
 extension Corpus {
-    /// `rgba(from:)` with the image scaled (aspect-filled and centre-cropped) to a square of `side` pixels.
+    /// `rgba(from:)` with the image scaled (aspect-filled and center-cropped) to a square of `side` pixels.
     static func rgba(from url: URL, scaledToSquare side: Int) throws -> (data: Data, width: Int, height: Int) {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)

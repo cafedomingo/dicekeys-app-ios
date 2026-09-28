@@ -3,7 +3,7 @@
 //  DiceKeysTests
 //
 //  Kept from the deleted ApiRequestTests when the request API was removed: this one
-//  guards derivation behaviour, not the API.
+//  guards derivation behavior, not the API.
 //
 
 import Foundation

@@ -170,7 +170,7 @@ struct DiceKeyKeychain: Sendable {
 }
 
 extension Error {
-    /// True when the user (or the system) cancelled an authentication prompt,
+    /// True when the user (or the system) canceled an authentication prompt,
     /// which is not worth reporting as an error.
     var isAuthenticationCancellation: Bool {
         guard let laError = self as? LAError else { return false }

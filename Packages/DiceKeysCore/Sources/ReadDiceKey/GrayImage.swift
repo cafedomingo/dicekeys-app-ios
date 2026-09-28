@@ -177,7 +177,7 @@ struct GrayImage: Sendable {
 
     /// `cv::Canny(src, dst, low, high, apertureSize: 5)` with the default L1 gradient, as
     /// OpenCV 4 computes it: a 5x5 Sobel (replicated border), |dx| + |dy| magnitudes,
-    /// non-maximum suppression in four sectors, then hysteresis over 8-neighbours.
+    /// non-maximum suppression in four sectors, then hysteresis over 8-neighbors.
     func canny5(lowThreshold: Double, highThreshold: Double) -> GrayImage {
         let w = width, h = height
         var out = GrayImage(width: width, height: height)
@@ -339,7 +339,7 @@ struct GrayImage: Sendable {
 
     // MARK: warpAffine crop (graphics/rotate.h copyRotatedRectangle)
 
-    /// Copies a `width` x `height` rectangle centred on `center` after rotating the image by
+    /// Copies a `width` x `height` rectangle centered on `center` after rotating the image by
     /// `angleInDegrees` (counter-clockwise for positive angles), exactly as
     /// `copyRotatedRectangle` does with `getRotationMatrix2D` + `warpAffine`: bilinear
     /// interpolation on OpenCV's 1/32-pixel fixed-point grid, black outside the image.

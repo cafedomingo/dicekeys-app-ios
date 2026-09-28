@@ -14,7 +14,7 @@ let questionMarkByte: UInt8 = 63
 
 // MARK: - face-read.h FaceUndoverlines
 
-/// The underline and overline of one face, with the centre, angle and size they imply.
+/// The underline and overline of one face, with the center, angle and size they imply.
 struct FaceUndoverlines: Sendable {
     var underline = Undoverline()
     var overline = Undoverline()
@@ -26,7 +26,7 @@ struct FaceUndoverlines: Sendable {
         self.overline = overline
     }
 
-    /// `FaceUndoverlines::center()`. A face with neither line has centre (0, 0), as in the
+    /// `FaceUndoverlines::center()`. A face with neither line has center (0, 0), as in the
     /// C++ (its `FaceUndoverlinesCenterOnly` subclass is sliced away when stored).
     func center() -> Point2f {
         if underline.found && overline.found {

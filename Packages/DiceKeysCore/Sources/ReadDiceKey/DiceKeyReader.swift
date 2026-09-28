@@ -38,7 +38,7 @@ struct DiceKeyReader: Sendable {
 
     /// `DiceKeyImageProcessor::processRGBAImage`: converts to gray and processes.
     ///
-    /// The C++ also copied a colour crop of every face read with errors into `imageData` for
+    /// The C++ also copied a color crop of every face read with errors into `imageData` for
     /// `getImageOfFace`, which the C ABI never exposed; that is not ported.
     mutating func processRGBA(_ rgba: UnsafeRawBufferPointer, width: Int, height: Int) -> Bool {
         let gray = GrayImage(rgba: rgba, width: width, height: height)
@@ -68,7 +68,7 @@ struct DiceKeyReader: Sendable {
                 // Merge the previous read into this one: it may have read something this one missed.
                 diceKey = DiceKeyRead(faces: facesRead.faces).mergePrevious(previousDiceKey)
                 // Kept exactly as read-dicekey.cpp lines 59-62 have it (the comparison reads
-                // as inverted; upstream behaviour is what the app has always shipped).
+                // as inverted; upstream behavior is what the app has always shipped).
                 if diceKey.totalError > previousDiceKey.totalError {
                     whenLastImproved = now
                 }
@@ -218,7 +218,7 @@ struct OverlayColor: Sendable {
     let b: UInt8
 }
 
-/// visualize-read-results.h: the three result colours.
+/// visualize-read-results.h: the three result colors.
 let colorNoErrorGreen = OverlayColor(r: 0, g: 192, b: 0)
 let colorSmallErrorOrange = OverlayColor(r: 192, g: 96, b: 0)
 let colorBigErrorRed = OverlayColor(r: 128, g: 0, b: 0)
@@ -281,7 +281,7 @@ struct RGBACanvas {
 }
 
 /// visualize-read-results.cpp `visualizeReadResults`: boxes around faces with errors, boxes
-/// around every undoverline (thick and coloured where the error lies), and the letter and
+/// around every undoverline (thick and colored where the error lies), and the letter and
 /// digit read drawn over each face.
 func visualizeReadResults(_ canvas: inout RGBACanvas, faces: [FaceRead], angleInRadiansNonCanonicalForm: Float, pixelsPerFaceEdgeWidth: Float) {
     let faceSizeInPixels = FaceDimensionsFractional.size * pixelsPerFaceEdgeWidth

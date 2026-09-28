@@ -10,7 +10,7 @@ disabled_rules:
   - type_body_length
   - type_name
   # String(decoding:as:) is the deliberate, lossy UTF-8 decode; the rule's failable
-  # String(bytes:encoding:) would change behaviour on invalid input.
+  # String(bytes:encoding:) would change behavior on invalid input.
   - optional_data_string_conversion
 opt_in_rules:
   - closure_spacing

@@ -89,7 +89,7 @@ struct OcrResultEntry: Sendable {
 typealias OcrResult = [OcrResultEntry]
 
 /// simple-ocr.cpp `findClosestMatchingCharacter`: for each pixel of the black/white
-/// character image, map it to the model raster and add the penalty for its colour to
+/// character image, map it to the model raster and add the penalty for its color to
 /// every character; sort by total penalty (a stable sort, keeping table order for ties as
 /// `std::sort` did in practice).
 func findClosestMatchingCharacter(
@@ -167,7 +167,7 @@ func readCharactersOnFace(
     }
     let textHeightPixels = Int((FaceDimensionsFractional.textRegionHeight * pixelsPerFaceEdgeWidth).rounded(.up))
     var textWidthPixels = Int((FaceDimensionsFractional.textRegionWidth * pixelsPerFaceEdgeWidth).rounded(.up))
-    // An even width splits cleanly in two at the centre.
+    // An even width splits cleanly in two at the center.
     if textWidthPixels % 2 == 1 {
         textWidthPixels += 1
     }

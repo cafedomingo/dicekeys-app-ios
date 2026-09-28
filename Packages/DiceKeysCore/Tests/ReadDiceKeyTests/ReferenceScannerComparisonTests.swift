@@ -7,7 +7,7 @@
 //  corpus test only says "the key was misread", this says which stage diverged:
 //
 //    * an undoverline code or a missing undoverline  -> rectangle detection / bit sampling
-//    * a line endpoint or centre off by pixels        -> minAreaRect, RRectCorners or line trimming
+//    * a line endpoint or center off by pixels        -> minAreaRect, RRectCorners or line trimming
 //    * a different orientation                        -> grid fitting
 //    * a different first OCR character                -> the crop (warpAffine) or the OCR
 //
@@ -55,7 +55,7 @@ struct ReferenceScannerComparisonTests {
     /// different ones, which moves a line end by a few pixels (up to 6.4 on the corpus when
     /// both read the same decoded bytes); JPEG decoder differences add a little more.
     static let endpointTolerance = 10.0
-    /// Pixels a face centre may differ by (the same effect, averaged over two lines).
+    /// Pixels a face center may differ by (the same effect, averaged over two lines).
     static let centerTolerance = 4.0
 
     @Test("reference fixture is present")

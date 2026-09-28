@@ -25,7 +25,7 @@ final class PrivacyCoverWindowController {
     /// backgrounded app while the process lives on.
     private(set) var coverWindows: [ObjectIdentifier: UIWindow] = [:]
     /// Held so they can be unregistered. The handlers capture `self` weakly, so a discarded
-    /// controller is not kept alive by the notification centre while it waits for `deinit`.
+    /// controller is not kept alive by the notification center while it waits for `deinit`.
     nonisolated(unsafe) private var observers: [any NSObjectProtocol] = []
 
     /// The cover is removed on `willEnterForeground` rather than on becoming active: iOS
