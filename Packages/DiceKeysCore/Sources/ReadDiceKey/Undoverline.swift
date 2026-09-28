@@ -24,27 +24,25 @@ struct Undoverline: Sendable {
     /// The direction the face reads in, from its letter to its digit.
     var direction: Point { simd_normalize(end - start) }
 
-    /// Unit vector from this line toward the middle of its face.
-    private var towardFace: Point {
-        bits.isOverline ? direction.turnedClockwise : -direction.turnedClockwise
+    /// From the middle of this line to the middle of its face.
+    private var towardFaceCenter: Point {
+        let towardFace = bits.isOverline ? direction.turnedClockwise : -direction.turnedClockwise
+        return towardFace * (length * Float(FaceDimensionsFractional.centerOfUndoverlineToCenterOfFace))
     }
 
     /// Where the middle of this line's face is.
-    var faceCenter: Point {
-        center + towardFace * (length * Float(FaceDimensionsFractional.centerOfUndoverlineToCenterOfFace))
-    }
+    var faceCenter: Point { center + towardFaceCenter }
 
     /// Where the face's other line should be.
     var oppositeBar: Bar {
-        let offset = towardFace * (2 * length * Float(FaceDimensionsFractional.centerOfUndoverlineToCenterOfFace))
-        return Bar(center: bar.center + offset, axis: bar.axis, length: bar.length, width: bar.width)
+        Bar(center: bar.center + 2 * towardFaceCenter, axis: bar.axis, length: bar.length, width: bar.width)
     }
 }
 
 /// An undoverline's 11 bits, taken from its letter end, are a 1, the overline flag, the
 /// 8-bit code and a 0. Read from the other end the 1 comes last, which is how the direction
 /// of the line (and so the rotation of the face) is known.
-struct UndoverlineBits: Equatable {
+struct UndoverlineBits {
     let isOverline: Bool
     let code: UInt8
     /// True when the bits were read from the digit end.
@@ -77,6 +75,9 @@ struct UndoverlineBits: Equatable {
 /// letter end.
 private let dotCenters = FaceDimensionsFractional.dotCentersAsFractionOfUndoverline.map { Float($0) }
 
+/// Where the outline of a bar is sampled along its length to find how dark the bar is.
+private let outlinePositions = (0...30).map { Float($0) / 30 }
+
 /// Reads the bar in `bar` as an undoverline, or nil when its dots are not a valid code.
 ///
 /// The rectangle can take in a little of whatever the bar touches at the brightness it was
@@ -87,8 +88,7 @@ func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
     guard bar.length >= 1, bar.center.x.isFinite, bar.center.y.isFinite else { return nil }
     var start = bar.center - bar.axis * (bar.length / 2)
     var end = bar.center + bar.axis * (bar.length / 2)
-    let outline = image.samples(from: start, to: end, at: (0...30).map { Float($0) / 30 })
-    let darkBelow = twoLevelThreshold(outline, minDark: 4, minLight: 4)
+    let darkBelow = twoLevelThreshold(image.samples(from: start, to: end, at: outlinePositions))
 
     let stretch = (end - start) * 0.03
     start -= stretch
@@ -107,7 +107,7 @@ func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
     }
 
     let dots = image.samples(from: start, to: end, at: dotCenters)
-    let dotThreshold = twoLevelThreshold(dots, minDark: MinNumberOfBlackDotsInUndoverline, minLight: MinNumberOfWhiteDotsInUndoverline)
+    let dotThreshold = twoLevelThreshold(dots)
     let bits = dots.reduce(UInt32(0)) { ($0 << 1) | ($1 > dotThreshold ? 1 : 0) }
     guard let decoded = UndoverlineBits(bits) else { return nil }
     return decoded.wasReversed
@@ -121,12 +121,13 @@ private func isPoint(_ point: Point, between a: Point, and b: Point) -> Bool {
 }
 
 /// The brightness that splits `samples` into a dark and a light group with the least total
-/// squared distance from each group's mean, keeping at least `minDark` samples below it and
-/// `minLight` above. It lies halfway between the lightest dark and the darkest light sample.
-func twoLevelThreshold(_ samples: [UInt8], minDark: Int, minLight: Int) -> UInt8 {
+/// squared distance from each group's mean, with at least four samples in each group, as
+/// every code has at least four dark and four light dots. It lies halfway between the
+/// lightest dark and the darkest light sample.
+func twoLevelThreshold(_ samples: [UInt8]) -> UInt8 {
     let sorted = samples.sorted()
-    let firstSplit = max(1, minDark), lastSplit = sorted.count - max(1, minLight)
-    guard firstSplit <= lastSplit else { return sorted.isEmpty ? 0 : sorted[sorted.count / 2] }
+    let firstSplit = MinNumberOfBlackDotsInUndoverline, lastSplit = sorted.count - MinNumberOfWhiteDotsInUndoverline
+    precondition(firstSplit <= lastSplit, "too few samples to split")
     var sums = [Double](repeating: 0, count: sorted.count + 1)
     var squares = [Double](repeating: 0, count: sorted.count + 1)
     for (i, value) in sorted.enumerated() {

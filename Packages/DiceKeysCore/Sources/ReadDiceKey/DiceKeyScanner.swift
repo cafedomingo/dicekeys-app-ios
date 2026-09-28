@@ -11,7 +11,7 @@ import CoreGraphics
 import DiceKeySpecification
 
 /// One face of a DiceKey.
-public struct ScannedFace: Sendable, Hashable {
+public struct ScannedFace: Sendable, Equatable {
     public let letter: FaceLetter
     public let digit: FaceDigit
     /// Quarter turns clockwise from upright, 0 to 3, relative to the top of the key.
@@ -105,7 +105,7 @@ public struct DiceKeyScanner: Sendable {
 /// share a face or two by chance. With fewer, whichever read has more faces stands, so one key
 /// is not mixed into another on a coincidence. Successive frames of a key in view read most of
 /// its faces, so they share far more than five.
-func merge(known: [ScannedFace?], read: [ScannedFace?]) -> [ScannedFace?]? {
+private func merge(known: [ScannedFace?], read: [ScannedFace?]) -> [ScannedFace?]? {
     let knownCount = known.compactMap { $0 }.count
     guard knownCount > 0 else { return read }
     var best: (turned: [ScannedFace?], agreements: Int)?
@@ -126,7 +126,7 @@ func merge(known: [ScannedFace?], read: [ScannedFace?]) -> [ScannedFace?]? {
 
 /// The faces as they read after the whole key turns a quarter turn clockwise: the die in
 /// row r, column c moves to row c, column 4 - r, and turns with the key.
-private func turnedClockwise(_ faces: [ScannedFace?]) -> [ScannedFace?] {
+func turnedClockwise(_ faces: [ScannedFace?]) -> [ScannedFace?] {
     var turned = faces
     for row in 0..<5 {
         for column in 0..<5 {

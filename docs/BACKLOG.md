@@ -65,10 +65,9 @@ fix is to make `setStored` async rather than to weaken the access control.
 
 **Why it exists.** The scanner was rewritten around the two bar codes on each face, and
 Apple's Vision framework was measured and ruled out along the way; `SCANNING.md` has both. On
-an M2 it scans a frame in 6.6 ms against the original's 21.7, but only by spreading the same
-CPU over more cores (31.4 ms of CPU against 31.8), and it holds about 39 MB while scanning. It
-still thresholds the whole frame twelve times and traces every border at each level, and no
-phone has measured it.
+an M2 it scans a frame in 5.4 ms against the original's 21.7, largely by spreading its work
+over more cores, and needs about 8 MB more while scanning. It still thresholds the whole frame
+twelve times and traces every border at each level, and no phone has measured it.
 
 **What is left, in order.**
 

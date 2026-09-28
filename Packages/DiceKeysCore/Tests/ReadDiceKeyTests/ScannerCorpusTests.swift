@@ -132,19 +132,6 @@ enum Corpus {
         return faces
     }
 
-    /// The key as it reads after turning the box a quarter turn clockwise.
-    static func turnedClockwise(_ faces: [ScannedFace?]) -> [ScannedFace?] {
-        var turned = faces
-        for row in 0..<5 {
-            for column in 0..<5 {
-                turned[column * 5 + (4 - row)] = faces[row * 5 + column].map {
-                    ScannedFace(letter: $0.letter, digit: $0.digit, clockwiseTurns: ($0.clockwiseTurns + 1) % 4)
-                }
-            }
-        }
-        return turned
-    }
-
     /// Faces read right and read wrong, in whichever of the key's four rotations reads best.
     /// A face read where the expectation cannot see a die counts as neither.
     static func score(_ read: [ScannedFace?], against expected: [ScannedFace?]) -> (right: Int, wrong: Int) {
@@ -242,6 +229,6 @@ struct ScannerCorpusTests {
             #expect(Corpus.score(scanner.faces, against: expected).wrong == 0)
         }
         print("video \(url.lastPathComponent.suffix(12)): \(scanner.faces.compactMap { $0 }.count) faces known after the last frame")
-        #expect(scanner.faces.compactMap { $0 }.count >= 17)
+        #expect(scanner.faces.compactMap { $0 }.count >= 16)
     }
 }

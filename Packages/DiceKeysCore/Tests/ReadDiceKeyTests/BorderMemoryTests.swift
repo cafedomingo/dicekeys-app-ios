@@ -1,5 +1,5 @@
 //
-//  ContourMemoryTests.swift
+//  BorderMemoryTests.swift
 //  ReadDiceKeyTests
 //
 
@@ -7,8 +7,8 @@ import Foundation
 import Testing
 @testable import ReadDiceKey
 
-@Suite("findContours memory")
-struct ContourMemoryTests {
+@Suite("traceBorders memory")
+struct BorderMemoryTests {
     /// One long border (a comb, with a corner at every tooth) above thousands of 2x2 specks.
     private func combAboveSpecks(width: Int, speckRows: Int) -> GrayImage {
         let height = 4 + speckRows * 3
@@ -31,16 +31,15 @@ struct ContourMemoryTests {
         return GrayImage(width: width, height: height, pixels: pixels)
     }
 
-    @Test("each contour keeps only the memory its own points need")
-    func contourCapacityTracksItsLength() {
-        var scratch = ContourScratch()
-        let contours = findContours(in: combAboveSpecks(width: 1000, speckRows: 10), atLeast: 1, minPerimeter: 0, scratch: &scratch)
-        let longest = contours.map(\.count).max() ?? 0
+    @Test("each border keeps only the memory its own points need")
+    func borderCapacityTracksItsLength() {
+        let borders = traceBorders(in: combAboveSpecks(width: 1000, speckRows: 10), atLeast: 1, minPerimeter: 0)
+        let longest = borders.map(\.count).max() ?? 0
         #expect(longest > 500, "the comb should trace as one long border")
-        #expect(contours.count > 3000, "every speck should be a contour of its own")
+        #expect(borders.count > 3000, "every speck should be a border of its own")
 
-        let points = contours.reduce(0) { $0 + $1.count }
-        let capacity = contours.reduce(0) { $0 + $1.capacity }
+        let points = borders.reduce(0) { $0 + $1.count }
+        let capacity = borders.reduce(0) { $0 + $1.capacity }
         #expect(capacity <= 2 * points)
     }
 
@@ -50,10 +49,9 @@ struct ContourMemoryTests {
         let gray = try Corpus.gray(from: photo.url, square: 1080)
         for image in [combAboveSpecks(width: 1000, speckRows: 10), gray] {
             for threshold: UInt8 in [1, 98, 156] {
-                var scratch = ContourScratch()
-                let all = findContours(in: image, atLeast: threshold, minPerimeter: 0, scratch: &scratch)
-                let kept = findContours(in: image, atLeast: threshold, minPerimeter: 50, scratch: &scratch)
-                #expect(kept == all.filter { arcLengthOpen($0) >= 50 })
+                let all = traceBorders(in: image, atLeast: threshold, minPerimeter: 0)
+                let kept = traceBorders(in: image, atLeast: threshold, minPerimeter: 50)
+                #expect(kept == all.filter { perimeter($0) >= 50 })
                 #expect(kept.count < all.count)
             }
         }

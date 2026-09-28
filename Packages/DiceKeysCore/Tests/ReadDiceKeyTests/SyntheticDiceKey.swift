@@ -28,17 +28,9 @@ struct SyntheticDiceKey {
         })
     }
 
-    /// The key as it reads after turning the whole box a quarter turn clockwise: the die in
-    /// row r, column c moves to row c, column 4 - r, and every face turns with the box.
+    /// The key as it reads after turning the whole box a quarter turn clockwise.
     var turnedClockwise: SyntheticDiceKey {
-        var turned = faces
-        for row in 0..<5 {
-            for column in 0..<5 {
-                let face = faces[row * 5 + column]
-                turned[column * 5 + (4 - row)] = ScannedFace(letter: face.letter, digit: face.digit, clockwiseTurns: (face.clockwiseTurns + 1) % 4)
-            }
-        }
-        return SyntheticDiceKey(faces: turned)
+        SyntheticDiceKey(faces: ReadDiceKey.turnedClockwise(faces).map { $0! })
     }
 
     /// A copy of the key with the face at `index` replaced.

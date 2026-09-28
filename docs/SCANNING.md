@@ -75,7 +75,7 @@ image the scanner needs, so the scanner takes the centered square of it (what th
 preview shows) with one copy per row. AVFoundation rotates the buffers to match the preview
 before they arrive, so the scanner works in the coordinates the user sees.
 
-### 2. Finding bars (`Bars.swift`, `Contours.swift`)
+### 2. Finding bars (`Bars.swift`, `Borders.swift`)
 
 A bar is dark against its own die, but the light across a key is rarely even: glare on one
 corner, a shadow over another. No single brightness threshold separates every bar from its
@@ -84,12 +84,13 @@ die, but for each bar some threshold does. So the frame is thresholded at twelve
 border of every bright region is traced (Suzuki and Abe's border following). The bars show up
 as holes in their dice.
 
-Each border longer than 50 pixels is fitted with its smallest enclosing rectangle, and kept if
+Each border more than 50 pixels around is fitted with its smallest enclosing rectangle, and kept if
 it has an undoverline's proportions: 0.177 as thick as it is long, with 50% slack either way.
-The levels are independent, so they run on all cores, each worker reusing one label plane.
+The levels are independent, so they are traced in parallel, each in its own byte-per-pixel
+label plane.
 
 Most borders are not bars (paper texture, the box, letters, the scene), so two facts about a
-key thin them out when more than 25 candidates remain:
+key thin them out:
 
 - **All 50 bars are the same size.** The areas are sorted and the tightest run of 35 found;
   only candidates within 25% of its middle area stay. A tight run of much larger rectangles
