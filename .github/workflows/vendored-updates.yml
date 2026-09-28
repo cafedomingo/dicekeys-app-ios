@@ -1,7 +1,6 @@
 name: Vendored updates
 
-# Dependabot cannot see vendored sources, so this compares them with upstream once a month
-# and keeps one open issue listing whatever is behind.
+# Dependabot cannot see vendored sources.
 on:
   schedule:
     - cron: "0 9 1 * *"
@@ -29,7 +28,7 @@ jobs:
           if [ "$vendored" != "$latest" ]; then
             notes+="- libsodium: vendored \`$vendored\`, latest \`$latest\`. Run \`scripts/vendor-libsodium.sh\`."$'\n'
           fi
-          # lib-seeded is vendored unmodified, so identical content has an identical tree hash.
+          # lib-seeded is unmodified, so same content means same tree hash.
           ours=$(git rev-parse HEAD:Packages/DiceKeysCore/Vendor/seeded-crypto/lib-seeded)
           theirs=$(gh api repos/dicekeys/seeded-crypto/git/trees/primary --jq '.tree[] | select(.path == "lib-seeded").sha')
           if [ "$ours" != "$theirs" ]; then

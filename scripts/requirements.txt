@@ -1,2 +1,2 @@
-# Python dependencies of scripts/. Dependabot bumps these.
+# Python dependencies of scripts/.
 pillow==11.3.0

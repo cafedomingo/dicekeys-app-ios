@@ -1,12 +1,10 @@
 version: 2
 updates:
-  # SwiftLint and XcodeGen, pinned in BuildTools/Package.resolved.
   - package-ecosystem: "swift"
     directory: "/BuildTools"
     schedule:
       interval: "weekly"
     labels: ["dependencies"]
-  # requirements.txt for the scripts, requirements-lint.txt for CI's linters.
   - package-ecosystem: "pip"
     directory: "/scripts"
     schedule:

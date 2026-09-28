@@ -13,15 +13,12 @@ on:
 permissions:
   contents: read
 
-# A new push to a PR supersedes its running build. Every commit on main keeps its own result.
+# Cancel superseded PR runs only.
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# Jobs use the runner image's default Xcode, its newest stable release.
 jobs:
-  # Tool versions are pinned where Dependabot bumps them: SwiftLint in
-  # BuildTools/Package.resolved, the others in scripts/requirements-lint.txt.
   lint:
     runs-on: macos-latest
     timeout-minutes: 15
@@ -59,8 +56,7 @@ jobs:
         working-directory: Packages/DiceKeysCore
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
-  # Dead code in the app target. The analyzer replays the compiler invocations from a clean
-  # build's log, so it builds on its own rather than sharing a build with app-tests.
+  # Builds on its own: the analyzer needs this build's DerivedData.
   unused-code:
     runs-on: macos-latest
     timeout-minutes: 45
@@ -99,8 +95,7 @@ jobs:
       - uses: ./.github/actions/build-tools
       - name: Generate project
         run: xcodegen generate
-      # Ad-hoc signing: with no entitlements the app has no keychain access at all and
-      # every SecItem call fails with errSecMissingEntitlement (-34018).
+      # Ad-hoc signing, or every keychain call fails with -34018.
       - name: Build for testing (simulator)
         run: |
           set -o pipefail
