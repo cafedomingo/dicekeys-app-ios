@@ -35,7 +35,7 @@ struct ScanDiceKeyView: View {
         VStack(alignment: .center, spacing: 0) {
             switch cameraAuthorized {
             case .some(true):
-                Text("Place the DiceKey so that the \(stickers ? "stickers" : "dice") fill the camera view. Then hold steady.")
+                Text("Line up the \(stickers ? "stickers" : "dice") with the squares, then hold steady.")
                     .font(.title2)
                 scanner
                 Text("\(scanModel.frameCount) frames processed")

@@ -33,9 +33,28 @@ private let xDistToCharCenter: CGFloat = (FaceDimensionsFractional.spaceBetweenL
 private let letterOffset = CGPoint(x: -xDistToCharCenter, y: 0)
 private let digitOffset = CGPoint(x: xDistToCharCenter, y: 0)
 
+/// Dims the camera preview except for 25 windows where the dice should go, in the middle two
+/// thirds of the square. The scanner reads a key that size as well as one filling the frame,
+/// and asking for less keeps the phone far enough back to focus and to keep the whole key in
+/// view.
+private struct ScanningTarget: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path(rect)
+        let pitch = min(rect.width, rect.height) * 2 / 3 / 5
+        let first = CGPoint(x: rect.midX - 2.5 * pitch, y: rect.midY - 2.5 * pitch)
+        for row in 0..<5 {
+            for column in 0..<5 {
+                let cell = CGRect(x: first.x + CGFloat(column) * pitch, y: first.y + CGFloat(row) * pitch, width: pitch, height: pitch)
+                path.addRoundedRect(in: cell.insetBy(dx: 0.07 * pitch, dy: 0.07 * pitch), cornerSize: CGSize(width: 0.24 * pitch, height: 0.24 * pitch))
+            }
+        }
+        return path
+    }
+}
+
 /// Draws the letters and digits the scanner has read on top of the camera
 /// preview, each rotated to match its die. Until a DiceKey is in view, shows the
-/// scanning target overlay instead.
+/// scanning target instead.
 struct FacesReadOverlay: View {
     let renderedSize: CGSize
     let dice: [DieInFrame]
@@ -43,9 +62,8 @@ struct FacesReadOverlay: View {
 
     var body: some View {
         if dice.isEmpty || imageFrameSize.width == 0 || imageFrameSize.height == 0 {
-            Image("Scanning Overlay")
-                .resizable()
-                .foregroundStyle(Color.Camera.dim)
+            ScanningTarget()
+                .fill(Color.Camera.dim, style: FillStyle(eoFill: true))
                 .frame(width: renderedSize.width, height: renderedSize.height)
         } else {
             Canvas { context, size in

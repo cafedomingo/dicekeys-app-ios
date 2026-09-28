@@ -60,6 +60,9 @@ enum Corpus {
         case shorterSide1080
         /// Exactly what the app scans: the centered 1080-pixel square.
         case centeredSquare1080
+        /// Three quarters of the app's scale: a key held back to fit the scanning target
+        /// rather than to fill the frame.
+        case shorterSide810
     }
 
     /// The photo as gray pixels, EXIF orientation applied.
@@ -79,7 +82,7 @@ enum Corpus {
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
         }
-        let scale = size == .native ? 1 : 1080 / Double(min(image.width, image.height))
+        let scale = size == .native ? 1 : (size == .shorterSide810 ? 810 : 1080) / Double(min(image.width, image.height))
         return try draw(image, width: Int((Double(image.width) * scale).rounded()), height: Int((Double(image.height) * scale).rounded()))
     }
 
@@ -183,10 +186,13 @@ struct ScannerCorpusTests {
         #expect(scanner.faces.allSatisfy { $0 == nil })
     }
 
-    @Test("reads nearly every face of a photo that must read, at the app's frame size", arguments: CorpusImage.all.filter(\.mustRead))
-    func readsMostFaces(image: CorpusImage) throws {
+    @Test(
+        "reads nearly every face of a photo that must read, filling the frame or held back to fit the target",
+        arguments: CorpusImage.all.filter(\.mustRead), [Corpus.Size.shorterSide1080, .shorterSide810]
+    )
+    func readsMostFaces(image: CorpusImage, size: Corpus.Size) throws {
         var scanner = DiceKeyScanner()
-        scanner.scan(try Corpus.gray(from: image.url, size: .shorterSide1080))
+        scanner.scan(try Corpus.gray(from: image.url, size: size))
         let expected = try #require(image.expected)
         #expect(Corpus.score(scanner.faces, against: expected).right >= 20)
     }

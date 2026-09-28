@@ -145,14 +145,16 @@ how a photo was taken, not on who took it:
 
 - **A well-framed key must read** (the photos in `well-framed/`) at the app's scale (the
   shorter side scaled to 1,080 pixels, uncropped, since the photos were not framed through
-  the app's square): at least 20 faces from one frame of each such photo, and a recorded
-  total across them all.
+  the app's square): at least 20 faces from one frame of each such photo, both filling the
+  frame and at three quarters of that size, as a key held back to fit the scanning target,
+  whose squares take up the middle two thirds of the frame; and a recorded total across
+  them all.
 - **Everything else must only never be misread** (the photos in `other/`): a steep tilt, low light, blur, a key far away
   under glare, a cropped key, the video at 360 pixels, and scenes with no key at all (loose and
   jumbled dice, printed faces, StickKeys sheets, a sudoku grid), which must read nothing.
 
-Every photo is checked for misreads at full size, at the app's scale, and cropped to the
-centered square exactly as the app scans it. No face has been read wrong in any of them. The
+Every photo is checked for misreads at full size, at the app's scale and three quarters of
+it, and cropped to the centered square exactly as the app scans it. No face has been read wrong in any of them. The
 photos far outside what the scanning overlay asks for are there to prove that, not to be read.
 
 ## Constants and where they come from
