@@ -38,7 +38,7 @@ struct ScanControls: View {
                             }
                         }
                     } label: {
-                        Image(systemName: "camera.rotate")
+                        Image(systemName: "camera.aperture")
                             .font(.title3)
                             .frame(width: 44, height: 44)
                     }

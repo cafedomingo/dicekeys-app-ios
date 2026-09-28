@@ -58,6 +58,9 @@ final class CameraSession {
         await serialized {
             do {
                 box.output = try Self.configure(session: session, camera: camera, delegate: delegate)
+                // Only once the session has committed does the camera have the format it
+                // will run in, which the zoom depends on.
+                Self.zoomForScanning(camera)
             } catch {
                 box.error = error
             }
@@ -145,6 +148,26 @@ final class CameraSession {
             session.addOutput(videoOutput)
         }
         return videoOutput
+    }
+
+    /// Zooms in just enough that a DiceKey lined up with the scanning target is farther away
+    /// than the camera's minimum focus distance. The target's squares span the middle two
+    /// thirds of the frame's square, so the square covers 7.5 dice pitches: DiceKey dice are
+    /// 12 mm cubes about 17 mm apart in the box (1.35 to 1.5 die widths, measured in the corpus
+    /// photos). A quarter of the minimum distance again leaves room for that estimate and for
+    /// autofocus, which is slow near its limit.
+    private nonisolated static func zoomForScanning(_ camera: AVCaptureDevice) {
+        let minimumFocusDistance = Double(camera.minimumFocusDistance)  // millimeters; -1 if unknown
+        guard minimumFocusDistance > 0, (try? camera.lockForConfiguration()) != nil else { return }
+        defer { camera.unlockForConfiguration() }
+        let format = camera.activeFormat
+        let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+        // The field of view is across the frame's long side; the scanned square spans its short side.
+        let longSide = Double(max(size.width, size.height)), shortSide = Double(min(size.width, size.height))
+        let halfAngleOfSquare = atan(tan(Double(format.videoFieldOfView) * .pi / 360) * shortSide / longSide)
+        let distanceToTarget = 7.5 * 17 / 2 / tan(halfAngleOfSquare)
+        let zoom = 1.25 * minimumFocusDistance / distanceToTarget
+        camera.videoZoomFactor = min(max(zoom, camera.minAvailableVideoZoomFactor), format.videoMaxZoomFactor)
     }
 
     private func makePreviewLayer(for camera: AVCaptureDevice) {
