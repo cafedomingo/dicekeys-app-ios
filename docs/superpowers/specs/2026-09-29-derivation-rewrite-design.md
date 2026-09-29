@@ -258,10 +258,12 @@ derivation (see Decisions).
 - numbers and string values are emitted as their original source text;
 - booleans as `true`/`false`, null as `null`;
 - all whitespace outside strings dropped;
-- duplicate keys kept, in order;
+- duplicate keys are rejected (the reference's order for duplicate `purpose` keys is
+  engine-dependent and the C++ takes the last value, so no order can be right);
 - object keys sorted by UTF-16 code unit order, `purpose` first, `#` last, at every level;
-- keys are emitted as their original quoted text (the reference decodes them, which produces
-  invalid JSON for a key containing an escape; identical for every key without one);
+- keys are written decoded, as the reference does; a key whose decoded text contains a quote,
+  backslash or control character is rejected, since the reference would write invalid JSON
+  for it;
 - input that is not a JSON object is rejected (the builder shows the error) instead of being
   passed through verbatim.
 
@@ -378,7 +380,7 @@ fixture tests. Deleted with the legacy engine in PR 6; the fixture tests remain.
 
 **Canonicalizer.** The TypeScript test cases verbatim, the existing Android-derived cases,
 plus numbers (`1.50`, `1e3`, `-0`), escapes (`\/`, `\u007f`, `\u001f`, `\b`), booleans,
-null, duplicates, non-ASCII keys, and rejection of non-object input.
+null, duplicate rejection, escaped and non-ASCII keys, and rejection of non-object input.
 
 **Key formats.** `ssh-keygen -y`, `-l` and `-Y sign` on the OpenSSH output where the tool
 is available (macOS test host); OpenPGP parsed by a small test-side packet walker that checks
