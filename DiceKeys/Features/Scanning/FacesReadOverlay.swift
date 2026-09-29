@@ -53,15 +53,15 @@ private struct ScanningTarget: Shape {
 }
 
 /// Draws the letters and digits the scanner has read on top of the camera
-/// preview, each rotated to match its die. Until a DiceKey is in view, shows the
-/// scanning target instead.
+/// preview, each rotated to match its die. Until a face has been read, shows the scanning
+/// target instead.
 struct FacesReadOverlay: View {
     let renderedSize: CGSize
     let dice: [DieInFrame]
     let imageFrameSize: CGSize
 
     var body: some View {
-        if dice.isEmpty || imageFrameSize.width == 0 || imageFrameSize.height == 0 {
+        if !dice.contains(where: { $0.face != nil }) || imageFrameSize.width == 0 || imageFrameSize.height == 0 {
             ScanningTarget()
                 .fill(Color.Camera.dim, style: FillStyle(eoFill: true))
                 .frame(width: renderedSize.width, height: renderedSize.height)

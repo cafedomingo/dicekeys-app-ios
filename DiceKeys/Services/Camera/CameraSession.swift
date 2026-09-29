@@ -15,9 +15,16 @@ import ReadDiceKey
 /// level with the horizon. Frames go to `CameraSampleBufferDelegate`.
 @MainActor
 final class CameraSession {
-    enum CameraSessionError: Error {
+    enum CameraSessionError: LocalizedError {
         case inputsAreInvalid
-        case noCamerasAvailable
+        case noScannableFormat
+
+        var errorDescription: String? {
+            switch self {
+            case .inputsAreInvalid: "The camera could not be connected."
+            case .noScannableFormat: "The camera does not deliver the kind of picture the scanner reads."
+            }
+        }
     }
 
     let session = AVCaptureSession()
@@ -140,13 +147,19 @@ final class CameraSession {
 
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.alwaysDiscardsLateVideoFrames = true
-        if let format = GrayImage.lumaPixelFormats.first(where: videoOutput.availableVideoPixelFormatTypes.contains) {
+        let formats = videoOutput.availableVideoPixelFormatTypes
+        if let format = GrayImage.lumaPixelFormats.first(where: formats.contains) {
             videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
+        } else if !formats.isEmpty {
+            // Every frame would be skipped, so fail where the screen can say so. An empty list
+            // proves nothing, and then the camera's own format stands.
+            throw CameraSessionError.noScannableFormat
         }
         videoOutput.setSampleBufferDelegate(delegate, queue: delegate.queue)
-        if session.canAddOutput(videoOutput) {
-            session.addOutput(videoOutput)
+        guard session.canAddOutput(videoOutput) else {
+            throw CameraSessionError.inputsAreInvalid
         }
+        session.addOutput(videoOutput)
         return videoOutput
     }
 
