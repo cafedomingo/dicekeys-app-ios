@@ -8,6 +8,47 @@ Everything above the Ideas heading is wanted, whether or not it is scheduled. Ev
 below it is a question rather than a plan, kept so the reasoning behind it survives, and it
 may well be answered by deciding not to do it.
 
+## Derive in Swift
+
+**Decided.** `Packages/SeededCrypto` (libsodium compiled from source, the seeded-crypto C++
+subtree, a C ABI over it, and a Swift wrapper: about 2.2 MB of vendored C) is replaced by a
+Swift package over CryptoKit and a BLAKE2b of our own. Derived values stay byte for byte
+identical for every recipe the app can build or that the TypeScript app accepts, apart from
+the behaviors listed as legacy in the design.
+
+**What settled it.** The app only derives and formats; nothing seals, unseals, signs or
+verifies, and those are the only operations that need what CryptoKit lacks
+(XSalsa20-Poly1305). CryptoKit reproduces libsodium's Ed25519 and X25519 keys from the same
+seeds, checked over 200 random seeds with SHA-512 applied to the X25519 seed by hand. BLAKE2b
+has no maintained Swift package: swift-sodium is a binary xcframework, the pure Swift
+candidates have single-digit stars, and swift-crypto and CryptoSwift have none. RFC 7693 is
+about 150 lines with official known-answer vectors, so we write it, and test it against
+libsodium while libsodium is still in the tree.
+
+**What is dropped.** Seal, unseal, sign and verify as operations. Argon2id: no DiceKeys app
+ever surfaced it, libsodium's public API cannot take the salt it needs, and no credible Swift
+package exists; a recipe asking for it gets a clear error, and its vectors are kept so it can
+return (see the parity item below). The web address mode of the recipe builder, since the
+`allow` field is only enforced by the inter-app API, which this app does not have.
+`excludeOrientationOfFaces`, which no app honors outside Android's API path. The C++'s
+lenient parsing, which reads `16.9` as 16 and `true` as 1 and accepts lengths that hang the
+main thread. Every rejected or changed behavior is documented with what the C++ produced.
+
+**What changes on purpose.** OpenPGP exports stop being byte-stable: CryptoKit randomizes
+Ed25519 signatures by design, so the self-signature differs per derivation while the key and
+fingerprint do not. The TypeScript app already stamps the current time into its export. The
+export also gains the armor blank line and CRC it was missing, proper packet lengths, and
+key flags that let PGP tools sign with the key. The raw JSON canonicalizer is rewritten to
+match the TypeScript reference; today it turns `true` into `1`, reformats numbers, and
+collapses duplicate keys.
+
+**How it lands.** Each its own PR, in order: the canonicalizer; an expanded vector fixture
+generated from the C++ while it exists, since it is the only reference implementation and
+nothing can be generated after; the new package with the C++ behind an engine protocol and
+the app switched to it; BLAKE2b; the Swift engine with differential tests against the C++;
+then the swap and the deletion, with `docs/derivation.md` and `docs/recipe-format.md`
+taking over from the vendored documentation.
+
 ## Rotate the whole app, or nothing
 
 **Why it exists.** The app is locked to portrait on iPhone while the camera rotates
@@ -94,7 +135,33 @@ sequence number, and trim the built in list to what is actually wanted. Keep raw
 the escape hatch for reproducing a secret made somewhere else, which matters because the
 recipe is hashed into the secret. A recipe that differs by one character is a different
 secret, so anyone already using a secret from a web address recipe must still be able to
-reproduce it, and raw JSON is how.
+reproduce it, and raw JSON is how. Dropping the web address lands with the Swift derivation
+work; trimming the built in list is still open.
+
+## The password screen
+
+**Why it exists.** The builder's minimum of 8 characters gives a 9-bit password: each word
+carries exactly 9 bits, and `lengthInChars` truncates the finished string, count prefix
+included, so `lengthInChars: 8` yields `15-Buzz-`. Nothing warns. And the recipe format has
+two choices, `hashFunction` and `wordList`, that only raw JSON can reach.
+
+**What is left.** Raise the floor and show bit strength next to the length field. Add a hash
+function selector and a word list selector; each writes its field only for a non-default
+choice, so existing recipes and templates are untouched. Look at the TypeScript and Android
+builders for ideas; both were more complete than the upstream iOS app.
+
+**Decided for the hash selector.** HKDF-SHA-512 through CryptoKit, standard RFC 5869 with no
+code of our own, becomes the second `hashFunction` and the default for new recipes; BLAKE2b
+stays for every existing one. An unknown name fails, nothing falls back. Slow functions such
+as Argon2id buy nothing for a 196-bit seed.
+
+**Decided for word lists.** Sizes must be powers of two, because a word is an 8-byte block
+modulo the list size. Two candidates. The BIP39 English list the app already ships for
+mnemonics: 2,048 words, 11 bits each, 12 for 128 bits, every word unique in its first four
+letters; use it as is, since BIP39 is fixed, even if a spelling turns out not to be US. And
+an emoji list: 512 single code point emoji with default emoji presentation, no modifiers,
+sequences or flags, old enough to render on every supported OS. Label emoji a novelty: many
+sites reject non-ASCII passwords, and each emoji is four UTF-8 bytes against length limits.
 
 ## The QR code sheet
 
@@ -182,16 +249,27 @@ what the owner's photos do not yet: a key in an open box, a faded print, a key p
 paper, very low resolution, a photo at an angle, and an image that once crashed the scanner.
 The recorded total in `ScannerCorpusTests` then resets to what the new photos read.
 
+## Argon2id, for parity
+
+Wanted only so that a recipe written for the C++ library derives here too; no DiceKeys app
+ever offered it. RFC 9106 over our BLAKE2b: `H'`, the compression function `G`, memory
+filling with Argon2id's switch from data-independent to data-dependent addressing, and
+multi-lane support because the RFC vectors use four lanes. About 300 to 400 lines. Verify
+against the RFC vectors and against the legacy cases in the fixture, which cover the
+arbitrary-length salt (type string plus recipe) and outputs over 64 bytes that the RFC
+vectors do not. The default 64 MiB with two passes should take well under a second in Swift.
+
+## A compressed DiceKey format
+
+A binary form of a DiceKey for storage and transfer, not for seeding: the seed stays the
+75-character string, or every derived value would change. Naive packing is 10 bits per die
+(letter 5, digit 3, orientation 2), 32 bytes. The letters are a permutation, so a mixed-radix
+rank of 25! × 6²⁵ × 4²⁵ / 4, about 2¹⁹⁶, fits in 25 bytes, and 19 without orientations.
+Decide the consumer first (keychain, QR backup, sharing), since that decides whether the
+seven bytes matter.
+
 ## Smaller items, not worth their own change
 
-- **`update-seeded-crypto.sh` cannot pull.** `git subtree` finds its earlier merges from
-  metadata in their commit messages, and squash merges drop it, so the script stops with
-  "was never added". Vendoring by copy, as `vendor-libsodium.sh` does, survives squash
-  merges.
-
-- **Swift/C++ interop** could replace the hand-written C ABI over seeded-crypto.
-- **Modernizing the vendored C++** in the subtree is possible now that it is a git subtree;
-  the golden vectors would catch any change to derived output.
 - **SwiftLint** as a build plugin, so Xcode shows violations while editing; CI already
   runs it.
 - **The Python generator in Swift.** `generate-app-icon.py` could be a Swift script
@@ -312,71 +390,3 @@ vendored or fetched, and it goes stale.
 site caps length at twenty, and shortening the recipe to suit, produces a different password
 rather than a shorter one. So rules have to be consulted when a recipe is first created and
 recorded in it, not applied afterwards to something already in use.
-
-## Should Argon2id support stay?
-
-**A question, not a plan.** Derivation defaults to BLAKE2b. Argon2id runs only when a recipe
-carries `"hashFunction": "Argon2id"`, and nothing in this app's recipe builder can set that
-field, so the only route to it is typing raw JSON.
-
-**No published DiceKeys app ever offered it.** Searching the org: the TypeScript app, which
-is the flagship, has no reference to Argon2 at all, and neither does the Android app. The
-upstream iOS app has exactly one, a `Codable` enum mirroring the JSON format with no control
-that sets it. This port dropped even that. So the feature appears to be a library capability
-the apps modeled and never surfaced, usable only by someone who read the library's own
-documentation.
-
-**What keeping it costs.** It is the sole reason `recipe.cpp` reaches past libsodium's
-public API into its bundled Argon2, and the sole reason this port carries a copy of
-`argon2.h` alongside the libsodium it compiles. Dropping it would leave derivation needing
-exactly one hash function.
-
-**What dropping it costs.** Any recipe anywhere that specifies Argon2id becomes
-unreproducible here. That is the same argument that keeps raw JSON in the recipes item: the
-escape hatch is only an escape hatch if it can express what other apps could express. Nobody
-knows whether such a recipe exists.
-
-## Alternatives for the seeding implementation
-
-**Not decided, but better founded than it started.** The question is whether roughly 2.2 MB
-of vendored C source and three hand-written layers are needed to do what this app does.
-
-**What is there now.** `CSodium` compiles libsodium from source; `SeededCryptoCXX` is the
-DiceKeys C++ subtree; `SeededCryptoNative` is a C ABI over it; `SeededCrypto` is the Swift
-API. libsodium is an independent library, not a DiceKeys one, and seeded-crypto uses it for
-nearly everything: BLAKE2b for the HKDF, Argon2id where a recipe asks, X25519 and
-XSalsa20-Poly1305 for sealing, Ed25519 for signing.
-
-**What the app actually calls.** It derives key material and formats it: hex, JSON, BIP39,
-OpenSSH, OpenPGP. It never seals, unseals, signs or verifies. Grep `DiceKeys/` for `.seal(`,
-`.unseal(`, `generateSignature` or `.verify(` and there is nothing; those functions exist in
-the Swift package and no screen reaches them. An Unsealing Key recipe produces the key bytes,
-not the ability to unseal a message.
-
-**Which is what makes the idea plausible.** The primitives CryptoKit cannot supply,
-XSalsa20-Poly1305 and the sealed box construction, are exactly the ones nothing calls.
-CryptoKit does have Ed25519 and X25519, which is what the Signing Key and Unsealing Key
-recipes need in order to hand over bytes. That leaves BLAKE2b as the only primitive with no
-platform equivalent and no way around it, because it is the derivation itself.
-
-**So the shape would be:** one BLAKE2b dependency, CryptoKit for the curves, and the rest
-deleted. Four things to establish before believing it:
-
-- `hkdf.cpp` is a custom construction over BLAKE2b, not standard HKDF. It has to be
-  reproduced exactly rather than approximated.
-- `crypto_box_seed_keypair` is not raw: it takes SHA-512 of the seed and clamps. CryptoKit
-  takes the scalar directly, so that step has to be done by hand or the X25519 keys differ.
-- The `toJson()` output is seeded-crypto's format, and anything reading it elsewhere expects
-  it byte for byte.
-- Dropping seal and unseal narrows interoperability with other DiceKeys apps even though
-  nothing here uses them. That is a product decision rather than a technical one.
-
-**The golden vectors are the whole proof, and the only one.** Every official implementation
-is the same C++ compiled differently: [seeded-crypto-js](https://github.com/dicekeys/seeded-crypto-js)
-through Emscripten, [seeded-crypto-ios](https://github.com/dicekeys/seeded-crypto-ios) as a
-dormant CocoaPods wrapper, which is what this app moved away from. There is no independent
-implementation to check against, so the vectors are not one cross-check among several.
-
-**Related.** Removing Argon2id would leave exactly one hash function to reimplement, and
-would retire the internal header include on its own. The two smaller items about Swift and
-C++ interop and about modernizing the vendored C++ are the incremental version of this.
