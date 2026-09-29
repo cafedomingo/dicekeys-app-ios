@@ -26,7 +26,7 @@ struct Slot: Sendable {
     /// The direction the face reads in, in radians.
     var angle: Float? {
         switch (underline, overline) {
-        // The overline is a quarter turn anticlockwise of the reading direction from the underline.
+        // The overline is a quarter turn counterclockwise of the reading direction from the underline.
         case let (underline?, overline?): (overline.center - underline.center).angle + .pi / 2
         case let (line?, nil), let (nil, line?): line.direction.angle
         case (nil, nil): nil
@@ -114,7 +114,7 @@ func readSlots(in image: GrayImage) -> (slots: [Slot], grid: Grid)? {
     return (slots, grid)
 }
 
-/// The grid through a face that has at least four others in line with it along its row and
+/// The grid through a face that has exactly four others in line with it along its row and
 /// along its column (within a face's width), evenly spaced both ways.
 private func fitGrid(to faces: [Slot], faceSize: Float) -> Grid? {
     let centers = faces.compactMap(\.center)
@@ -128,7 +128,7 @@ private func fitGrid(to faces: [Slot], faceSize: Float) -> Grid? {
             .sorted { simd_dot($0 - origin, alongRow) < simd_dot($1 - origin, alongRow) }
         let column = centers.filter { abs(crossProduct($0 - origin, alongColumn)) <= faceSize }
             .sorted { simd_dot($0 - origin, alongColumn) < simd_dot($1 - origin, alongColumn) }
-        guard row.count >= 5, column.count >= 5,
+        guard row.count == 5, column.count == 5,
               let across = evenStep(row), let down = evenStep(column),
               let columnIndex = row.firstIndex(of: origin), let rowIndex = column.firstIndex(of: origin) else { continue }
         return Grid(center: origin + across * Float(2 - columnIndex) + down * Float(2 - rowIndex), across: across, down: down)

@@ -113,7 +113,7 @@ overline, and which end is the letter end.
 - **Pairing.** Each line says where its partner should be: 0.82 of a face away, toward the
   text. An underline and an overline that each sit where the other says are one face, when
   the two misses together come to less than a quarter of a face.
-- **The grid.** A paired face with at least four others in line along its row and its column,
+- **The grid.** A paired face with exactly four others in line along its row and its column,
   evenly spaced both ways, fixes the grid: its center and the step from column to column and
   row to row. Rows are taken to run within 45 degrees of the frame's x axis, so row 0 is the
   top of the key as the camera sees it.
