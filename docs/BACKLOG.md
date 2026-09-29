@@ -27,7 +27,7 @@ rotation everywhere, so the UI and the camera turn together and the iPad keeps a
 orientations, or lock both to portrait and stop tracking gravity at all. The first is more
 work and the better answer for the iPad; the second is a deletion.
 
-**Worth knowing.** Rotation has never affected derived secrets. Seed derivation canonicalises
+**Worth knowing.** Rotation has never affected derived secrets. Seed derivation canonicalizes
 rotation first, and `DiceKeySeedTests` proves all four rotations of a key produce the same
 seed. Every rotation bug here has been about what the screen shows.
 
@@ -379,4 +379,4 @@ implementation to check against, so the vectors are not one cross-check among se
 
 **Related.** Removing Argon2id would leave exactly one hash function to reimplement, and
 would retire the internal header include on its own. The two smaller items about Swift and
-C++ interop and about modernising the vendored C++ are the incremental version of this.
+C++ interop and about modernizing the vendored C++ are the incremental version of this.

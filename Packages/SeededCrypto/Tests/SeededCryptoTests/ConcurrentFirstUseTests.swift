@@ -3,7 +3,7 @@
 //  SeededCryptoTests
 //
 //  Regression test for libsodium being built without HAVE_PTHREAD: sodium_init() then
-//  has no lock, concurrent first calls each re-randomise the guarded-memory canary, and
+//  has no lock, concurrent first calls each re-randomize the guarded-memory canary, and
 //  the first sodium_free() aborts the process (SIGABRT in _out_of_bounds). It reproduced
 //  in roughly one of three fresh processes running the golden vectors in parallel.
 //

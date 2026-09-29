@@ -45,7 +45,7 @@ let package = Package(
                 .define("HAVE_TI_MODE", to: "1"),
                 // Without HAVE_PTHREAD (or HAVE_ATOMIC_OPS) sodium_init() has no lock, so two
                 // threads deriving for the first time both run _sodium_alloc_init(), the
-                // guarded-memory canary is re-randomised under a live allocation, and the
+                // guarded-memory canary is re-randomized under a live allocation, and the
                 // next sodium_free() aborts. configure sets both on Apple platforms.
                 .define("HAVE_PTHREAD", to: "1"),
                 .define("HAVE_ATOMIC_OPS", to: "1"),
