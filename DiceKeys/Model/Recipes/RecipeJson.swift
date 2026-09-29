@@ -99,11 +99,14 @@ enum RecipeJsonError: Error, Equatable {
     case invalid(offset: Int)
     /// A field name whose decoded text the reference would write as invalid JSON.
     case unrepresentableKey(offset: Int)
+    /// A field name that appears twice in one object.
+    case duplicateKey(offset: Int)
 
     var message: String {
         switch self {
         case .notAnObject: return "A recipe must be a JSON object, such as {\"purpose\":\"example\"}"
         case .invalid(let offset): return "Not valid JSON near position \(offset)"
+        case .duplicateKey: return "Each field name may appear only once"
         case .unrepresentableKey: return "A field name cannot contain quotes, backslashes or control characters"
         }
     }
@@ -189,6 +192,11 @@ struct RecipeJsonParser {
             let name = try decode(quotedRange: nameStart..<index)
             guard name.unicodeScalars.allSatisfy({ $0 != "\"" && $0 != "\\" && $0.value >= 0x20 }) else {
                 throw .unrepresentableKey(offset: nameStart)
+            }
+            // The reference's order for equal names is engine-dependent and the C++ library
+            // keeps the last value, so no order of duplicates could match everywhere.
+            guard !fields.contains(where: { $0.name.utf16.elementsEqual(name.utf16) }) else {
+                throw .duplicateKey(offset: nameStart)
             }
             skipWhitespace()
             guard peek == UInt8(ascii: ":") else { throw .invalid(offset: index) }

@@ -100,10 +100,16 @@ struct RecipeJsonTests {
         #expect(try json.canonicalizedRecipe() == json)
     }
 
-    @Test("duplicate keys are kept in order")
-    func duplicateKeys() throws {
-        #expect(try #"{"a":1,"a":2}"#.canonicalizedRecipe() == #"{"a":1,"a":2}"#)
-        #expect(try #"{"b":1,"a":2,"a":1}"#.canonicalizedRecipe() == #"{"a":2,"a":1,"b":1}"#)
+    static let duplicateKeys: [String] = [#"{"a":1,"a":2}"#, #"{"x":{"purpose":"a","purpose":"b"}}"#, #"{"a":1,"\u0061":2}"#]
+
+    @Test("duplicate keys are rejected, at every level", arguments: duplicateKeys)
+    func rejectsDuplicateKeys(json: String) {
+        var thrown: RecipeJsonError?
+        do { _ = try json.canonicalizedRecipe() } catch { thrown = error }
+        guard case .duplicateKey = thrown else {
+            Issue.record("expected .duplicateKey, got \(String(describing: thrown))")
+            return
+        }
     }
 
     @Test("keys sort by UTF-16 code unit, so an emoji sorts before U+FF5E and uppercase before lowercase")
@@ -173,6 +179,7 @@ struct RecipeJsonTests {
 
     @Test("errors have a message a person can act on")
     func errorMessages() {
+        #expect(RecipeJsonError.duplicateKey(offset: 1).message == "Each field name may appear only once")
         #expect(RecipeJsonError.unrepresentableKey(offset: 1).message == "A field name cannot contain quotes, backslashes or control characters")
         #expect(RecipeJsonError.notAnObject.message == "A recipe must be a JSON object, such as {\"purpose\":\"example\"}")
         #expect(RecipeJsonError.invalid(offset: 7).message == "Not valid JSON near position 7")
