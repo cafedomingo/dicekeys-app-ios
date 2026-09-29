@@ -55,4 +55,19 @@ struct RecipeBuildingTests {
         #expect(stored.purpose() == nil)
         #expect(stored.fields.isEmpty)
     }
+
+    @Test("raw JSON that is not an object is reported, not passed through")
+    @MainActor
+    func rawJsonErrors() {
+        let model = CustomRecipeModel(type: .Password)
+        model.buildType = .rawJson
+        model.rawJsonString = "[]"
+        #expect(model.progress == .error(RecipeJsonError.notAnObject.message))
+        model.rawJsonString = #"{"purpose":"x",}"#
+        #expect(model.progress == .error(RecipeJsonError.invalid(offset: 15).message))
+        model.rawJsonString = "   "
+        #expect(model.progress == .incomplete)
+        model.rawJsonString = ##"{ "#":2, "purpose":"x" }"##
+        #expect(model.progress.recipe?.recipe == ##"{"purpose":"x","#":2}"##)
+    }
 }

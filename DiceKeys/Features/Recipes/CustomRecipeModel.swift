@@ -125,7 +125,12 @@ final class CustomRecipeModel: Identifiable {
         case .purpose:
             recipe = getRecipeJson(purpose: purposeString.trim(), sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
         case .rawJson:
-            recipe = (try? rawJsonString.canonicalizedRecipe()) ?? rawJsonString
+            do {
+                recipe = try rawJsonString.canonicalizedRecipe()
+            } catch {
+                progress = .error(error.message)
+                return
+            }
         }
 
         progress = .ready(DerivationRecipe(type: type, name: name, recipe: recipe))
