@@ -219,6 +219,7 @@ struct ScannerCorpusTests {
 
     @Test("never reads a face wrong across a video", arguments: videos)
     func neverMisreadsAVideo(url: URL) async throws {
+        let expected = try #require(Corpus.faces(of: String(url.deletingPathExtension().lastPathComponent.prefix(75))))
         let asset = AVURLAsset(url: url)
         let track = try #require(try await asset.loadTracks(withMediaType: .video).first)
         let reader = try AVAssetReader(asset: asset)
@@ -231,7 +232,6 @@ struct ScannerCorpusTests {
         while let sample = output.copyNextSampleBuffer() {
             guard let frame = sample.imageBuffer, let image = GrayImage(centeredSquareOf: frame) else { continue }
             scanner.scan(image)
-            let expected = try #require(Corpus.faces(of: String(url.deletingPathExtension().lastPathComponent.prefix(75))))
             #expect(Corpus.score(scanner.faces, against: expected).wrong == 0)
         }
         print("video \(url.lastPathComponent.suffix(12)): \(scanner.faces.compactMap { $0 }.count) faces known after the last frame")

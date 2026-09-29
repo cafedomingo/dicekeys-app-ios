@@ -14,6 +14,13 @@ struct DiceKeyScannerTests {
     private let topLeftBlock: Set<Int> = [0, 1, 5, 6]
     private let bottomRightBlock: Set<Int> = [18, 19, 23, 24]
 
+    @Test("a face's turns are counted in quarter turns from 0 to 3, however many it is given")
+    func turnsWrapAround() {
+        #expect(ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 4).clockwiseTurns == 0)
+        #expect(ScannedFace(letter: .A, digit: ._1, clockwiseTurns: -1).clockwiseTurns == 3)
+        #expect(ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 6) == ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 2))
+    }
+
     @Test("a blank frame reads nothing")
     func blankFrame() {
         var scanner = DiceKeyScanner()

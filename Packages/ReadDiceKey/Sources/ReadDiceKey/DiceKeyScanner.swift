@@ -17,10 +17,11 @@ public struct ScannedFace: Sendable, Equatable {
     /// Quarter turns clockwise from upright, 0 to 3, relative to the top of the key.
     public let clockwiseTurns: Int
 
+    /// Any whole number of quarter turns, which is kept as the equivalent from 0 to 3.
     public init(letter: FaceLetter, digit: FaceDigit, clockwiseTurns: Int) {
         self.letter = letter
         self.digit = digit
-        self.clockwiseTurns = clockwiseTurns
+        self.clockwiseTurns = (clockwiseTurns % 4 + 4) % 4
     }
 }
 
@@ -72,7 +73,7 @@ public struct DiceKeyScanner: Sendable {
             return ScannedFace(
                 letter: face.letter,
                 digit: face.digit,
-                clockwiseTurns: (turns % 4 + 4) % 4
+                clockwiseTurns: turns
             )
         }
         let merged = merge(known: faces, read: read)
@@ -131,7 +132,7 @@ func turnedClockwise(_ faces: [ScannedFace?]) -> [ScannedFace?] {
     for row in 0..<5 {
         for column in 0..<5 {
             turned[column * 5 + (4 - row)] = faces[row * 5 + column].map {
-                ScannedFace(letter: $0.letter, digit: $0.digit, clockwiseTurns: ($0.clockwiseTurns + 1) % 4)
+                ScannedFace(letter: $0.letter, digit: $0.digit, clockwiseTurns: $0.clockwiseTurns + 1)
             }
         }
     }
