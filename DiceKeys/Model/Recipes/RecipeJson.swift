@@ -117,6 +117,12 @@ enum RecipeJsonError: Error, Equatable {
 struct RecipeJsonParser {
     private let bytes: [UInt8]
     private var index = 0
+    private var depth = 0
+    /// Parsing and serializing recurse once per level, so pasted text nested thousands deep
+    /// would overflow the stack. Debug builds on a 512 KB thread (the Swift concurrency pool)
+    /// overflowed between 250 and 400 levels, so this stays well below that; no real recipe
+    /// nests more than a few levels.
+    private static let maximumDepth = 128
 
     private init(_ text: String) {
         bytes = Array(text.utf8)
@@ -179,7 +185,15 @@ struct RecipeJsonParser {
         }
     }
 
+    /// Counts one more open bracket; the caller decrements on leaving.
+    private mutating func enterNesting() throws(RecipeJsonError) {
+        depth += 1
+        guard depth <= Self.maximumDepth else { throw .invalid(offset: index) }
+    }
+
     private mutating func parseObjectBody() throws(RecipeJsonError) -> RecipeJsonValue {
+        try enterNesting()
+        defer { depth -= 1 }
         index += 1
         var fields: [RecipeJsonField] = []
         skipWhitespace()
@@ -214,6 +228,8 @@ struct RecipeJsonParser {
     }
 
     private mutating func parseArray() throws(RecipeJsonError) -> RecipeJsonValue {
+        try enterNesting()
+        defer { depth -= 1 }
         index += 1
         var items: [RecipeJsonValue] = []
         skipWhitespace()

@@ -165,6 +165,19 @@ struct RecipeJsonTests {
         }
     }
 
+    @Test("nesting deeper than 128 levels is rejected, ordinary nesting is accepted")
+    func nestingDepthIsCapped() throws {
+        func nested(_ levels: Int) -> String {
+            #"{"a":"# + String(repeating: "[", count: levels) + String(repeating: "]", count: levels) + "}"
+        }
+        #expect(try nested(100).canonicalizedRecipe() == nested(100))
+        // The object is level 1, so 127 arrays is the deepest accepted.
+        #expect(try nested(127).canonicalizedRecipe() == nested(127))
+        for levels in [128, 129, 10_000] {
+            #expect(throws: RecipeJsonError.invalid(offset: 5 + 127)) { try nested(levels).canonicalizedRecipe() }
+        }
+    }
+
     @Test("a top-level object with trailing whitespace or a BOM is accepted")
     func leadingAndTrailing() throws {
         #expect(try "\u{FEFF}{\"a\":1}".canonicalizedRecipe() == #"{"a":1}"#)
