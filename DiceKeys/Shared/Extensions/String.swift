@@ -32,9 +32,7 @@ extension String {
         return context.createCGImage(outputImage, from: outputImage.extent)
     }
 
-    /// Copies the string to this device's pasteboard for one minute. Everything the app
-    /// copies is a secret, so it must not sync to other devices through Universal Clipboard
-    /// or stay available to whatever is pasted into next.
+    /// Copies the string to this device's pasteboard for one minute.
     @MainActor
     func copyToPasteboard() {
         UIPasteboard.general.setItems(
