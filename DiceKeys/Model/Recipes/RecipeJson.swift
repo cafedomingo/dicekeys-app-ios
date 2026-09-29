@@ -74,7 +74,7 @@ struct RecipeJsonField: Equatable {
     /// "#" (the sequence number) always comes last and "purpose" always first; the rest sort
     /// by UTF-16 code unit, which is what JavaScript's `<` on strings compares.
     static func precedes(_ lhs: String, _ rhs: String) -> Bool {
-        if lhs == rhs { return false }
+        if lhs.utf16.elementsEqual(rhs.utf16) { return false }
         if lhs == "#" { return false }
         if rhs == "#" { return true }
         if lhs == "purpose" { return true }

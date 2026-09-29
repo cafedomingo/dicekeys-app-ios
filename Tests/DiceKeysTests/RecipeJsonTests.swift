@@ -49,4 +49,13 @@ struct RecipeJsonTests {
         #expect(RecipeJsonValue.text("\u{01}\u{08}\u{0C}\n\r").canonicalText == #""\u0001\b\f\n\r""#)
         #expect(RecipeJsonValue.text("café/😀").canonicalText == #""café/😀""#)
     }
+
+    @Test("canonically equivalent names still sort by their UTF-16 code units")
+    func equivalentNamesSortByCodeUnits() {
+        let object = RecipeJsonValue.object([
+            RecipeJsonField(name: "\u{E9}", value: .int(1)),
+            RecipeJsonField(name: "e\u{301}", value: .int(2))
+        ])
+        #expect(object.canonicalText == "{\"e\u{301}\":2,\"\u{E9}\":1}")
+    }
 }
