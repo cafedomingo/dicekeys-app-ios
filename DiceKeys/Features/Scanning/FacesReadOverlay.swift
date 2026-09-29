@@ -33,21 +33,16 @@ private let xDistToCharCenter: CGFloat = (FaceDimensionsFractional.spaceBetweenL
 private let letterOffset = CGPoint(x: -xDistToCharCenter, y: 0)
 private let digitOffset = CGPoint(x: xDistToCharCenter, y: 0)
 
-/// Dims the camera preview except for 25 windows where the dice should go, in the middle two
-/// thirds of the square. The scanner reads a key that size as well as one filling the frame,
-/// and asking for less keeps the phone far enough back to focus and to keep the whole key in
-/// view.
+/// Dims the camera preview except for a window over the middle three quarters of the square,
+/// the size a whole DiceKey should look. The scanner reads a key that size as well as one
+/// filling the frame, and asking for no more keeps the phone far enough back to focus and to
+/// keep the whole key in view.
 private struct ScanningTarget: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path(rect)
-        let pitch = min(rect.width, rect.height) * 2 / 3 / 5
-        let first = CGPoint(x: rect.midX - 2.5 * pitch, y: rect.midY - 2.5 * pitch)
-        for row in 0..<5 {
-            for column in 0..<5 {
-                let cell = CGRect(x: first.x + CGFloat(column) * pitch, y: first.y + CGFloat(row) * pitch, width: pitch, height: pitch)
-                path.addRoundedRect(in: cell.insetBy(dx: 0.07 * pitch, dy: 0.07 * pitch), cornerSize: CGSize(width: 0.24 * pitch, height: 0.24 * pitch))
-            }
-        }
+        let side = min(rect.width, rect.height) * 3 / 4
+        let window = CGRect(x: rect.midX - side / 2, y: rect.midY - side / 2, width: side, height: side)
+        path.addRoundedRect(in: window, cornerSize: CGSize(width: 0.06 * side, height: 0.06 * side))
         return path
     }
 }
