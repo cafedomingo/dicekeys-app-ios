@@ -13,9 +13,10 @@ struct ScanningZoomTests {
 
     @Test("zooms a camera that cannot focus as close as the target asks")
     func zoomsWhenTheTargetIsTooClose() {
-        // A 70-degree camera puts the target about 16 cm away, inside a 20 cm focus limit.
+        // A 70-degree camera puts the target about 16 cm away, inside a 20 cm focus limit, so it
+        // zooms until the target is 20 cm away.
         let zoom = CameraSession.zoomForScanning(minimumFocusDistance: 200, fieldOfView: 70, frameSize: frame)
-        #expect(zoom > 1.4 && zoom < 1.7)
+        #expect(zoom > 1.2 && zoom < 1.3)
     }
 
     @Test("leaves a camera that can focus closer than the target at its widest")
