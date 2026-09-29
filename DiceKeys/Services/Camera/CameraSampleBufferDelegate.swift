@@ -13,8 +13,10 @@ nonisolated struct ScannedFrame: Sendable {
     /// The dice found in the frame, in frame pixels.
     let dice: [DieInFrame]
     let size: CGSize
-    /// All 25 faces, once every one has been read.
+    /// All 25 faces, once every one has been read and they make a DiceKey.
     let diceKey: [ScannedFace]?
+    /// All 25 faces, once every one has been read, whatever they are.
+    let allFaces: [ScannedFace]?
 }
 
 /// Scans each camera frame and hands the result to the main actor. The one `NSObject`
@@ -48,7 +50,8 @@ nonisolated final class CameraSampleBufferDelegate: NSObject, AVCaptureVideoData
         let frame = ScannedFrame(
             dice: scanner.scan(image),
             size: CGSize(width: image.width, height: image.height),
-            diceKey: scanner.diceKey
+            diceKey: scanner.diceKey,
+            allFaces: scanner.allFaces
         )
         let onFrame = self.onFrame
         Task { @MainActor in onFrame(frame) }

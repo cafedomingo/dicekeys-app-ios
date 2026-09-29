@@ -8,7 +8,6 @@
 import DiceKeySpecification
 import Foundation
 import Synchronization
-import ReadDiceKey
 import SeededCrypto
 
 let clockwise90DegreeRotationIndexesFor5x5Grid = [
@@ -43,18 +42,6 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     init(_ faces: [Face]) {
         precondition(faces.count == 25)
         self.faces = faces
-    }
-
-    /// The faces the scanner read, rows top to bottom as the camera saw them.
-    init(_ scanned: [ScannedFace]) {
-        precondition(scanned.count == 25)
-        self.faces = scanned.map { face in
-            Face(
-                letter: face.letter,
-                digit: face.digit,
-                orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.allCases[face.clockwiseTurns]
-            )
-        }
     }
 
     /// The center face of a DiceKey, useful as the most salient face for users to

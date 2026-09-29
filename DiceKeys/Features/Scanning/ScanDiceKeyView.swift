@@ -11,11 +11,11 @@ import AVFoundation
 /// The camera preview with the read-faces overlay and floating controls.
 /// Calls `onDiceKeyRead` once, when a complete DiceKey has been scanned.
 struct ScanDiceKeyView: View {
-    var stickers: Bool = false
+    let stickers: Bool
     let onDiceKeyRead: (_ diceKey: DiceKey) -> Void
-    var onCancel: (() -> Void)?
+    let onCancel: (() -> Void)?
 
-    @State private var scanModel = DiceKeyScanModel()
+    @State private var scanModel: DiceKeyScanModel
     @State private var cameraAuthorized: Bool?
     @State private var selectedCameraID: String?
     @State private var cameraError: PresentableError?
@@ -23,6 +23,20 @@ struct ScanDiceKeyView: View {
     /// Discovered once and again when a camera connects or disconnects, not per render:
     /// the body re-evaluates on every scanned frame.
     @State private var cameras: [AVCaptureDevice] = []
+
+    /// `checkingACopy` finishes the scan on any 25 faces, so a copy with a letter repeated can
+    /// still be compared with its original; otherwise the faces must make a DiceKey.
+    init(
+        stickers: Bool = false,
+        checkingACopy: Bool = false,
+        onDiceKeyRead: @escaping (_ diceKey: DiceKey) -> Void,
+        onCancel: (() -> Void)? = nil
+    ) {
+        self.stickers = stickers
+        self.onDiceKeyRead = onDiceKeyRead
+        self.onCancel = onCancel
+        _scanModel = State(initialValue: DiceKeyScanModel(checkingACopy: checkingACopy))
+    }
 
     private var selectedCamera: AVCaptureDevice? {
         if let camera = cameras.first(where: { $0.uniqueID == selectedCameraID }), camera.canBeDisplayed {

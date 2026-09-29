@@ -5,6 +5,7 @@
 //  Created by Kevin Shah on 27/01/21.
 //
 
+import DiceKeySpecification
 import Foundation
 import Observation
 import ReadDiceKey
@@ -20,15 +21,36 @@ final class DiceKeyScanModel {
     /// Set once, when every face of the DiceKey has been read.
     private(set) var completedDiceKey: DiceKey?
 
+    /// When checking a copy, any 25 faces finish the scan, a letter repeated and all, so the
+    /// check can show which dice were copied wrong. Otherwise they must make a DiceKey.
+    private let checkingACopy: Bool
+
+    init(checkingACopy: Bool = false) {
+        self.checkingACopy = checkingACopy
+    }
+
     func apply(_ frame: ScannedFrame) {
         frameCount += 1
         if imageFrameSize != frame.size {
             imageFrameSize = frame.size
         }
         dice = frame.dice
-        guard completedDiceKey == nil, let faces = frame.diceKey else {
+        guard completedDiceKey == nil, let faces = checkingACopy ? frame.allFaces : frame.diceKey else {
             return
         }
         completedDiceKey = DiceKey(faces)
+    }
+}
+
+extension DiceKey {
+    /// The faces the scanner read, rows top to bottom as the camera saw them.
+    convenience init(_ scanned: [ScannedFace]) {
+        self.init(scanned.map { face in
+            Face(
+                letter: face.letter,
+                digit: face.digit,
+                orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.allCases[face.clockwiseTurns]
+            )
+        })
     }
 }

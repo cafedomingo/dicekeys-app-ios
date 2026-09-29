@@ -52,13 +52,18 @@ public struct DiceKeyScanner: Sendable {
 
     public init() {}
 
-    /// All 25 faces, rows top to bottom, once every one has been read.
-    public var diceKey: [ScannedFace]? {
+    /// All 25 faces, rows top to bottom, once every one has been read, whatever they are.
+    public var allFaces: [ScannedFace]? {
         let read = faces.compactMap { $0 }
-        // A DiceKey has one die per letter. Faces that repeat a letter are something else,
-        // such as a sheet of StickKeys stickers, however well they read.
-        guard read.count == 25, Set(read.map(\.letter)).count == 25 else { return nil }
-        return read
+        return read.count == 25 ? read : nil
+    }
+
+    /// All 25 faces, once every one has been read and they make a DiceKey. A DiceKey has one
+    /// die per letter; faces that repeat a letter are something else, such as a sheet of
+    /// StickKeys stickers or a copy with a sticker in the wrong place, however well they read.
+    public var diceKey: [ScannedFace]? {
+        guard let all = allFaces, Set(all.map(\.letter)).count == 25 else { return nil }
+        return all
     }
 
     /// Reads one frame and merges what it shows with the frames before.

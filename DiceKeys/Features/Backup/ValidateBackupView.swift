@@ -47,6 +47,7 @@ struct ValidateBackupView: View {
         if scanningCopy || scanningOriginal {
             ScanDiceKeyView(
                 stickers: target == .Stickeys,
+                checkingACopy: scanningCopy,
                 onDiceKeyRead: { diceKeyScanned in
                     if scanningOriginal {
                         onOriginalRescanned(diceKeyScanned)
