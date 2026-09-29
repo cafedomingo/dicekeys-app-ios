@@ -22,7 +22,7 @@ struct ScanningZoomTests {
     @Test("leaves a camera that can focus closer than the target at its widest")
     func leavesACloseFocusingCameraAlone() {
         #expect(CameraSession.zoomForScanning(minimumFocusDistance: 100, fieldOfView: 70, frameSize: frame) < 1)
-        // An ultra wide sees so much that the target is only a few centimeters away.
+        // A camera with a very wide view puts the target only a few centimeters away.
         #expect(CameraSession.zoomForScanning(minimumFocusDistance: 20, fieldOfView: 110, frameSize: frame) < 1)
     }
 

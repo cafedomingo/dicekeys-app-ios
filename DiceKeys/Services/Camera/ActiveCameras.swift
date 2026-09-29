@@ -19,14 +19,13 @@ extension AVCaptureDevice {
 @MainActor
 enum ActiveCameras {
     static func get() -> [AVCaptureDevice] {
-        // Back cameras first: on a phone that is the one to scan with. The devices come in
-        // the order of `deviceTypes`, so the wide-angle camera, the sharpest, is the default;
-        // CameraSession zooms it so the key stays far enough away to focus on, and the ultra
-        // wide stays available for close-ups. A Mac running the app as Designed for iPad has
-        // no back camera, so fall back to whatever video device there is (built-in,
-        // Continuity Camera, external webcam).
+        // On a phone, the back wide-angle camera: the sharpest, and CameraSession zooms it so
+        // the key stays far enough away to focus on. The ultra wide is left out: it sees less
+        // of each die and has to be held closer, and on the phone it scanned far worse. A Mac
+        // running the app as Designed for iPad has no back camera, so fall back to whatever
+        // video device there is (built-in, Continuity Camera, external webcam).
         let back = AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera],
+            deviceTypes: [.builtInWideAngleCamera],
             mediaType: .video,
             position: .back
         ).devices.filter(\.canBeDisplayed)
