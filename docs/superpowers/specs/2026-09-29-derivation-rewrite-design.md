@@ -253,8 +253,7 @@ derivation (see Decisions).
 
 ## Canonicalizer (app)
 
-`DiceKeys/Model/Recipes/CanonicalizeJsonRecipe.swift` is rewritten over JSON tokens to match
-the TypeScript reference (`web/src/dicekeys/canonicalizeRecipeJson.ts`):
+`DiceKeys/Model/Recipes/RecipeJson.swift` parses a recipe keeping the source text of numbers and strings and writes the reference canonical form (sorted fields, `purpose` first, `#` last, no whitespace). It matches the TypeScript reference (`web/src/dicekeys/canonicalizeRecipeJson.ts`):
 
 - numbers and string values are emitted as their original source text;
 - booleans as `true`/`false`, null as `null`;

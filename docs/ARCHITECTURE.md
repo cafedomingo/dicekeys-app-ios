@@ -47,7 +47,7 @@ DiceKeys/
   Model/          value types and domain logic; nothing here knows about SwiftUI state
     DiceKey/      DiceKey, Face, PartialFace,
                   FaceOrientationLetterTrbl+Rotation
-    Recipes/      DerivationRecipe (was Derivables), CanonicalizeJsonRecipe,
+    Recipes/      DerivationRecipe (was Derivables), RecipeJson,
                   DerivationRecipeTemplates, DerivedValue (was DerivedValueView)
     BIP39/        Mnemonic, Wordlist
     Settings.swift
