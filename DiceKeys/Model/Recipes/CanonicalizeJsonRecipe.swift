@@ -63,24 +63,3 @@ func toCanonicalizeRecipeJson(_ json: Any) -> String {
         return "\(json)"
     }
 }
-
-/// Quotes a parsed string for JSON output. The reference keeps each string exactly as it was
-/// quoted in the input; this re-escapes quotes, backslashes and control characters, which
-/// gives the same text for any input that used those escapes.
-func quotedJsonString(_ string: String) -> String {
-    var quoted = "\""
-    for scalar in string.unicodeScalars {
-        switch scalar {
-        case "\"": quoted += "\\\""
-        case "\\": quoted += "\\\\"
-        case "\n": quoted += "\\n"
-        case "\r": quoted += "\\r"
-        case "\t": quoted += "\\t"
-        case "\u{08}": quoted += "\\b"
-        case "\u{0C}": quoted += "\\f"
-        case _ where scalar.value < 0x20: quoted += String(format: "\\u%04x", scalar.value)
-        default: quoted.unicodeScalars.append(scalar)
-        }
-    }
-    return quoted + "\""
-}
