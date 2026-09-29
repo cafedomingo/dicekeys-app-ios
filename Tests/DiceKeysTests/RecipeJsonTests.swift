@@ -91,7 +91,6 @@ struct RecipeJsonTests {
         #"{"purpose":"back\\slash"}"#,
         #"{"purpose":"line\nbreak\ttab\u0001"}"#,
         #"{"purpose":"foo\",\"allow\":[{\"host\":\"attacker.example\"}]"}"#,
-        #"{"purpose":"x","we\"ird":1}"#,
         #"{"purpose":"café 😀"}"#,
         #"{"":1}"#
     ]
@@ -110,9 +109,30 @@ struct RecipeJsonTests {
     @Test("keys sort by UTF-16 code unit, so an emoji sorts before U+FF5E and uppercase before lowercase")
     func keyOrderIsUTF16() throws {
         #expect(try #"{"～":1,"😀":2}"#.canonicalizedRecipe() == #"{"😀":2,"～":1}"#)
-        #expect(try #"{"～":1,"\ud83d\ude00":2}"#.canonicalizedRecipe() == #"{"\ud83d\ude00":2,"～":1}"#)
+        #expect(try #"{"～":1,"\ud83d\ude00":2}"#.canonicalizedRecipe() == #"{"😀":2,"～":1}"#)
         #expect(try #"{"b":1,"B":2}"#.canonicalizedRecipe() == #"{"B":2,"b":1}"#)
         #expect(try ##"{"x":{"z":1,"purpose":"p","#":2}}"##.canonicalizedRecipe() == ##"{"x":{"purpose":"p","z":1,"#":2}}"##)
+    }
+
+    @Test("keys are written decoded, as the reference does")
+    func keysAreWrittenDecoded() throws {
+        #expect(try #"{"\u0070urpose":"x","a":1}"#.canonicalizedRecipe() == #"{"purpose":"x","a":1}"#)
+        #expect(try #"{"a":1,"\u0070urpose":"x"}"#.canonicalizedRecipe() == #"{"purpose":"x","a":1}"#)
+        #expect(try #"{"é":1,"e":2}"#.canonicalizedRecipe() == #"{"e":2,"é":1}"#)
+    }
+
+    static let unrepresentableKeys: [String] = [
+        #"{"purpose":"x","we\"ird":1}"#, #"{"a\"b":1}"#, #"{"a\\b":1}"#, #"{"a\nb":1}"#, #"{"a\u0001b":1}"#
+    ]
+
+    @Test("keys the reference would write as invalid JSON are rejected", arguments: unrepresentableKeys)
+    func rejectsUnrepresentableKeys(json: String) {
+        var thrown: RecipeJsonError?
+        do { _ = try json.canonicalizedRecipe() } catch { thrown = error }
+        guard case .unrepresentableKey = thrown else {
+            Issue.record("expected .unrepresentableKey, got \(String(describing: thrown))")
+            return
+        }
     }
 
     static let notObjects: [String] = ["", "   ", "[]", "\"x\"", "123", "null", "true"]
@@ -125,7 +145,8 @@ struct RecipeJsonTests {
     static let invalid: [String] = [
         "{", #"{"a":1,}"#, #"{"a":01}"#, #"{"a":1.}"#, #"{"a":.5}"#, #"{"a":+1}"#, #"{"a":"\x"}"#,
         #"{"a":1}x"#, #"{"a" 1}"#, #"{a:1}"#, #"{"a":tru}"#, #"{"a":"unterminated}"#,
-        "{\"a\":\"raw\nnewline\"}", #"{"a":"\u12"}"#, #"{"\ud83d":1}"#, #"{"a":[1,]}"#, #"{"a":1 "b":2}"#
+        "{\"a\":\"raw\nnewline\"}", #"{"a":"\u12"}"#, #"{"\ud83d":1}"#, #"{"a":[1,]}"#, #"{"a":1 "b":2}"#,
+        #"{"\ude00":1}"#, #"{"\ud83dx":1}"#, #"{"\ud83d\ud83d":1}"#, #"{"\ud83dA":1}"#
     ]
 
     @Test("invalid JSON is rejected", arguments: invalid)
@@ -152,6 +173,7 @@ struct RecipeJsonTests {
 
     @Test("errors have a message a person can act on")
     func errorMessages() {
+        #expect(RecipeJsonError.unrepresentableKey(offset: 1).message == "A field name cannot contain quotes, backslashes or control characters")
         #expect(RecipeJsonError.notAnObject.message == "A recipe must be a JSON object, such as {\"purpose\":\"example\"}")
         #expect(RecipeJsonError.invalid(offset: 7).message == "Not valid JSON near position 7")
     }

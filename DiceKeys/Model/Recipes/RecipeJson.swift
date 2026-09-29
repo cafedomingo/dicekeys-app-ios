@@ -39,7 +39,9 @@ indirect enum RecipeJsonValue: Equatable {
                 if RecipeJsonField.precedes(rhs.element.name, lhs.element.name) { return false }
                 return lhs.offset < rhs.offset
             }
-            return "{" + sorted.map { "\($0.element.quotedName):\($0.element.value.canonicalText)" }.joined(separator: ",") + "}"
+            // The reference writes the decoded name between plain quotes, without escaping it.
+            // The parser rejects names for which that would not be valid JSON.
+            return "{" + sorted.map { "\"\($0.element.name)\":\($0.element.value.canonicalText)" }.joined(separator: ",") + "}"
         case .array(let items):
             return "[" + items.map(\.canonicalText).joined(separator: ",") + "]"
         case .string(let quoted):
@@ -55,21 +57,9 @@ indirect enum RecipeJsonValue: Equatable {
 }
 
 struct RecipeJsonField: Equatable {
-    /// The decoded name, used for ordering and lookup.
+    /// The decoded name, used for ordering and written back between plain quotes.
     let name: String
-    /// The original quoted text, written back as is.
-    let quotedName: String
     let value: RecipeJsonValue
-
-    init(name: String, quotedName: String, value: RecipeJsonValue) {
-        self.name = name
-        self.quotedName = quotedName
-        self.value = value
-    }
-
-    init(name: String, value: RecipeJsonValue) {
-        self.init(name: name, quotedName: quotedJsonString(name), value: value)
-    }
 
     /// "#" (the sequence number) always comes last and "purpose" always first; the rest sort
     /// by UTF-16 code unit, which is what JavaScript's `<` on strings compares.
@@ -107,11 +97,14 @@ enum RecipeJsonError: Error, Equatable {
     case notAnObject
     /// Byte offset into the UTF-8 text where parsing stopped.
     case invalid(offset: Int)
+    /// A field name whose decoded text the reference would write as invalid JSON.
+    case unrepresentableKey(offset: Int)
 
     var message: String {
         switch self {
         case .notAnObject: return "A recipe must be a JSON object, such as {\"purpose\":\"example\"}"
         case .invalid(let offset): return "Not valid JSON near position \(offset)"
+        case .unrepresentableKey: return "A field name cannot contain quotes, backslashes or control characters"
         }
     }
 }
@@ -152,8 +145,8 @@ struct RecipeJsonParser {
     static func decodeString(quoted: String) throws(RecipeJsonError) -> String {
         var parser = RecipeJsonParser(quoted)
         guard parser.peek == UInt8(ascii: "\"") else { throw .invalid(offset: 0) }
-        let value = try parser.parseString()
-        guard parser.index == parser.bytes.count, case .string = value else { throw .invalid(offset: parser.index) }
+        _ = try parser.parseString()
+        guard parser.index == parser.bytes.count else { throw .invalid(offset: parser.index) }
         return try parser.decode(quotedRange: 0..<parser.bytes.count)
     }
 
@@ -174,7 +167,7 @@ struct RecipeJsonParser {
         switch byte {
         case UInt8(ascii: "{"): return try parseObjectBody()
         case UInt8(ascii: "["): return try parseArray()
-        case UInt8(ascii: "\""): return try parseString()
+        case UInt8(ascii: "\""): return .string(quoted: try parseString())
         case UInt8(ascii: "t"): try expect("true"); return .bool(true)
         case UInt8(ascii: "f"): try expect("false"); return .bool(false)
         case UInt8(ascii: "n"): try expect("null"); return .null
@@ -192,14 +185,17 @@ struct RecipeJsonParser {
             skipWhitespace()
             guard peek == UInt8(ascii: "\"") else { throw .invalid(offset: index) }
             let nameStart = index
-            guard case .string(let quotedName) = try parseString() else { throw .invalid(offset: nameStart) }
+            _ = try parseString()
             let name = try decode(quotedRange: nameStart..<index)
+            guard name.unicodeScalars.allSatisfy({ $0 != "\"" && $0 != "\\" && $0.value >= 0x20 }) else {
+                throw .unrepresentableKey(offset: nameStart)
+            }
             skipWhitespace()
             guard peek == UInt8(ascii: ":") else { throw .invalid(offset: index) }
             index += 1
             skipWhitespace()
             let value = try parseValue()
-            fields.append(RecipeJsonField(name: name, quotedName: quotedName, value: value))
+            fields.append(RecipeJsonField(name: name, value: value))
             skipWhitespace()
             switch peek {
             case UInt8(ascii: ","): index += 1
@@ -227,7 +223,7 @@ struct RecipeJsonParser {
     }
 
     /// Scans a string, validating escapes, and returns its source text with the quotes.
-    private mutating func parseString() throws(RecipeJsonError) -> RecipeJsonValue {
+    private mutating func parseString() throws(RecipeJsonError) -> String {
         let start = index
         index += 1
         while true {
@@ -235,7 +231,7 @@ struct RecipeJsonParser {
             switch byte {
             case UInt8(ascii: "\""):
                 index += 1
-                return .string(quoted: String(decoding: bytes[start..<index], as: UTF8.self))
+                return String(decoding: bytes[start..<index], as: UTF8.self)
             case UInt8(ascii: "\\"):
                 index += 1
                 guard let escaped = peek else { throw .invalid(offset: index) }
