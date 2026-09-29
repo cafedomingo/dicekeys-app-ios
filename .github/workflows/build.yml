@@ -41,18 +41,27 @@ jobs:
       - name: actionlint
         run: actionlint
 
-  # The native package (libsodium, seeded-crypto, and the Swift scanner) builds and tests
-  # with plain SwiftPM on the macOS host. GoldenVectorTests is the tripwire for any change
-  # to derived secrets.
-  native-package:
+  # libsodium and seeded-crypto, built from their vendored C and C++ sources with plain
+  # SwiftPM on the macOS host. GoldenVectorTests is the tripwire for any change to derived
+  # secrets.
+  crypto:
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
-      # Release build: the scanner corpus is 23 twelve-megapixel photos, which takes
-      # minutes at -Onone and seconds optimized.
-      - name: Build and test package
-        working-directory: Packages/DiceKeysCore
+      - name: Build and test
+        working-directory: Packages/SeededCrypto
+        run: swift test -c release -Xswiftc -enable-testing --parallel
+
+  # The scanner and its photo corpus, with plain SwiftPM on the macOS host. Release build:
+  # the corpus is full-size photos, which take minutes at -Onone and seconds optimized.
+  scanner:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build and test
+        working-directory: Packages/ReadDiceKey
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
   unused-code:

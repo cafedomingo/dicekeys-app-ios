@@ -5,38 +5,52 @@
 //  Created by Kevin Shah on 27/01/21.
 //
 
+import DiceKeySpecification
 import Foundation
 import Observation
+import ReadDiceKey
 
 /// Per-frame results from the scanner, published on the main actor. Only the
-/// views that read `frameCount` or `facesRead` re-render on every frame.
+/// views that read `frameCount` or `dice` re-render on every frame.
 @MainActor @Observable
 final class DiceKeyScanModel {
     private(set) var frameCount = 0
     private(set) var imageFrameSize: CGSize = .zero
-    private(set) var facesRead: [FaceRead] = []
+    private(set) var dice: [DieInFrame] = []
 
-    /// Set once, when a complete, error-free DiceKey has been read.
+    /// Set once, when every face of the DiceKey has been read.
     private(set) var completedDiceKey: DiceKey?
+
+    /// When checking a copy, any 25 faces finish the scan, a letter repeated and all, so the
+    /// check can show which dice were copied wrong. Otherwise they must make a DiceKey.
+    private let checkingACopy: Bool
+
+    init(checkingACopy: Bool = false) {
+        self.checkingACopy = checkingACopy
+    }
 
     func apply(_ frame: ScannedFrame) {
         frameCount += 1
-        let size = CGSize(width: frame.width, height: frame.height)
-        if imageFrameSize != size {
-            imageFrameSize = size
+        if imageFrameSize != frame.size {
+            imageFrameSize = frame.size
         }
-        let faces = FaceRead.fromJson(frame.readResultJSON) ?? []
-        facesRead = faces
-
-        guard completedDiceKey == nil,
-              faces.count == 25,
-              faces.allSatisfy({ $0.errors.isEmpty }),
-              let diceKey = try? DiceKey(faces) else {
+        dice = frame.dice
+        guard completedDiceKey == nil, let faces = checkingACopy ? frame.allFaces : frame.diceKey else {
             return
         }
-        // Frames are rotated by AVFoundation before the scanner sees them, so the faces
-        // are already in the orientation the user is looking at. The pipeline used to
-        // apply a fixed 90° turn here to compensate for the raw landscape-native buffer.
-        completedDiceKey = diceKey
+        completedDiceKey = DiceKey(faces)
+    }
+}
+
+extension DiceKey {
+    /// The faces the scanner read, rows top to bottom as the camera saw them.
+    convenience init(_ scanned: [ScannedFace]) {
+        self.init(scanned.map { face in
+            Face(
+                letter: face.letter,
+                digit: face.digit,
+                orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.allCases[face.clockwiseTurns]
+            )
+        })
     }
 }

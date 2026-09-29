@@ -5,6 +5,7 @@
 //  Created by Stuart Schechter on 2020/11/12.
 //
 
+import DiceKeySpecification
 import Foundation
 import Synchronization
 import SeededCrypto
@@ -29,14 +30,10 @@ func nicknameForDiceKey(centerFace: Face) -> String {
 }
 
 /// `final` + `Sendable`: every stored property is an immutable value, and DiceKeys
-/// cross actor boundaries (keychain reads, the scanner actor).
+/// cross actor boundaries (keychain reads).
 final class DiceKey: Identifiable, Equatable, Sendable {
     static func == (lhs: DiceKey, rhs: DiceKey) -> Bool {
         (0..<25).allSatisfy { index in lhs.faces[index] == rhs.faces[index] }
-    }
-
-    enum ConstructorError: Error {
-        case emptyFace
     }
 
     /// The 25 faces that make up a DiceKey, each with a letter, digit, and orientation
@@ -45,16 +42,6 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     init(_ faces: [Face]) {
         precondition(faces.count == 25)
         self.faces = faces
-    }
-
-    init(_ facesRead: [FaceRead]) throws {
-        precondition(facesRead.count == 25)
-        self.faces = try facesRead.map { fr -> Face in
-            guard let face = fr.toFace() else {
-                throw ConstructorError.emptyFace
-            }
-            return face
-        }
     }
 
     /// The center face of a DiceKey, useful as the most salient face for users to

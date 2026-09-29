@@ -5,6 +5,7 @@
 //  Created by Stuart Schechter on 2021/01/22.
 //
 
+import DiceKeySpecification
 import Observation
 
 /// The 25 partially-entered faces of a DiceKey being typed in by hand.

@@ -8,15 +8,23 @@
 
 import AVFoundation
 import Foundation
+import ReadDiceKey
 
 /// Owns the `AVCaptureSession` for scanning, its preview layer, and (on iOS)
 /// the `RotationCoordinator` that keeps the preview and the scanned frames
 /// level with the horizon. Frames go to `CameraSampleBufferDelegate`.
 @MainActor
 final class CameraSession {
-    enum CameraSessionError: Error {
+    enum CameraSessionError: LocalizedError {
         case inputsAreInvalid
-        case noCamerasAvailable
+        case noScannableFormat
+
+        var errorDescription: String? {
+            switch self {
+            case .inputsAreInvalid: "The camera could not be connected."
+            case .noScannableFormat: "The camera does not deliver the kind of picture the scanner reads."
+            }
+        }
     }
 
     let session = AVCaptureSession()
@@ -28,8 +36,8 @@ final class CameraSession {
     private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
     private var rotationObservations: [NSKeyValueObservation] = []
 
-    init(processor: DiceKeyFrameProcessor, onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
-        self.delegate = CameraSampleBufferDelegate(processor: processor, onFrame: onFrame)
+    init(onFrame: @escaping @MainActor @Sendable (ScannedFrame) -> Void) {
+        self.delegate = CameraSampleBufferDelegate(onFrame: onFrame)
     }
 
     /// Bumped by every `start` and `stop`; a `start` that finds it changed after an await
@@ -57,6 +65,9 @@ final class CameraSession {
         await serialized {
             do {
                 box.output = try Self.configure(session: session, camera: camera, delegate: delegate)
+                // Only once the session has committed does the camera have the format it
+                // will run in, which the zoom depends on.
+                Self.zoomForScanning(camera)
             } catch {
                 box.error = error
             }
@@ -136,13 +147,54 @@ final class CameraSession {
 
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.alwaysDiscardsLateVideoFrames = true
-        // The single DispatchQueue in the app: AVFoundation requires a serial queue
-        // for sample-buffer delivery.
-        videoOutput.setSampleBufferDelegate(delegate, queue: DispatchQueue(label: "com.dicekeys.sampleBuffers"))
-        if session.canAddOutput(videoOutput) {
-            session.addOutput(videoOutput)
+        let formats = videoOutput.availableVideoPixelFormatTypes
+        if let format = GrayImage.lumaPixelFormats.first(where: formats.contains) {
+            videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
+        } else if !formats.isEmpty {
+            // Every frame would be skipped, so fail where the screen can say so. An empty list
+            // proves nothing, and then the camera's own format stands.
+            throw CameraSessionError.noScannableFormat
         }
+        videoOutput.setSampleBufferDelegate(delegate, queue: delegate.queue)
+        guard session.canAddOutput(videoOutput) else {
+            throw CameraSessionError.inputsAreInvalid
+        }
+        session.addOutput(videoOutput)
         return videoOutput
+    }
+
+    /// Zooms `camera` in just enough that a DiceKey lined up with the scanning target is
+    /// farther away than it can focus, if it reports how close that is.
+    private nonisolated static func zoomForScanning(_ camera: AVCaptureDevice) {
+        let minimumFocusDistance = Double(camera.minimumFocusDistance)  // -1 if unknown
+        guard minimumFocusDistance > 0, (try? camera.lockForConfiguration()) != nil else { return }
+        defer { camera.unlockForConfiguration() }
+        let format = camera.activeFormat
+        let size = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
+        let zoom = zoomForScanning(
+            minimumFocusDistance: minimumFocusDistance,
+            fieldOfView: Double(format.videoFieldOfView),
+            frameSize: CGSize(width: Int(size.width), height: Int(size.height))
+        )
+        camera.videoZoomFactor = min(max(zoom, camera.minAvailableVideoZoomFactor), format.videoMaxZoomFactor)
+    }
+
+    /// The zoom at which a DiceKey filling the scanning target's window is `minimumFocusDistance`
+    /// (in millimeters) away, for a camera whose field of view (in degrees) spans the long side
+    /// of `frameSize`; under 1 when no zoom is needed.
+    ///
+    /// The window takes up `ScanningTarget.windowFraction` of the frame's square and holds the
+    /// whole box, about six dice pitches across, so the square, which spans the frame's short
+    /// side, covers six pitches divided by that fraction: DiceKey dice are 12 mm cubes about
+    /// 17 mm apart (1.35 to 1.5 die widths, measured in the corpus photos). No margin is added: on the owner's phone, a key
+    /// held a little closer than this still read within a second, and more zoom only made the
+    /// preview feel cramped.
+    nonisolated static func zoomForScanning(minimumFocusDistance: Double, fieldOfView: Double, frameSize: CGSize) -> Double {
+        let longSide = max(frameSize.width, frameSize.height), shortSide = min(frameSize.width, frameSize.height)
+        let halfAngleOfSquare = atan(tan(fieldOfView * .pi / 360) * shortSide / longSide)
+        let pitchesAcrossSquare = 6 / Double(ScanningTarget.windowFraction)
+        let distanceToTarget = pitchesAcrossSquare * 17 / 2 / tan(halfAngleOfSquare)
+        return minimumFocusDistance / distanceToTarget
     }
 
     private func makePreviewLayer(for camera: AVCaptureDevice) {
@@ -161,10 +213,9 @@ final class CameraSession {
         rotationCoordinator = coordinator
         // One angle drives both the preview and the frames. AVFoundation publishes two,
         // and its own documentation warns they differ "in certain combinations of device
-        // and interface orientations"; feeding the preview one and the frames the other
-        // is what left landscape scans a quarter turn out while portrait looked fine.
-        // Which angle is used matters far less than that both get the same one: the
-        // overlay is drawn in frame coordinates over the preview, so they have to agree.
+        // and interface orientations". Which angle is used matters far less than that both
+        // get the same one: the overlay is drawn in frame coordinates over the preview, so
+        // they have to agree.
         rotationObservations = [
             coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]) { [weak self] coordinator, _ in
                 let angle = coordinator.videoRotationAngleForHorizonLevelPreview
@@ -184,8 +235,6 @@ final class CameraSession {
     /// Rotates the frames by the same angle as the preview. `AVCaptureVideoDataOutput`
     /// physically rotates its buffers, so the scanner and the overlay work in the
     /// coordinates the user is looking at, whatever AVFoundation's angle convention is.
-    /// This replaced a hand-written angle-to-`CGImagePropertyOrientation` table that was
-    /// only correct in portrait.
     private func applyCaptureRotation(_ angle: CGFloat) {
         guard let connection = videoOutput?.connection(with: .video),
               connection.isVideoRotationAngleSupported(angle) else { return }

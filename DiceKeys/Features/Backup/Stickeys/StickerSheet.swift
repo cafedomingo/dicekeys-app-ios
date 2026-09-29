@@ -5,6 +5,7 @@
 //  Created by Stuart Schechter on 2020/12/02.
 //
 
+import DiceKeySpecification
 import SwiftUI
 
 private let nativeHeightOverWidth = CGFloat(155.0/130.0)

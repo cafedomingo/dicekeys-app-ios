@@ -1,4 +1,4 @@
-// Generates Packages/DiceKeysCore/Tests/SeededCryptoTests/Fixtures/golden-vectors.json
+// Generates Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/golden-vectors.json
 // straight from the reference C++ (lib-seeded + libsodium) through the C ABI shim.
 // Build + run on any machine with clang++; see scripts/generate-golden-vectors.sh.
 #include <cstdio>

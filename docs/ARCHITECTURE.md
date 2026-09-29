@@ -3,25 +3,26 @@
 Companion documents:
 - `BACKLOG.md`: everything deliberately left undone, sized and explained.
 - `DEPENDENCIES.md`: the vendored C and C++ libraries and how to update them.
-- `SCANNER-PORT-NOTES.md`: the Swift scanner, stage by stage, and its deliberate differences.
+- `SCANNING.md`: how the scanner reads a DiceKey, and why it works that way rather than the
+  alternatives measured.
 
 ## The app in one paragraph
 
 A single iOS app target: SwiftUI on Observation, `NavigationStack`, async/await and Swift 6
 strict concurrency, with Liquid Glass chrome. It scans a physical DiceKey with the camera or
 takes one typed by hand, holds it in memory behind Face ID, and derives passwords, keys and
-seeds from it. One local Swift package supplies everything native, with no external package
-dependencies: libsodium as a source copy, DiceKeys' seeded-crypto as an unmodified git
-subtree behind a small C ABI, and a pure-Swift port of the DiceKey scanner. No CocoaPods,
-submodules, Objective-C, C++ wrappers or OpenCV remain, and there is not one `#if os(...)`
-left in the app.
+seeds from it. Two local Swift packages supply the rest, with no external dependencies:
+`SeededCrypto` holds libsodium as a source copy and DiceKeys' seeded-crypto as an unmodified
+git subtree behind a small C ABI, and `ReadDiceKey` holds the generated face specification and
+a DiceKey scanner written in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or
+OpenCV remain, and there is not one `#if os(...)` left in the app.
 
 ## Goals, in priority order
 
 1. **Always be able to read a DiceKey and re-derive the same secrets.** The seed derivation
    (seeded-crypto + libsodium) builds from sources in this repository and the scanner is
    pure Swift. Golden vectors generated from the reference implementation guard the
-   derivation output; upstream's photo corpus guards the scanner.
+   derivation output; a corpus of photos of real keys guards the scanner.
 2. Build with current Xcode against the current SDKs, Swift 6 language mode, strict
    concurrency, no deprecated APIs. GitHub Actions macOS runners are the compiler for this
    branch, so the SDK floor follows what they ship (Xcode 26.6 today).
@@ -30,7 +31,7 @@ left in the app.
    controls, nothing fighting the system look.
 
 Nothing here changes what the app derives. Any change that alters derived output is a bug,
-and `Packages/DiceKeysCore/Tests/SeededCryptoTests` exists to catch it.
+and `Packages/SeededCrypto/Tests/SeededCryptoTests` exists to catch it.
 
 ---
 
@@ -44,7 +45,7 @@ DiceKeys/
   App/            DiceKeysApp (entry), AppModel (composition root), AppRouter (Route + path),
                   RootView (NavigationStack + destinations + API sheet), HomeView
   Model/          value types and domain logic; nothing here knows about SwiftUI state
-    DiceKey/      DiceKey, Face, FaceRead, FaceSpecification, PartialFace,
+    DiceKey/      DiceKey, Face, PartialFace,
                   FaceOrientationLetterTrbl+Rotation
     Recipes/      DerivationRecipe (was Derivables), CanonicalizeJsonRecipe,
                   DerivationRecipeTemplates, DerivedValue (was DerivedValueView)
@@ -52,8 +53,7 @@ DiceKeys/
     Settings.swift
   Services/       things that talk to the OS
     Keychain/     DiceKeyKeychain (was EncryptedDiceKeyStore)
-    Camera/       CameraSession, CameraSampleBufferDelegate, DiceKeyFrameProcessor (actor),
-                  ActiveCameras
+    Camera/       CameraSession, CameraSampleBufferDelegate, ActiveCameras
   Features/       one folder per user-facing feature; views are thin over stores/models
     DiceKey/      DiceKeyMemoryStore, KnownDiceKeysStore, UnlockedDiceKeyState,
                   DiceKeyScreen, SaveDiceKeySheet, SavedDiceKeysView
@@ -76,7 +76,7 @@ DiceKeys/
     Extensions/   Data, String, View
     PlatformTypes.swift  (UIFont.inconsolataBold)
   Resources/, fonts/    Colors.xcassets (see Colors), Assets.xcassets, AppIcon.icon
-Tests/DiceKeysTests/    Swift Testing: CanonicalizeRecipeJsonTests, MnemonicsTests, DiceKeySeedTests
+Tests/DiceKeysTests/    Swift Testing
 Tests/DiceKeysUITests/  ScreenWalk, run by scripts/screen-walk.sh, not by CI
 ```
 
@@ -92,8 +92,8 @@ Tests/DiceKeysUITests/  ScreenWalk, run by scripts/screen-walk.sh, not by CI
   `.presentationDetents([.medium, .large])`.
 - **Errors**: caught into a `PresentableError?` and shown with `.errorAlert(_:)`.
   `UnlockedDiceKeyState.lastError` is the store-side example.
-- **Async**: `async/await`, `Task`, one actor (`DiceKeyFrameProcessor`), `Mutex` for the
-  frame-drop flag. The only `DispatchQueue` is the serial queue AVFoundation requires.
+- **Async**: `async/await` and `Task`, and no actors of our own. The only `DispatchQueue`
+  is the serial queue AVFoundation requires, where camera frames are scanned.
 - **Liquid Glass**: primary CTAs `.buttonStyle(.glassProminent)`, secondary `.glass`
   (`PrimaryButton`/`SecondaryButton`, `StepFooterView`). Camera controls in one
   `GlassEffectContainer` with `.glassEffect(.regular.interactive())` + `.glassEffectID`
@@ -139,7 +139,7 @@ change.
 
 ```
 swift run --package-path BuildTools xcodegen generate
-open DiceKeys.xcodeproj        # schemes: DiceKeys, DiceKeysCore-Package
+open DiceKeys.xcodeproj        # scheme: DiceKeys
 ```
 
 The Xcode project is generated and git-ignored. **Edit `project.yml`, never the project.**
@@ -179,9 +179,9 @@ permissions error until it is accepted.
 
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
-- `swift test -c release` for `Packages/DiceKeysCore`: the golden derivation vectors, the
-  scanner over upstream's 23 photos, a face-by-face comparison against the C++ scanner's
-  recorded output, and concurrent first use of libsodium.
+- `swift test -c release` for each package: in `Packages/SeededCrypto` the golden derivation
+  vectors and concurrent first use of libsodium, and in `Packages/ReadDiceKey` the scanner over
+  upstream's photos, the owner's photos and video, and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
 
 The runners have no iOS 27 SDK, which is why the deployment target is 26 and the one
@@ -191,22 +191,24 @@ The runners have no iOS 27 SDK, which is why the deployment target is 26 and the
 
 Installed from TestFlight on an iPhone: the app runs, the camera previews, and the scanner
 reads a real DiceKey at a speed the owner called fine. Rotation was wrong on the device and
-has been through two fixes; `BACKLOG.md` records what still needs confirming.
+has been through two fixes; `BACKLOG.md` records what still needs confirming. The scanner has
+since been rewritten (`SCANNING.md`), and the rewrite has not been on a device yet.
 
 Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## How the safety nets work
 
-- `Packages/DiceKeysCore/Tests/SeededCryptoTests/Fixtures/golden-vectors.json` came from the
+- `Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/golden-vectors.json` came from the
   reference C++ (`scripts/generate-golden-vectors.sh`). If `GoldenVectorTests` fails, derived
   secrets have changed; do not update the fixture without understanding why.
 - `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to the
   same fixture, and proves every rotation of a key derives the same seed. That last test is
   why the rotation bugs were display problems rather than security ones.
-- `Packages/DiceKeysCore/Tests/ReadDiceKeyTests/` runs the scanner over upstream's photos
-  (the file names are the expected reads) and compares it face by face with the C++ scanner's
-  recorded output (`reference-cpp-scanner.json`, regenerable from this repo's commit
-  `183d39d`).
+- `Packages/ReadDiceKey/Tests/ReadDiceKeyTests/` runs the scanner over upstream's photos and
+  the owner's photos and video (the file names are the expected reads): it must never read a
+  face wrong, must read well-framed keys, and must read nothing where there is no key. Keys drawn from the face
+  codes cover reading across frames: a quarter turn between frames, a second key, a frame
+  that reads nothing.
 - Re-vendoring: `scripts/vendor-libsodium.sh [url] [tag]` and
   `scripts/update-seeded-crypto.sh [url] [ref]`; run the golden-vector script after either
   and expect no diff.
@@ -217,8 +219,9 @@ Keep the C++. `lib-seeded` is about 5k real lines over libsodium and is the refe
 implementation shared with the web app; any byte-level divergence in a rewrite silently
 changes every derived secret, and the golden vectors can only cover cases someone wrote
 down. `lib-read-dicekey` was the exception, because it needed OpenCV: it was ported to Swift
-stage by stage and checked face by face against the C++ output (`docs/SCANNER-PORT-NOTES.md`).
-The port follows the same algorithm, so it is still covered by the licensing question below.
+stage by stage and checked face by face against the C++ output, then rewritten around the two
+bar codes once the port showed what mattered (`SCANNING.md`). It still follows upstream's
+approach to finding and decoding the bars, so it is covered by the licensing question below.
 Rust would add a second toolchain and an FFI layer for no gain on a
 single-platform personal app. What *was* removed is every line of Objective-C: the shims are
 C++ behind a C header, which Swift imports natively.
@@ -227,7 +230,7 @@ C++ behind a C header, which Swift imports natively.
 
 seeded-crypto and the BIP-39 word list are MIT, libsodium is ISC, Inconsolata is OFL, and
 `THIRD_PARTY_LICENSES` records each one with its origin and commit. The DiceKeys-derived
-parts, meaning the app itself, the scanner port, the photo corpus and the icon mark, still
+parts, meaning the app itself, the scanner, the photo corpus and the icon mark, still
 carry only upstream's "all rights reserved while we choose a license" placeholder. That is
 why the README says personal use and TestFlight only, and why publishing needs DiceKeys, LLC
 to choose a license (license@dicekeys.com).

@@ -5,6 +5,8 @@
 //  Created by Stuart Schechter on 2020/11/12.
 //
 
+import DiceKeySpecification
+
 extension FaceOrientationLetterTrbl {
     func rotate90() -> FaceOrientationLetterTrbl {
         switch self {
