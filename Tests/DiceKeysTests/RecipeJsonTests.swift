@@ -58,4 +58,101 @@ struct RecipeJsonTests {
         ])
         #expect(object.canonicalText == "{\"e\u{301}\":2,\"\u{E9}\":1}")
     }
+
+    // The reference's own test cases, from
+    // dicekeys-app-typescript/web/src/tests/recipe-canonicalization.test.ts, plus the Android
+    // ones this app already carried. Both apps agree on all of these.
+    static let referenceVectors: [(input: String, expected: String)] = [
+        (##"{"#":3,"allow":[{"host":"*.example.com"}]}"##, ##"{"allow":[{"host":"*.example.com"}],"#":3}"##),
+        (##"{"#":3,"allow":[{"host":"*.example.com"}],"purpose":"Life? Don't talk to me about life!" }"##,
+         ##"{"purpose":"Life? Don't talk to me about life!","allow":[{"host":"*.example.com"}],"#":3}"##),
+        (#"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}]}"#, #"{"allow":[{"host":"*.example.com","paths":["lo","yo"]}]}"#),
+        (" {  \"allow\" : [  {\"host\"\n:\"*.example.com\"}\t ]    }\n\n", #"{"allow":[{"host":"*.example.com"}]}"#),
+        (##"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}],"#":3, "purpose":"Don't know", "lengthInChars":3, "lengthInBytes": 15, "UNANTICIPATED_CAPITALIZED_FIELD":{}}"##,
+         ##"{"purpose":"Don't know","UNANTICIPATED_CAPITALIZED_FIELD":{},"allow":[{"host":"*.example.com","paths":["lo","yo"]}],"lengthInBytes":15,"lengthInChars":3,"#":3}"##),
+        (##"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}],"#":3, "purpose":"Don't know", "lengthInChars":3, "lengthInBytes": 15, "UNANTICIPATED_CAPITALIZED_FIELD":[ ] }"##,
+         ##"{"purpose":"Don't know","UNANTICIPATED_CAPITALIZED_FIELD":[],"allow":[{"host":"*.example.com","paths":["lo","yo"]}],"lengthInBytes":15,"lengthInChars":3,"#":3}"##),
+        (#"{ "silly":[{"pointless":[ "spacing in", "out"]}]}"#, #"{"silly":[{"pointless":["spacing in","out"]}]}"#),
+        (#"{ "silly":[{"pointless":[ "spacing in", "out"]}],   "crazy":3}"#, #"{"crazy":3,"silly":[{"pointless":["spacing in","out"]}]}"#)
+    ]
+
+    @Test("the reference test cases", arguments: referenceVectors)
+    func referenceCases(vector: (input: String, expected: String)) throws {
+        #expect(try vector.input.canonicalizedRecipe() == vector.expected)
+    }
+
+    // Source text the old JSONSerialization-based canonicalizer rewrote. Each of these is a
+    // fixed point: the reference emits numbers and strings exactly as written.
+    static let preservedText: [String] = [
+        #"{"a":1.50,"b":1e3,"c":-0,"d":0.30000000000000004,"e":12345678901234567890123}"#,
+        #"{"a":true,"b":false,"c":null}"#,
+        #"{"purpose":"a\/b\u007f\u001F\b\u00e9\ud83d\ude00"}"#,
+        #"{"purpose":"say \"hi\""}"#,
+        #"{"purpose":"back\\slash"}"#,
+        #"{"purpose":"line\nbreak\ttab\u0001"}"#,
+        #"{"purpose":"foo\",\"allow\":[{\"host\":\"attacker.example\"}]"}"#,
+        #"{"purpose":"x","we\"ird":1}"#,
+        #"{"purpose":"café 😀"}"#,
+        #"{"":1}"#
+    ]
+
+    @Test("numbers, strings and escapes keep their source text", arguments: preservedText)
+    func preservesSourceText(json: String) throws {
+        #expect(try json.canonicalizedRecipe() == json)
+    }
+
+    @Test("duplicate keys are kept in order")
+    func duplicateKeys() throws {
+        #expect(try #"{"a":1,"a":2}"#.canonicalizedRecipe() == #"{"a":1,"a":2}"#)
+        #expect(try #"{"b":1,"a":2,"a":1}"#.canonicalizedRecipe() == #"{"a":2,"a":1,"b":1}"#)
+    }
+
+    @Test("keys sort by UTF-16 code unit, so an emoji sorts before U+FF5E and uppercase before lowercase")
+    func keyOrderIsUTF16() throws {
+        #expect(try #"{"～":1,"😀":2}"#.canonicalizedRecipe() == #"{"😀":2,"～":1}"#)
+        #expect(try #"{"～":1,"\ud83d\ude00":2}"#.canonicalizedRecipe() == #"{"\ud83d\ude00":2,"～":1}"#)
+        #expect(try #"{"b":1,"B":2}"#.canonicalizedRecipe() == #"{"B":2,"b":1}"#)
+        #expect(try ##"{"x":{"z":1,"purpose":"p","#":2}}"##.canonicalizedRecipe() == ##"{"x":{"purpose":"p","z":1,"#":2}}"##)
+    }
+
+    static let notObjects: [String] = ["", "   ", "[]", "\"x\"", "123", "null", "true"]
+
+    @Test("anything but an object is rejected", arguments: notObjects)
+    func rejectsNonObjects(json: String) {
+        #expect(throws: RecipeJsonError.notAnObject) { try json.canonicalizedRecipe() }
+    }
+
+    static let invalid: [String] = [
+        "{", #"{"a":1,}"#, #"{"a":01}"#, #"{"a":1.}"#, #"{"a":.5}"#, #"{"a":+1}"#, #"{"a":"\x"}"#,
+        #"{"a":1}x"#, #"{"a" 1}"#, #"{a:1}"#, #"{"a":tru}"#, #"{"a":"unterminated}"#,
+        "{\"a\":\"raw\nnewline\"}", #"{"a":"\u12"}"#, #"{"\ud83d":1}"#, #"{"a":[1,]}"#, #"{"a":1 "b":2}"#
+    ]
+
+    @Test("invalid JSON is rejected", arguments: invalid)
+    func rejectsInvalidJson(json: String) {
+        var thrown: RecipeJsonError?
+        do { _ = try json.canonicalizedRecipe() } catch { thrown = error }
+        guard case .invalid = thrown else {
+            Issue.record("expected .invalid, got \(String(describing: thrown))")
+            return
+        }
+    }
+
+    @Test("a top-level object with trailing whitespace or a BOM is accepted")
+    func leadingAndTrailing() throws {
+        #expect(try "\u{FEFF}{\"a\":1}".canonicalizedRecipe() == #"{"a":1}"#)
+        #expect(try "{\"a\":1}\n".canonicalizedRecipe() == #"{"a":1}"#)
+    }
+
+    @Test("decoding a quoted string handles every escape and surrogate pairs")
+    func decodeString() throws {
+        #expect(try RecipeJsonParser.decodeString(quoted: #""a\"b\\c\/d\b\f\n\r\t\u00e9\ud83d\ude00""#) == "a\"b\\c/d\u{08}\u{0C}\n\r\té😀")
+        #expect(throws: RecipeJsonError.self) { try RecipeJsonParser.decodeString(quoted: #""\ud83d""#) }
+    }
+
+    @Test("errors have a message a person can act on")
+    func errorMessages() {
+        #expect(RecipeJsonError.notAnObject.message == "A recipe must be a JSON object, such as {\"purpose\":\"example\"}")
+        #expect(RecipeJsonError.invalid(offset: 7).message == "Not valid JSON near position 7")
+    }
 }
