@@ -6,6 +6,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG="$ROOT/Packages/SeededCrypto/Sources"
 BUILD="$ROOT/.build/golden"
+# Every object is rebuilt and every object in the directory is linked, so start empty: objects
+# left from a checkout at another path would be linked twice.
+rm -rf "$BUILD"
 mkdir -p "$BUILD"
 CFLAGS=(-O1 -w -DNATIVE_LITTLE_ENDIAN=1 -DHAVE_MADVISE -DHAVE_MMAP -DHAVE_MPROTECT -DHAVE_POSIX_MEMALIGN -DHAVE_WEAK_SYMBOLS -DCONFIGURED=1)
 while IFS= read -r -d '' f; do
