@@ -39,10 +39,7 @@ struct ScanDiceKeyView: View {
     }
 
     private var selectedCamera: AVCaptureDevice? {
-        if let camera = cameras.first(where: { $0.uniqueID == selectedCameraID }), camera.canBeDisplayed {
-            return camera
-        }
-        return cameras.first
+        cameras.first { $0.uniqueID == selectedCameraID }
     }
 
     var body: some View {
@@ -69,7 +66,10 @@ struct ScanDiceKeyView: View {
         .task {
             cameraAuthorized = await ActiveCameras.requestAccessIfNeeded()
             cameras = ActiveCameras.get()
-            if selectedCameraID == nil {
+        }
+        // The first camera, until one is chosen, and again if the chosen one goes away.
+        .onChange(of: cameras) { _, cameras in
+            if !cameras.contains(where: { $0.uniqueID == selectedCameraID }) {
                 selectedCameraID = cameras.first?.uniqueID
             }
         }

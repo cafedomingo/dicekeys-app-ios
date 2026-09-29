@@ -37,10 +37,13 @@ private let digitOffset = CGPoint(x: xDistToCharCenter, y: 0)
 /// the size a whole DiceKey should look. The scanner reads a key that size as well as one
 /// filling the frame, and asking for no more keeps the phone far enough back to focus and to
 /// keep the whole key in view.
-private struct ScanningTarget: Shape {
+struct ScanningTarget: Shape {
+    /// How much of the square's side the window takes up. CameraSession zooms for it.
+    static let windowFraction: CGFloat = 3 / 4
+
     func path(in rect: CGRect) -> Path {
         var path = Path(rect)
-        let side = min(rect.width, rect.height) * 3 / 4
+        let side = min(rect.width, rect.height) * Self.windowFraction
         let window = CGRect(x: rect.midX - side / 2, y: rect.midY - side / 2, width: side, height: side)
         path.addRoundedRect(in: window, cornerSize: CGSize(width: 0.06 * side, height: 0.06 * side))
         return path
@@ -68,7 +71,7 @@ struct FacesReadOverlay: View {
                     let faceSize = die.size * scale
                     let angle = Angle(radians: die.angle)
                     let coordinateSystemFromCenterOfDie = AngularCoordinateSystem(
-                        zeroPoint: CGPoint(x: die.center.x * scale, y: die.center.y * size.height / imageFrameSize.height),
+                        zeroPoint: CGPoint(x: die.center.x * scale, y: die.center.y * scale),
                         angle: angle,
                         scalingFactor: faceSize
                     )

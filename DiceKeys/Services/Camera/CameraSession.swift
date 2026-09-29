@@ -183,16 +183,17 @@ final class CameraSession {
     /// (in millimeters) away, for a camera whose field of view (in degrees) spans the long side
     /// of `frameSize`; under 1 when no zoom is needed.
     ///
-    /// The window spans the middle three quarters of the frame's square and holds the whole
-    /// box, about six dice pitches across, so the square, which spans the frame's short side,
-    /// covers eight pitches: DiceKey dice are 12 mm cubes about 17 mm apart (1.35 to 1.5 die
-    /// widths, measured in the corpus photos). No margin is added: on the owner's phone, a key
+    /// The window takes up `ScanningTarget.windowFraction` of the frame's square and holds the
+    /// whole box, about six dice pitches across, so the square, which spans the frame's short
+    /// side, covers six pitches divided by that fraction: DiceKey dice are 12 mm cubes about
+    /// 17 mm apart (1.35 to 1.5 die widths, measured in the corpus photos). No margin is added: on the owner's phone, a key
     /// held a little closer than this still read within a second, and more zoom only made the
     /// preview feel cramped.
     nonisolated static func zoomForScanning(minimumFocusDistance: Double, fieldOfView: Double, frameSize: CGSize) -> Double {
         let longSide = max(frameSize.width, frameSize.height), shortSide = min(frameSize.width, frameSize.height)
         let halfAngleOfSquare = atan(tan(fieldOfView * .pi / 360) * shortSide / longSide)
-        let distanceToTarget = 8 * 17 / 2 / tan(halfAngleOfSquare)
+        let pitchesAcrossSquare = 6 / Double(ScanningTarget.windowFraction)
+        let distanceToTarget = pitchesAcrossSquare * 17 / 2 / tan(halfAngleOfSquare)
         return minimumFocusDistance / distanceToTarget
     }
 
