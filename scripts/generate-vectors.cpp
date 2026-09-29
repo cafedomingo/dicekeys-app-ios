@@ -110,6 +110,9 @@ static void buildCases() {
     for (int n : {1, 8, 9, 16, 64, 100}) {
         add("cases", "password lengthInChars " + std::to_string(n), "Password", example, R"({"lengthInChars":)" + std::to_string(n) + "}");
     }
+    add("cases", "password lengthInBytes 16", "Password", example, R"({"lengthInBytes":16})");
+    add("cases", "secret with password-only fields", "Secret", example,
+        R"({"purpose":"x","lengthInChars":8,"lengthInWords":2,"wordList":"EN_1024_words_6_chars_max_ed_4_20200917"})");
     add("cases", "password wordList 1024", "Password", example, R"({"wordList":"EN_1024_words_6_chars_max_ed_4_20200917"})");
     add("cases", "password wordList 1024 lengthInWords 3", "Password", example, R"({"wordList":"EN_1024_words_6_chars_max_ed_4_20200917","lengthInWords":3})");
     add("cases", "password wordList 1024 lengthInBits 1", "Password", example, R"({"wordList":"EN_1024_words_6_chars_max_ed_4_20200917","lengthInBits":1})");
@@ -131,6 +134,7 @@ static void buildCases() {
         {"escapes", R"({"purpose":"a\"b\\c\/dé"})"},
         {"memory fields under BLAKE2b are salt", R"({"purpose":"x","hashFunctionMemoryLimitInBytes":8192,"hashFunctionMemoryPasses":9})"},
         {"excludeOrientationOfFaces is salt", R"({"purpose":"x","excludeOrientationOfFaces":true})"},
+        {"tab and CRLF", "{\t\"purpose\":\"x\"\r\n}"},
         {"authorization fields are salt", R"({"purpose":"x","allow":[{"host":"*.example.com","paths":["/a"]}],"clientMayRetrieveKey":true,"requireAuthenticationHandshake":true})"},
     };
     for (auto &t : texts) add("cases", "text: " + t.first, "Secret", example, t.second);
@@ -154,6 +158,10 @@ static void buildCases() {
     add("rejected", "wrong algorithm for SymmetricKey", "SymmetricKey", example, R"({"algorithm":"X25519"})");
     add("rejected", "wrong algorithm for SigningKey", "SigningKey", example, R"({"algorithm":"X25519"})");
     add("rejected", "signing key lengthInBytes 16", "SigningKey", example, R"({"lengthInBytes":16})");
+    add("rejected", "wrong algorithm for UnsealingKey", "UnsealingKey", example, R"({"algorithm":"Ed25519"})");
+    add("rejected", "symmetric key lengthInBytes 16", "SymmetricKey", example, R"({"lengthInBytes":16})");
+    add("rejected", "unsealing key lengthInBytes 16", "UnsealingKey", example, R"({"lengthInBytes":16})");
+    add("rejected", "whitespace-only recipe", "Secret", example, " ");
     add("rejected", "unknown hashFunction", "Secret", example, R"({"hashFunction":"SHA256"})");
     add("rejected", "array recipe", "Secret", example, "[]");
     add("rejected", "string recipe", "Secret", example, R"("x")");
@@ -183,8 +191,14 @@ static void buildCases() {
         "An empty secret. The port throws outOfRange.");
     add("legacy", "lengthInChars 0", "Password", example, R"({"lengthInChars":0})",
         "An empty password (upstream issue 56). The port throws outOfRange.");
+    add("legacy", "lengthInWords 0", "Password", example, R"({"lengthInWords":0})",
+        "0 meant unset, so the default 15 words. The port throws outOfRange.");
+    add("legacy", "lengthInBits 0", "Password", example, R"({"lengthInBits":0})",
+        "0 meant unset, so the default 15 words. The port throws outOfRange.");
+    add("legacy", "lengthInChars -1", "Password", example, R"({"lengthInChars":-1})",
+        "value<size_t> wrapped -1 to npos, so no truncation. The port throws wrongType.");
     add("legacy", "issue 56 seed", "Password", "this string is seedy", R"({"allow":[{"host":"*.exampl.com"}],"lengthInChars":0})",
-        "The original issue 56 vector, kept for the app's PasswordDerivationTests until the port lands.");
+        "The original upstream issue 56 vector: a non-DiceKey seed with lengthInChars 0 derives an empty password. The port throws outOfRange.");
     add("legacy", "unknown wordList", "Password", example, R"({"wordList":"nonsense"})",
         "Fell back to the 512 list. The port throws unknownWordList.");
     add("legacy", "inverted bits and words check accepts a wrong pair", "Password", example, R"({"lengthInBits":1,"lengthInWords":9})",

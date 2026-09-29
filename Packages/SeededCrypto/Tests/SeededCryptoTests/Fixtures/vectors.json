@@ -1229,6 +1229,22 @@
       "type": "Password"
     },
     {
+      "json": "{\"password\":\"15-Cargo-nacho-chunk-value-judge-lures-grimy-venus-email-smite-alive-work-quack-wand-savor\",\"recipe\":\"{\\\"lengthInBytes\\\":16}\"}",
+      "name": "password lengthInBytes 16",
+      "password": "15-Cargo-nacho-chunk-value-judge-lures-grimy-venus-email-smite-alive-work-quack-wand-savor",
+      "recipe": "{\"lengthInBytes\":16}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
+      "json": "{\"recipe\":\"{\\\"purpose\\\":\\\"x\\\",\\\"lengthInChars\\\":8,\\\"lengthInWords\\\":2,\\\"wordList\\\":\\\"EN_1024_words_6_chars_max_ed_4_20200917\\\"}\",\"secretBytes\":\"b196da3cc1d6e213945d98efa817b5e4cc526213605f6f825f78126a0a9f28ad\"}",
+      "name": "secret with password-only fields",
+      "recipe": "{\"purpose\":\"x\",\"lengthInChars\":8,\"lengthInWords\":2,\"wordList\":\"EN_1024_words_6_chars_max_ed_4_20200917\"}",
+      "secretBytesHex": "b196da3cc1d6e213945d98efa817b5e4cc526213605f6f825f78126a0a9f28ad",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Secret"
+    },
+    {
       "json": "{\"password\":\"13-Snugly-scurvy-absurd-silent-mauve-margin-juror-remark-purity-vanish-lizard-floral-parcel\",\"recipe\":\"{\\\"wordList\\\":\\\"EN_1024_words_6_chars_max_ed_4_20200917\\\"}\"}",
       "name": "password wordList 1024",
       "password": "13-Snugly-scurvy-absurd-silent-mauve-margin-juror-remark-purity-vanish-lizard-floral-parcel",
@@ -1377,6 +1393,14 @@
       "name": "text: excludeOrientationOfFaces is salt",
       "recipe": "{\"purpose\":\"x\",\"excludeOrientationOfFaces\":true}",
       "secretBytesHex": "09c888e36191a07649d6f9573244b6308c2fa83f041c1acead6c355a2662c8dd",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Secret"
+    },
+    {
+      "json": "{\"recipe\":\"{\\t\\\"purpose\\\":\\\"x\\\"\\r\\n}\",\"secretBytes\":\"2e36bcc3ff54f5fb1b25b39047fa0bd01815e5ffa16e34b9c6ba177701f983b1\"}",
+      "name": "text: tab and CRLF",
+      "recipe": "{\t\"purpose\":\"x\"\r\n}",
+      "secretBytesHex": "2e36bcc3ff54f5fb1b25b39047fa0bd01815e5ffa16e34b9c6ba177701f983b1",
       "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
       "type": "Secret"
     },
@@ -1567,9 +1591,36 @@
       "type": "Password"
     },
     {
+      "json": "{\"password\":\"15-Remix-baked-virus-giant-arose-mocha-uncle-grout-lingo-shine-alive-rigor-kilns-oiled-spied\",\"recipe\":\"{\\\"lengthInWords\\\":0}\"}",
+      "name": "lengthInWords 0",
+      "note": "0 meant unset, so the default 15 words. The port throws outOfRange.",
+      "password": "15-Remix-baked-virus-giant-arose-mocha-uncle-grout-lingo-shine-alive-rigor-kilns-oiled-spied",
+      "recipe": "{\"lengthInWords\":0}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
+      "json": "{\"password\":\"15-Bring-train-gamma-manly-stilt-comfy-kegs-goofy-depth-foyer-error-evoke-couch-roman-video\",\"recipe\":\"{\\\"lengthInBits\\\":0}\"}",
+      "name": "lengthInBits 0",
+      "note": "0 meant unset, so the default 15 words. The port throws outOfRange.",
+      "password": "15-Bring-train-gamma-manly-stilt-comfy-kegs-goofy-depth-foyer-error-evoke-couch-roman-video",
+      "recipe": "{\"lengthInBits\":0}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
+      "json": "{\"password\":\"15-Manly-eject-glare-gifts-hull-rigid-depth-nutty-genre-kegs-lingo-trade-hardy-chaos-arena\",\"recipe\":\"{\\\"lengthInChars\\\":-1}\"}",
+      "name": "lengthInChars -1",
+      "note": "value<size_t> wrapped -1 to npos, so no truncation. The port throws wrongType.",
+      "password": "15-Manly-eject-glare-gifts-hull-rigid-depth-nutty-genre-kegs-lingo-trade-hardy-chaos-arena",
+      "recipe": "{\"lengthInChars\":-1}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Password"
+    },
+    {
       "json": "{\"password\":\"\",\"recipe\":\"{\\\"allow\\\":[{\\\"host\\\":\\\"*.exampl.com\\\"}],\\\"lengthInChars\\\":0}\"}",
       "name": "issue 56 seed",
-      "note": "The original issue 56 vector, kept for the app's PasswordDerivationTests until the port lands.",
+      "note": "The original upstream issue 56 vector: a non-DiceKey seed with lengthInChars 0 derives an empty password. The port throws outOfRange.",
       "password": "",
       "recipe": "{\"allow\":[{\"host\":\"*.exampl.com\"}],\"lengthInChars\":0}",
       "seed": "this string is seedy",
@@ -1676,6 +1727,34 @@
       "recipe": "{\"lengthInBytes\":16}",
       "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
       "type": "SigningKey"
+    },
+    {
+      "error": "Invalid algorithm type for public key cryptography",
+      "name": "wrong algorithm for UnsealingKey",
+      "recipe": "{\"algorithm\":\"Ed25519\"}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "UnsealingKey"
+    },
+    {
+      "error": "XSalsa20Poly1305 symmetric cryptography must use lengthInBytes of 32",
+      "name": "symmetric key lengthInBytes 16",
+      "recipe": "{\"lengthInBytes\":16}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "SymmetricKey"
+    },
+    {
+      "error": "X25519 public key cryptography must use lengthInBytes of 32",
+      "name": "unsealing key lengthInBytes 16",
+      "recipe": "{\"lengthInBytes\":16}",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "UnsealingKey"
+    },
+    {
+      "error": "[json.exception.parse_error.101] parse error at line 1, column 2: syntax error while parsing value - unexpected end of input; expected '[', '{', or a literal",
+      "name": "whitespace-only recipe",
+      "recipe": " ",
+      "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+      "type": "Secret"
     },
     {
       "error": "Invalid hashFunction",
