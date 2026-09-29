@@ -22,3 +22,11 @@ Where they come from:
   04400368ff3fa82f3eb19f06fb7bebc67a789603. One name is corrected from upstream: in
   `Y6bS2rG4b…`, X4, L3 and O1 are turned right in the photo, where upstream had them turned
   left.
+
+The fixtures are losslessly compressed with `jpegtran -copy icc -optimize` (baseline JPEG)
+and `oxipng -o 4 --nx --strip tEXt,zTXt,iTXt,tIME,eXIf`. JPEGs retain their ICC profiles
+and, where needed, a minimal EXIF orientation tag; PNGs retain color information. Keep
+only smaller results whose ImageIO-decoded pixels match the original, including the
+oriented grayscale input at every corpus size, and rerun the scanner tests. Progressive
+JPEG encoding can change ImageIO's decoded pixels even when the JPEG coefficients are
+unchanged, so preserve baseline encoding for these fixtures.
