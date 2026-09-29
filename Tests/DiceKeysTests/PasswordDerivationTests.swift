@@ -18,7 +18,7 @@ struct PasswordDerivationTests {
         let recipeJson = #"{"allow":[{"host":"*.exampl.com"}],"lengthInChars":0}"#
         let password = try Password.deriveFromSeed(withSeedString: "this string is seedy", recipe: recipeJson)
         // Upstream issue 56: deriving with lengthInChars 0 must not throw. The reference
-        // implementation yields an empty password for that recipe (see golden-vectors.json).
+        // implementation yields an empty password for that recipe (see the "issue 56 seed" entry in vectors.json).
         #expect(password.password.isEmpty)
     }
 }
