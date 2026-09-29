@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# Regenerates the golden derivation vectors from the vendored reference C++.
-# Only run this if you deliberately changed lib-seeded or libsodium; a diff in the
-# output means derived secrets changed, which is almost always a bug.
+# Regenerates the derivation vectors from the vendored reference C++. It is the only
+# reference implementation of DiceKeys derivation, so everything the Swift port must
+# reproduce is captured here while the C++ still exists. A diff in the output after a
+# libsodium or lib-seeded change means derived secrets changed, which is almost always a bug.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG="$ROOT/Packages/SeededCrypto/Sources"
-BUILD="$ROOT/.build/golden"
+BUILD="$ROOT/.build/vectors"
+OUT="$ROOT/Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/vectors.json"
 # Every object is rebuilt and every object in the directory is linked, so start empty: objects
 # left from a checkout at another path would be linked twice.
 rm -rf "$BUILD"
@@ -18,6 +20,6 @@ LIB="$ROOT/Packages/SeededCrypto/Vendor/seeded-crypto/lib-seeded"
 while IFS= read -r -d '' f; do
   clang++ -std=c++17 -O1 -w -I"$LIB" -I"$PKG/SeededCryptoNative/include" -I"$PKG/CSodium/include" -c "$f" -o "$BUILD/$(basename "$f").o"
 done < <(find "$LIB" "$PKG/SeededCryptoNative" -name '*.cpp' -print0)
-clang++ -std=c++17 -O1 -w -I"$LIB" -I"$PKG/SeededCryptoNative/include" "$ROOT/scripts/generate-golden-vectors.cpp" "$BUILD"/*.o -o "$BUILD/generate-golden-vectors"
-"$BUILD/generate-golden-vectors" > "$ROOT/Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/golden-vectors.json"
-echo "Wrote Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/golden-vectors.json"
+clang++ -std=c++17 -O1 -w -I"$LIB" -I"$PKG/SeededCryptoNative/include" "$ROOT/scripts/generate-vectors.cpp" "$BUILD"/*.o -o "$BUILD/generate-vectors"
+"$BUILD/generate-vectors" > "$OUT"
+echo "Wrote ${OUT#"$ROOT"/}"
