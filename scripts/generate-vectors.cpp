@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 #include "SeededCryptoNative.h"
+#include "key-formats/OpenSshKey.hpp"
+#include "signing-key.hpp"
 #include "github-com-nlohmann-json/json.hpp"
 
 using nlohmann::json;
@@ -232,9 +234,9 @@ static json derive(const Case &c, bool &ok) {
         v["signingKeyBytesHex"] = parsed["signingKeyBytes"];
         if (!dkc_signing_key_open_ssh_public_key(js.c_str(), &s, &err)) fail(c.name, take(err));
         v["openSshPublicKey"] = take(s);
-        if (!dkc_signing_key_open_ssh_pem_private_key(js.c_str(), c.sshComment.c_str(), &s, &err)) fail(c.name, take(err));
+        // The check value is random in the library and pinned here so the fixture regenerates without a diff.
         v["sshComment"] = c.sshComment;
-        v["openSshPemPrivateKey"] = take(s);
+        v["openSshPemPrivateKey"] = getOpenSshPemPrivateKeyEd25519(SigningKey::fromJson(js), c.sshComment, 0);
         if (!dkc_signing_key_open_pgp_pem_secret_key(js.c_str(), c.pgpUserId.c_str(), c.pgpTimestamp, &s, &err)) fail(c.name, take(err));
         v["pgpUserId"] = c.pgpUserId;
         v["pgpTimestamp"] = c.pgpTimestamp;
