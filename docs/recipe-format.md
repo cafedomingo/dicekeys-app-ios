@@ -22,9 +22,9 @@ it.
 | `wordList` | string | Password | `EN_512_words_5_chars_max_ed_4_20200917` | one of the two word lists below |
 
 A field that applies to another type is not read, except `algorithm`. `wordList` on a Secret
-is ignored; `hashFunction`, `type` and `algorithm` are checked for every type. On a Password, `lengthInBytes` must
-still be an integer, but it is then overridden: the derived length is the resolved word
-count times 8.
+is ignored; `hashFunction`, `type` and `algorithm` are checked for every type. On a Password,
+`lengthInBytes` must still be an integer, but it is then overridden: the derived length is
+the resolved word count times 8.
 
 `recipe-schema.json` describes the fields above as a JSON Schema.
 

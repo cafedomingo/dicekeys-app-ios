@@ -231,6 +231,7 @@ layer for no gain on a single-platform personal app.
 seeded-crypto (the origin of the derivation port) and the BIP-39 word list are MIT,
 Inconsolata is OFL, the BLAKE2 test vectors are CC0, and `THIRD_PARTY_LICENSES` records
 each one with its origin and commit. The DiceKeys-derived parts, meaning the app itself,
-the scanner, the photo corpus and the icon mark, still carry only upstream's "all rights reserved while we choose a license" placeholder. That is
-why the README says personal use and TestFlight only, and why publishing needs DiceKeys, LLC
-to choose a license (license@dicekeys.com).
+the scanner, the photo corpus and the icon mark, still carry only upstream's "all rights
+reserved while we choose a license" placeholder. That is why the README says personal use
+and TestFlight only, and why publishing needs DiceKeys, LLC to choose a license
+(license@dicekeys.com).
