@@ -259,6 +259,18 @@ against the RFC vectors and against the legacy cases in the fixture, which cover
 arbitrary-length salt (type string plus recipe) and outputs over 64 bytes that the RFC
 vectors do not. The default 64 MiB with two passes should take well under a second in Swift.
 
+## A faster BLAKE2b
+
+The Swift BLAKE2b hashes about 21 MB/s on an M2, 36 times slower than libsodium's. Nothing
+in the app feels it, since every derivation hashes under a kilobyte and finishes in under
+50 microseconds, but Argon2id above would fill 64 MiB through it. The cost is in the shape
+of the code, not the algorithm: `compress` keeps the 16 working words in a heap array and
+`mix` takes it `inout`, so every one of the 96 mixes per block does bounds-checked array
+reads and writes instead of register arithmetic. Keeping those words as local scalars and
+passing them `inout` to `mix` is the change, one file and no unsafe code, verified by the
+512 known answers and the fixture. Expect a 10 to 20 times gain from that alone; block-wise
+input copying and unrolled rounds are further steps only if the number still matters.
+
 ## A compressed DiceKey format
 
 A binary form of a DiceKey for storage and transfer, not for seeding: the seed stays the
