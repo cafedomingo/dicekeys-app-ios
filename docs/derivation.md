@@ -1,0 +1,166 @@
+# Derivation
+
+`Packages/Derivation` turns a DiceKey seed and a recipe (`recipe-format.md`) into a password,
+a secret or a key. The construction, the word lists and the JSON layouts are ported from
+dicekeys/seeded-crypto, which the other DiceKeys apps share, so every one of them derives the
+same values from the same DiceKey and recipe. A change to any derived byte is a bug.
+
+## The construction
+
+`info` is the type string (`Password`, `Secret`, `SymmetricKey`, `UnsealingKey` or
+`SigningKey`) followed immediately by the recipe text as UTF-8. The empty recipe hashes as
+the type string alone. The seed is the UTF-8 seed string. With keyed BLAKE2b at 32-byte
+digests (`HKDF.swift`):
+
+```
+PRK  = BLAKE2b(key = 32 zero bytes, message = seed)
+T(0) = empty
+T(i) = BLAKE2b(key = PRK, message = T(i-1) || info || UInt8(i))     i = 1 ... ceil(L / 32)
+out  = the first L bytes of T(1) || T(2) || ...
+```
+
+`L` is the length the recipe resolves to. It is at most 8160, so the one-byte counter never
+wraps.
+
+## Per type
+
+- **Password.** The derived bytes are read as 8-byte big-endian blocks; a block modulo the
+  list size picks a word. The output is the decimal word count, then a hyphen and a word for
+  each word, with the first letter of the first word uppercased, cut to `lengthInChars`
+  characters if the recipe sets it. List sizes are powers of two, so the modulo is unbiased.
+- **Secret.** The derived bytes, `lengthInBytes` of them.
+- **SymmetricKey.** The 32 derived bytes.
+- **UnsealingKey.** `unsealingKeyBytes` is the first 32 bytes of SHA-512 of the 32 derived
+  bytes, unclamped; `sealingKeyBytes` is the X25519 public key for that scalar.
+- **SigningKey.** The 32 derived bytes are the Ed25519 seed. `verificationKeyBytes` is the
+  public key, and `signingKeyBytes` is the seed followed by the public key, 64 bytes, the
+  layout libsodium uses for a secret key.
+
+## JSON output
+
+`toJson()` returns the engine's text unchanged, because it is a displayed format that other
+DiceKeys apps also show. Keys are in byte order, there is no whitespace, `/` is not escaped,
+non-ASCII is written raw, control characters are `\b \f \n \r \t` or lowercase `\u00xx`, and
+byte arrays are lowercase hex without a prefix.
+
+| Type | Keys | `recipe` when the recipe is empty |
+|---|---|---|
+| Password | `password`, `recipe` | omitted |
+| Secret | `recipe`, `secretBytes` | omitted |
+| SymmetricKey | `keyBytes`, `recipe` | omitted |
+| UnsealingKey | `recipe`, `sealingKeyBytes`, `unsealingKeyBytes` | present, as `""` |
+| SigningKey | `recipe`, `signingKeyBytes` | present, as `""` |
+
+## Key formats
+
+`KeyFormats` encodes a `SigningKey`.
+
+**OpenSSH.** The public line is `ssh-ed25519 <base64> DiceKeys`. The private key is an
+unencrypted `openssh-key-v1` block (cipher and KDF `none`, one key) in 64-column base64 with
+the `OPENSSH PRIVATE KEY` armor. Its private section holds the check value twice, the key
+type, the public key, the 64-byte signing key, the comment (empty by default) and padding
+bytes 1, 2, 3 and so on up to a multiple of 8. OpenSSH's check value exists to detect a wrong
+passphrase; here it is the first four bytes of SHA-256 of the public key, so the export is
+identical every time.
+
+**OpenPGP.** An armored transferable secret key: a v4 secret key packet (EdDSA, algorithm 22,
+Ed25519 OID, unprotected, with the 16-bit checksum), a user ID packet, and a positive
+certification self-signature (type 0x13, SHA-256) whose key flags are certify plus sign. The
+armor has the blank line after the header and a CRC24 line. Packets use the old framing, with
+1, 2 or 4 length octets as the body needs. The creation time is 0 because the v4 fingerprint
+hashes it, so the fingerprint depends on the key alone. CryptoKit randomizes Ed25519
+signatures, so two exports of one key differ in the 64 signature bytes and in nothing else.
+
+**BIP39.** `BIP39.mnemonic(entropy:)` takes 16 to 32 bytes in steps of 4. The English list is
+`Wordlist.swift`.
+
+## The seed string
+
+The seed is the DiceKey's human-readable form: 25 faces of letter, digit and orientation,
+75 characters, rotated to whichever of the four rotations sorts first, so every way of
+holding the key derives the same values. `DiceKey.toSeed()` builds it.
+
+The DiceKey id is a Secret derived from that seed with the recipe
+`{"purpose":"a unique identifier for this DiceKey","lengthInBytes":16}`; for the example key
+it is `31f6979a628e4800780118a5dc466129`.
+
+## Compatibility contract
+
+Each item is covered by a case in `vectors.json`.
+
+1. The empty recipe hashes as the type string alone; `{}` differs.
+2. The recipe text is hashed as given: leading or trailing whitespace, a byte order mark,
+   key order and unknown fields all change the output.
+3. The extract step is keyed BLAKE2b with a 32-byte zero key, not unkeyed BLAKE2b.
+4. The expand step chains `T(i-1)`, starts the counter at 1, rounds up to whole 32-byte
+   blocks and truncates.
+5. Keys require `lengthInBytes` 32 and accept only their own `algorithm` name.
+6. Password words come from 8-byte blocks; the index is the block modulo the list size; the
+   prefix is the decimal word count; words are joined by `-`; the first letter of the first
+   word is uppercased.
+7. `lengthInChars` truncates the finished string, prefix included.
+8. The word lists are the reference arrays, in order.
+9. The `toJson()` layouts and the presence of `recipe` are as in the table above.
+10. Hex is lowercase without a prefix.
+11. `signingKeyBytes` is the seed followed by the public key: 64 bytes, 128 hex characters.
+12. The X25519 scalar is the first 32 bytes of SHA-512 of the derived bytes, unclamped in
+    the JSON.
+13. The OpenSSH layout, 64-column base64 and the ` DiceKeys` comment on the public line.
+14. The OpenPGP public key body, fingerprint, secret key material and user ID.
+15. The seed string is the DiceKey rotated to its lexically smallest form, 75 characters.
+
+## Behaviors the reference had and this does not
+
+The reference implementation accepted recipes that the format never defined, and this one
+rejects them. The `legacy` section of `vectors.json` records what the reference produced for
+each recipe that shows one of the rows below, so the behavior could be restored and verified
+against the original. The `rejected` section holds the recipes the reference itself refused,
+with its error text.
+
+| The reference | Here |
+|---|---|
+| `hashFunction: Argon2id` derived through libsodium's internal `argon2id_hash_raw` (salt is the type string plus the recipe, one lane, output of at least 16 bytes cut to the length) | `unsupportedHashFunction` |
+| `16.9` read as 16, `true` as 1, `-1` as 4294967295, values of 2^32 or more cut to 32 bits | `wrongType` or `outOfRange` |
+| `lengthInBytes` unbounded, with the HKDF counter wrapping past 8160 bytes | 1 to 8160 |
+| `lengthInBytes: 0` an empty secret, `lengthInChars: 0` an empty password, and 0 for bits or words meaning unset | `outOfRange` |
+| An unknown `wordList` fell back to the 512 list | `unknownWordList` |
+| `algorithm` tolerated on a Password or Secret, and a key's name there forced length 32 | `invalidAlgorithm` |
+| The bits and words check multiplied where it should divide, so it accepted some wrong pairs and refused correct ones | the check in `recipe-format.md` |
+| A duplicate name: the last value won | `duplicateField` |
+| A recipe that was not an object raised a JSON library error | `recipeNotAnObject` |
+| `excludeOrientationOfFaces` documented but never honored | salt only |
+| The memory fields with BLAKE2b silently ignored | still ignored, so salt |
+| OpenSSH check value random | derived from the public key |
+| OpenPGP armor without the blank line or CRC, one-byte packet lengths whatever the size, certify-only key flags | fixed |
+| OpenPGP self-signature deterministic | randomized by CryptoKit |
+| Sealing, unsealing, signing and verifying as operations, `SealingKey`, `PackagedSealedMessage` | not offered |
+
+## The fixture
+
+`Packages/Derivation/Tests/DerivationTests/Fixtures/vectors.json` holds 168 derivations
+(`cases`) recorded from the reference C++ with four DiceKeys, with and without orientations,
+across every type, the app's templates, every length field at its bounds, both word lists,
+whitespace, key order and byte order mark variants, unknown fields and nested objects.
+Signing-key cases carry the OpenSSH and OpenPGP exports as the C++ wrote them. The tests
+compare the OpenSSH private key with the check value masked, and the OpenPGP export by parsed
+content, because the port changed the armor, the length encodings, the key flags and the
+signature bytes.
+
+The generator and the C++ it ran are gone, so the fixture cannot be regenerated. It is the
+reference: if `VectorTests` fails, the derivation changed, and the fixture is not what to fix.
+
+The BLAKE2b implementation is also tested against RFC 7693 and the official known-answer
+vectors (`Tests/BLAKE2Tests`).
+
+## Secrets in memory
+
+Derived values are ordinary Swift values, and nothing zeroes or locks their memory. The
+package never logs them. The app copies a value with `UIPasteboard.general`, which sets no
+expiry and allows Universal Clipboard.
+
+## Adding a hash function or a word list
+
+Add one case to `HashFunction` or `WordList` with its implementation, and one fixture case
+generated by the Swift engine, since nothing else remains to record it from. The name then
+becomes part of the format: recipes that name it derive values every implementation must
+reproduce, so it cannot change.

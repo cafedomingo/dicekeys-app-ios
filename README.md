@@ -19,9 +19,8 @@ Put your Apple Developer team id in `Config/Signing.xcconfig`, select the `DiceK
 and a device, then Product → Run.
 
 There is no CocoaPods, no git submodule, no Objective-C and no third-party binary.
-Key derivation is pure Swift, in `Packages/Derivation`, and so is the DiceKey scanner, in
-`Packages/ReadDiceKey`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and
-[docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
+Key derivation and the DiceKey scanner are pure Swift, in the local packages
+`Packages/Derivation` and `Packages/ReadDiceKey`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Testing the app
 
@@ -45,6 +44,5 @@ Everything taken from elsewhere keeps its own terms, listed in
 this fork started from and the read-dicekey scanner the Swift scanner is derived from, have
 **no open-source license yet** (DiceKeys, LLC: "all rights reserved while we choose a
 license"). That is why this fork is for personal use and TestFlight to the owner's own
-devices, not for publication, until DiceKeys picks a license. lib-seeded (MIT), libsodium
-(ISC), nlohmann/json (MIT), Inconsolata (OFL 1.1) and the BIP-39 word list (MIT) are fine to
-redistribute.
+devices, not for publication, until DiceKeys picks a license. lib-seeded (MIT), Inconsolata (OFL 1.1),
+the BIP-39 word list (MIT) and the BLAKE2 test vectors (CC0) are fine to redistribute.
