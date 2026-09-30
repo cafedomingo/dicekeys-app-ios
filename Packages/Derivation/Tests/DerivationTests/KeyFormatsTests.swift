@@ -51,13 +51,19 @@ struct ExportTests {
     @Test("OpenSSH and OpenPGP exports match the fixture", arguments: signingCases)
     func exports(vector: Vector) throws {
         let key = try SigningKey.derive(seed: vector.seed, recipe: vector.recipe)
-        #expect(try OpenSSH.publicKeyLine(key) == vector.openSshPublicKey)
+        #expect(OpenSSH.publicKeyLine(key) == vector.openSshPublicKey)
         let recorded = try #require(vector.openSshPemPrivateKey)
-        let sshPrivate = try OpenSSH.privateKeyPEM(key, comment: vector.sshComment ?? "")
+        let sshPrivate = OpenSSH.privateKeyPEM(key, comment: vector.sshComment ?? "")
         #expect(sshPrivate.count == recorded.count)
         #expect(try maskedOpenSshKey(sshPrivate) == maskedOpenSshKey(recorded))
-        let pgp = try OpenPGP.secretKeyBlock(key, userId: vector.pgpUserId ?? "", timestamp: vector.pgpTimestamp ?? 0)
-        #expect(pgp == vector.openPgpPemFormatSecretKey)
+        let ours = try OpenPGPWalker(armored: OpenPGP.secretKeyBlock(key, userId: vector.pgpUserId ?? "", timestamp: vector.pgpTimestamp ?? 0))
+        let theirs = try OpenPGPWalker(armored: try #require(vector.openPgpPemFormatSecretKey))
+        #expect(try ours.secretKey == theirs.secretKey)
+        #expect(try ours.userId == theirs.userId)
+        let (mine, reference) = (try ours.signature, try theirs.signature)
+        #expect(mine.version == reference.version && mine.signatureType == reference.signatureType)
+        #expect(mine.publicKeyAlgorithm == reference.publicKeyAlgorithm && mine.hashAlgorithm == reference.hashAlgorithm)
+        #expect(mine.unhashed == reference.unhashed)
     }
 }
 

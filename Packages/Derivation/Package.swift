@@ -30,11 +30,11 @@ let package = Package(
         ),
         .target(
             name: "KeyFormats",
-            dependencies: ["Derivation", .product(name: "SeededCrypto", package: "SeededCrypto")]
+            dependencies: ["Derivation"]
         ),
         .testTarget(
             name: "DerivationTests",
-            dependencies: ["Derivation", "KeyFormats"],
+            dependencies: ["Derivation", "KeyFormats", .product(name: "SeededCrypto", package: "SeededCrypto")],
             resources: [.copy("Fixtures")]
         ),
         .testTarget(
