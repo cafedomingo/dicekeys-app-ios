@@ -95,11 +95,11 @@ struct DerivedValueSigningKey: DerivedValue {
 
     var views: [DerivedValueView] = [.JSON, .OpenPGPPrivateKey, .OpenSSHPrivateKey, .OpenSSHPublicKey, .HexSigningKey]
 
-    init(signingKey: SigningKey) throws {
+    init(signingKey: SigningKey) {
         self.signingKey = signingKey
-        openPgpSecretKey = try OpenPGP.secretKeyBlock(signingKey)
-        openSshPrivateKey = try OpenSSH.privateKeyPEM(signingKey)
-        openSshPublicKey = try OpenSSH.publicKeyLine(signingKey)
+        openPgpSecretKey = OpenPGP.secretKeyBlock(signingKey)
+        openSshPrivateKey = OpenSSH.privateKeyPEM(signingKey)
+        openSshPublicKey = OpenSSH.publicKeyLine(signingKey)
     }
 
     func valueForView(view: DerivedValueView) -> String {
