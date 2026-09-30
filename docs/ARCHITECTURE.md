@@ -49,7 +49,6 @@ DiceKeys/
                   FaceOrientationLetterTrbl+Rotation
     Recipes/      DerivationRecipe (was Derivables), RecipeJson,
                   DerivationRecipeTemplates, DerivedValue (was DerivedValueView)
-    BIP39/        Mnemonic, Wordlist
     Settings.swift
   Services/       things that talk to the OS
     Keychain/     DiceKeyKeychain (was EncryptedDiceKeyStore)

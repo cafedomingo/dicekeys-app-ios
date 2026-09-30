@@ -103,7 +103,7 @@ public struct SigningKey: Sendable, Equatable {
     public let recipe: Recipe
     private let json: String
 
-    public var verificationKeyBytes: Data { signingKeyBytes.suffix(32) }
+    public var verificationKeyBytes: Data { Data(signingKeyBytes.suffix(32)) }
 
     private struct Fields: Decodable { let signingKeyBytes: String }
 

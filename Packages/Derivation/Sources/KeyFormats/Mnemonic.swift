@@ -9,14 +9,9 @@
 //
 import CryptoKit
 
-public class Mnemonic {
-    public enum Error: Swift.Error {
-        case invalidMnemonic
-        case invalidEntropy
-    }
-
+enum Mnemonic {
     // Entropy -> Mnemonic
-    public static func toMnemonic(_ bytes: [UInt8], wordlist: [String] = Wordlist.english) throws -> [String] {
+    static func toMnemonic(_ bytes: [UInt8], wordlist: [String] = Wordlist.english) -> [String] {
         let entropyBits = String(bytes.flatMap { ("00000000" + String($0, radix: 2)).suffix(8) })
         let checksumBits = Mnemonic.deriveChecksumBits(bytes)
         let bits = entropyBits + checksumBits
@@ -29,7 +24,7 @@ public class Mnemonic {
         return phrase
     }
 
-    public static func deriveChecksumBits(_ bytes: [UInt8]) -> String {
+    static func deriveChecksumBits(_ bytes: [UInt8]) -> String {
         let ENT = bytes.count * 8
         let CS = ENT / 32
 

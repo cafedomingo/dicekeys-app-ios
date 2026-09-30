@@ -5,6 +5,7 @@
 //  Created by Angelos Veglektsis on 7/6/22.
 //
 
+import KeyFormats
 import SeededCrypto
 
 enum DerivedValueView: Int, CaseIterable, Identifiable {
@@ -80,7 +81,7 @@ struct DerivedValueSecret: DerivedValue {
         case .Hex: return secret.secretBytes().asHexString
         case .BIP39:
             // Offered only for 32-byte secrets, which always have a mnemonic.
-            return (try? Mnemonic.toMnemonic([UInt8](secret.secretBytes())))?.joined(separator: " ") ?? secret.secretBytes().asHexString
+            return (try? BIP39.mnemonic(entropy: secret.secretBytes())) ?? secret.secretBytes().asHexString
         default: return secret.toJson()
         }
     }
