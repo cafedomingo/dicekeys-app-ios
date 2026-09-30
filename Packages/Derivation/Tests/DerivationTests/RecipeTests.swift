@@ -85,6 +85,7 @@ struct RecipeTests {
             #expect(throws: DerivationError.wrongType(field: "lengthInBytes", expected: "an integer")) { try Recipe(json: json, type: .secret) }
         }
         #expect(throws: DerivationError.wrongType(field: "lengthInChars", expected: "an integer")) { try Recipe(json: #"{"lengthInChars":8.9}"#, type: .password) }
+        #expect(throws: DerivationError.outOfRange(field: "lengthInBytes", allowed: 1...8160)) { try Recipe(json: #"{"lengthInBytes":99999999999999999999}"#, type: .secret) }
     }
 
     @Test("keys must be 32 bytes")

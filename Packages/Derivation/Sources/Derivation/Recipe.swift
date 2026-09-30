@@ -123,7 +123,13 @@ private struct RecipeFields {
 
     func integer(_ name: String, in allowed: ClosedRange<Int>) throws(DerivationError) -> Int? {
         guard let field = fields.first(where: { $0.name == name }) else { return nil }
-        guard case .number(let text) = field.value, let value = Int(text) else {
+        guard case .number(let text) = field.value else { throw .wrongType(field: name, expected: "an integer") }
+        guard let value = Int(text) else {
+            // A JSON integer too large for Int is out of range, not the wrong type.
+            let digits = text.hasPrefix("-") ? text.dropFirst() : Substring(text)
+            if !digits.isEmpty, digits.utf8.allSatisfy({ $0 >= 0x30 && $0 <= 0x39 }) {
+                throw .outOfRange(field: name, allowed: allowed)
+            }
             throw .wrongType(field: name, expected: "an integer")
         }
         guard allowed.contains(value) else { throw .outOfRange(field: name, allowed: allowed) }
