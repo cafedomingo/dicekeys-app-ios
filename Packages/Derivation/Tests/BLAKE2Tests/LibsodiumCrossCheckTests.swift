@@ -56,6 +56,20 @@ struct LibsodiumCrossCheckTests {
         }
     }
 
+    @Test("the derivation's shape over long messages", arguments: [2047, 2048, 2049, 4096, 8159, 8160, 8161, 8192, 8193, 16384])
+    func derivationShapeLongMessages(length: Int) {
+        var generator = SplitMix64(seed: UInt64(length))
+        let message = (0..<length).map { _ in UInt8.random(in: UInt8.min...UInt8.max, using: &generator) }
+        let key = (0..<32).map { _ in UInt8.random(in: UInt8.min...UInt8.max, using: &generator) }
+        let expected = libsodiumHash(message, key: key, digestLength: 32)
+        #expect(BLAKE2b.hash(message, key: key, digestLength: 32) == expected)
+        var streamed = BLAKE2b(digestLength: 32, key: key)
+        for chunk in stride(from: 0, to: length, by: 1000) {
+            streamed.update(message[chunk..<min(chunk + 1000, length)])
+        }
+        #expect(streamed.finalize() == expected)
+    }
+
     @Test("streaming matches libsodium's streaming at random split points")
     func randomStreaming() {
         var generator = SplitMix64(seed: 7)
