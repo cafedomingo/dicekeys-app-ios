@@ -6,7 +6,7 @@
 import Foundation
 import Testing
 import Derivation
-import KeyFormats
+@testable import KeyFormats
 
 @Suite("BIP39")
 struct BIP39Tests {
@@ -29,6 +29,11 @@ struct BIP39Tests {
     func referenceVectors(vector: (entropyHex: String, mnemonic: String)) throws {
         let entropy = try #require(Data(hexString: vector.entropyHex))
         #expect(try BIP39.mnemonic(entropy: entropy) == vector.mnemonic)
+    }
+
+    @Test("the English list has 2048 words")
+    func wordlistSize() {
+        #expect(Wordlist.english.count == 2048)
     }
 
     @Test("entropy must be 16 to 32 bytes in steps of 4")
