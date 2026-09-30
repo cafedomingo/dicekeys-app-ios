@@ -12,6 +12,11 @@ enum ReferenceJSON {
         return "{" + sorted.map { "\(quotedJsonString($0.key)):\(quotedJsonString($0.value))" }.joined(separator: ",") + "}"
     }
 
+    /// Password, Secret and SymmetricKey omit an empty recipe; the key pairs always write it.
+    static func recipeIfPresent(_ recipe: Recipe) -> [(key: String, value: String)] {
+        recipe.json.isEmpty ? [] : [(key: "recipe", value: recipe.json)]
+    }
+
     static func hex(_ bytes: some Sequence<UInt8>) -> String {
         let digits = Array("0123456789abcdef".utf8)
         var out = [UInt8]()
