@@ -13,8 +13,12 @@ import Testing
 
 private typealias JSONObject = [String: Any]
 
+/// The schema is a document, so it lives in docs/ rather than in the test bundle, and the
+/// test reads it from the source tree.
 private func loadSchema() throws -> JSONObject {
-    let url = try #require(Bundle.module.url(forResource: "recipe-schema", withExtension: "json"))
+    var url = URL(fileURLWithPath: #filePath)
+    for _ in 0..<5 { url.deleteLastPathComponent() }
+    url.append(path: "docs/recipe-schema.json")
     return try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? JSONObject)
 }
 

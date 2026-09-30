@@ -32,7 +32,7 @@ let package = Package(
         .testTarget(
             name: "DerivationTests",
             dependencies: ["Derivation", "KeyFormats"],
-            resources: [.copy("Fixtures"), .copy("../../../../docs/recipe-schema.json")]
+            resources: [.copy("Fixtures")]
         ),
         .testTarget(
             name: "BLAKE2Tests",
