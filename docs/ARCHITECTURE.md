@@ -216,22 +216,21 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## C++ in Swift or Rust: the decision
 
-The derivation was C++ (`lib-seeded`, about 5k lines, shared with the web
-app). The risk was a byte-level divergence silently changing every derived
-secret, so the port was checked three ways: 168 vectors recorded from the C++, the official
-BLAKE2b known answers for the one primitive written here, and, while the C++ was still in
-the tree, byte-for-byte comparison of the two. `lib-read-dicekey` was ported to Swift stage by
-stage and checked face by face against the C++ output, then rewritten around the two bar
-codes once the port showed what mattered (`SCANNING.md`); it still follows upstream's approach
-to finding and decoding the bars, so it is covered by the licensing question below. Rust would
-have added a second toolchain and an FFI layer for no gain on a single-platform personal app.
+The derivation was C++ (`lib-seeded`, about 5k lines, shared with the web app). The risk was a
+byte-level divergence silently changing every derived secret, so the port was checked three
+ways: 168 vectors recorded from the C++, the official BLAKE2b known answers for the one
+primitive written here, and, while the C++ was still in the tree, byte-for-byte comparison of
+the two. `lib-read-dicekey` was ported to Swift stage by stage and checked face by face against
+the C++ output, then rewritten around the two bar codes once the port showed what mattered
+(`SCANNING.md`); it still follows upstream's approach to finding and decoding the bars, so it is
+covered by the licensing question below. Rust would have added a second toolchain and an FFI
+layer for no gain on a single-platform personal app.
 
 ## Licensing, before this goes anywhere public
 
 seeded-crypto (the origin of the derivation port) and the BIP-39 word list are MIT,
 Inconsolata is OFL, the BLAKE2 test vectors are CC0, and `THIRD_PARTY_LICENSES` records
-each one with its origin and commit. The DiceKeys-derived
-parts, meaning the app itself, the scanner, the photo corpus and the icon mark, still
-carry only upstream's "all rights reserved while we choose a license" placeholder. That is
+each one with its origin and commit. The DiceKeys-derived parts, meaning the app itself,
+the scanner, the photo corpus and the icon mark, still carry only upstream's "all rights reserved while we choose a license" placeholder. That is
 why the README says personal use and TestFlight only, and why publishing needs DiceKeys, LLC
 to choose a license (license@dicekeys.com).

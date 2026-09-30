@@ -48,6 +48,7 @@ struct RecipeJsonTests {
         #expect(RecipeJsonValue.text("say \"hi\" \\ tab\tend").canonicalText == #""say \"hi\" \\ tab\tend""#)
         #expect(RecipeJsonValue.text("\u{01}\u{08}\u{0C}\n\r").canonicalText == #""\u0001\b\f\n\r""#)
         #expect(RecipeJsonValue.text("café/😀").canonicalText == #""café/😀""#)
+        #expect(RecipeJsonValue.text("a\u{7f}b").canonicalText == "\"a\u{7f}b\"")
     }
 
     @Test("canonically equivalent names still sort by their UTF-16 code units")

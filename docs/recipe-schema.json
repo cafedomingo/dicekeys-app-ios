@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "DiceKeys recipe",
-  "description": "The fields Packages/Derivation reads from a recipe that is a JSON object; a recipe may also be the empty string. Any other field is salt: it is hashed with the rest of the text and never read. recipe-format.md has the rules a schema cannot express.",
+  "description": "The fields Packages/Derivation reads, and the two the app writes (`purpose`, `#`), from a recipe that is a JSON object; a recipe may also be the empty string. Any other field is salt: it is hashed with the rest of the text and never read. recipe-format.md has the rules a schema cannot express.",
   "type": "object",
   "properties": {
     "type": {

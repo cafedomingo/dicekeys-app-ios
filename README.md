@@ -44,5 +44,6 @@ Everything taken from elsewhere keeps its own terms, listed in
 this fork started from and the read-dicekey scanner the Swift scanner is derived from, have
 **no open-source license yet** (DiceKeys, LLC: "all rights reserved while we choose a
 license"). That is why this fork is for personal use and TestFlight to the owner's own
-devices, not for publication, until DiceKeys picks a license. lib-seeded (MIT), Inconsolata (OFL 1.1),
-the BIP-39 word list (MIT) and the BLAKE2 test vectors (CC0) are fine to redistribute.
+devices, not for publication, until DiceKeys picks a license. lib-seeded (MIT), Inconsolata
+(OFL 1.1), the BIP-39 word list (MIT) and the BLAKE2 test vectors (CC0) are fine to
+redistribute.

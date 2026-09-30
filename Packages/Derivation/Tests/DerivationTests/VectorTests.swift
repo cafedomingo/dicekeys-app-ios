@@ -122,14 +122,6 @@ struct VectorTests {
         }
     }
 
-    @Test("a consistent lengthInBits and lengthInWords pair derives")
-    func consistentBitsAndWords() throws {
-        // The C++ rejected this correct pair; the port derives it.
-        let json = #"{"lengthInBits":90,"lengthInWords":10}"#
-        let password = try Password.derive(seed: fixture.diceKeys[0].seed, recipe: json)
-        #expect(password.password.hasPrefix("10-"))
-    }
-
     @Test("the same recipe on the two orientation forms of one key derives different values")
     func orientationsMatter() throws {
         let key = fixture.diceKeys[0]

@@ -8,7 +8,7 @@
 ///
 /// Integers must be JSON integers, every length is bounded, and unknown names for
 /// `hashFunction`, `wordList` and `algorithm` are errors. A field the format defines only
-/// for another type is salt: it is not read.
+/// for another type is salt and is not read, except `algorithm`, which only keys may name.
 public struct Recipe: Sendable, Equatable {
     public let json: String
     public let type: DerivableType
