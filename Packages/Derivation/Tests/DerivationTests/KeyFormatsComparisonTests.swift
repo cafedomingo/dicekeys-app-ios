@@ -2,9 +2,10 @@
 //  KeyFormatsComparisonTests.swift
 //  DerivationTests
 //
-//  The Swift encoders against the C++ ones, for every signing key in the fixture. The
-//  OpenPGP self-signature is randomized in Swift, so that export is compared by parsed
-//  content. Goes with the C++.
+//  The Swift encoders against the C++ exports recorded in the fixture, for every signing
+//  key in it. The OpenPGP self-signature is randomized in Swift, so that export is compared
+//  by parsed content. These tests read only the recorded fixture and stay after the C++ is
+//  deleted.
 //
 
 import CryptoKit

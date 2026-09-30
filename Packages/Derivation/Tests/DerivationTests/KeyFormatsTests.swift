@@ -64,6 +64,10 @@ struct ExportTests {
         #expect(mine.version == reference.version && mine.signatureType == reference.signatureType)
         #expect(mine.publicKeyAlgorithm == reference.publicKeyAlgorithm && mine.hashAlgorithm == reference.hashAlgorithm)
         #expect(mine.unhashed == reference.unhashed)
+        // The one deliberate difference: the key flags gain the certify right, 0x03 against 0x01.
+        #expect(mine.hashed.first { $0.type == 0x1b }?.body == [0x03])
+        let flagsAsRecorded = mine.hashed.map { $0.type == 0x1b ? OpenPGPWalker.Subpacket(type: 0x1b, body: [0x01]) : $0 }
+        #expect(flagsAsRecorded == reference.hashed)
     }
 }
 
