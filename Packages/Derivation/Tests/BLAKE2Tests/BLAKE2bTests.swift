@@ -109,19 +109,18 @@ extension BLAKE2bTests {
 
     @Test("messages at and around block boundaries", arguments: [0, 1, 127, 128, 129, 255, 256, 257, 383, 384, 385])
     func blockBoundaries(length: Int) {
-        // The one-shot and byte-at-a-time paths handle the full-block-then-final case
-        // differently, so both must agree at every boundary.
         let message = (0..<length).map { UInt8(truncatingIfNeeded: $0 &* 31) }
         var hasher = BLAKE2b()
         for byte in message {
             hasher.update([byte])
         }
         #expect(hasher.finalize() == BLAKE2b.hash(message))
-        let unkeyed = knownAnswers.first { $0.key.isEmpty && $0.in.count == length * 2 }
-        if let unkeyed, length < 256 {
-            let expectedInput = (0..<length).map { UInt8($0) }
-            #expect(hex(BLAKE2b.hash(expectedInput)) == unkeyed.out)
-        }
+    }
+
+    @Test("known answers at block boundaries", arguments: [0, 1, 127, 128, 129, 255])
+    func knownAnswerAtBoundaries(length: Int) throws {
+        let entry = try #require(knownAnswers.first { $0.key.isEmpty && $0.in.count == length * 2 })
+        #expect(hex(BLAKE2b.hash((0..<length).map { UInt8($0) })) == entry.out)
     }
 
     @Test("a keyed hash of the empty message treats the key block as the final block")

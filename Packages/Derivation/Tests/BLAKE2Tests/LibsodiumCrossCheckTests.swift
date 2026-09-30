@@ -95,11 +95,11 @@ struct LibsodiumCrossCheckTests {
             for end in splits + [message.count] {
                 let chunk = Array(message[start..<end])
                 ours.update(chunk)
-                _ = chunk.withUnsafeBufferPointer { crypto_generichash_blake2b_update(state, $0.baseAddress, UInt64(chunk.count)) }
+                #expect(chunk.withUnsafeBufferPointer { crypto_generichash_blake2b_update(state, $0.baseAddress, UInt64(chunk.count)) } == 0)
                 start = end
             }
             var theirs = [UInt8](repeating: 0, count: digestLength)
-            _ = crypto_generichash_blake2b_final(state, &theirs, digestLength)
+            #expect(crypto_generichash_blake2b_final(state, &theirs, digestLength) == 0)
             if ours.finalize() != theirs {
                 Issue.record("iteration \(iteration): message \(message.count) bytes, key \(key.count) bytes, digest \(digestLength), splits \(splits)")
                 return

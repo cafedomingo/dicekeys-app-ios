@@ -38,6 +38,7 @@ public struct BLAKE2b: Sendable {
     private var block: [UInt8]
     private var pending = 0
     private var counterLow: UInt64 = 0
+    /// Reached only past 2^64 bytes, so no test can pin it; the carry is kept for RFC conformance.
     private var counterHigh: UInt64 = 0
 
     public init(digestLength: Int = 64, key: [UInt8] = []) {
