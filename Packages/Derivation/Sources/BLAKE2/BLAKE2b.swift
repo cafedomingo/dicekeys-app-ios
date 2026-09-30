@@ -36,6 +36,8 @@ public struct BLAKE2b: Sendable {
     /// The block being filled. A full block is compressed only when more input arrives,
     /// because the last block, full or not, is compressed with the final flag.
     private var block: [UInt8]
+    /// The block as 16 little-endian words, kept between blocks to avoid an allocation each.
+    private var words = [UInt64](repeating: 0, count: 16)
     private var pending = 0
     private var counterLow: UInt64 = 0
     /// Reached only past 2^64 bytes, so no test can pin it; the carry is kept for RFC conformance.
@@ -56,14 +58,23 @@ public struct BLAKE2b: Sendable {
     }
 
     public mutating func update(_ input: some Sequence<UInt8>) {
-        for byte in input {
+        update(bytes: Array(input))
+    }
+
+    /// Copies whole runs into the block rather than one byte at a time; a generic per-byte
+    /// loop cannot be specialized across the module boundary and runs about 50 ns per byte.
+    private mutating func update(bytes: [UInt8]) {
+        var offset = 0
+        while offset < bytes.count {
             if pending == Self.blockSize {
                 addToCounter(UInt64(Self.blockSize))
                 compress(final: false)
                 pending = 0
             }
-            block[pending] = byte
-            pending += 1
+            let count = min(Self.blockSize - pending, bytes.count - offset)
+            block.replaceSubrange(pending..<pending + count, with: bytes[offset..<offset + count])
+            pending += count
+            offset += count
         }
     }
 
@@ -100,46 +111,51 @@ public struct BLAKE2b: Sendable {
         }
     }
 
+    /// The working vector lives in sixteen locals, not an array, so the 96 mixes per block
+    /// are register arithmetic with no bounds checks.
     private mutating func compress(final: Bool) {
-        var message = [UInt64](repeating: 0, count: 16)
         for word in 0..<16 {
             var value: UInt64 = 0
             for byte in 0..<8 {
                 value |= UInt64(block[word * 8 + byte]) << UInt64(8 * byte)
             }
-            message[word] = value
+            words[word] = value
         }
-        var v = state + Self.iv
-        v[12] ^= counterLow
-        v[13] ^= counterHigh
-        if final {
-            v[14] = ~v[14]
-        }
+        var v0 = state[0], v1 = state[1], v2 = state[2], v3 = state[3]
+        var v4 = state[4], v5 = state[5], v6 = state[6], v7 = state[7]
+        var v8 = Self.iv[0], v9 = Self.iv[1], v10 = Self.iv[2], v11 = Self.iv[3]
+        var v12 = Self.iv[4] ^ counterLow, v13 = Self.iv[5] ^ counterHigh
+        var v14 = final ? ~Self.iv[6] : Self.iv[6], v15 = Self.iv[7]
         for round in 0..<12 {
             let s = Self.sigma[round % 10]
-            Self.mix(&v, 0, 4, 8, 12, message[s[0]], message[s[1]])
-            Self.mix(&v, 1, 5, 9, 13, message[s[2]], message[s[3]])
-            Self.mix(&v, 2, 6, 10, 14, message[s[4]], message[s[5]])
-            Self.mix(&v, 3, 7, 11, 15, message[s[6]], message[s[7]])
-            Self.mix(&v, 0, 5, 10, 15, message[s[8]], message[s[9]])
-            Self.mix(&v, 1, 6, 11, 12, message[s[10]], message[s[11]])
-            Self.mix(&v, 2, 7, 8, 13, message[s[12]], message[s[13]])
-            Self.mix(&v, 3, 4, 9, 14, message[s[14]], message[s[15]])
+            Self.mix(&v0, &v4, &v8, &v12, words[s[0]], words[s[1]])
+            Self.mix(&v1, &v5, &v9, &v13, words[s[2]], words[s[3]])
+            Self.mix(&v2, &v6, &v10, &v14, words[s[4]], words[s[5]])
+            Self.mix(&v3, &v7, &v11, &v15, words[s[6]], words[s[7]])
+            Self.mix(&v0, &v5, &v10, &v15, words[s[8]], words[s[9]])
+            Self.mix(&v1, &v6, &v11, &v12, words[s[10]], words[s[11]])
+            Self.mix(&v2, &v7, &v8, &v13, words[s[12]], words[s[13]])
+            Self.mix(&v3, &v4, &v9, &v14, words[s[14]], words[s[15]])
         }
-        for index in 0..<8 {
-            state[index] ^= v[index] ^ v[index + 8]
-        }
+        state[0] ^= v0 ^ v8
+        state[1] ^= v1 ^ v9
+        state[2] ^= v2 ^ v10
+        state[3] ^= v3 ^ v11
+        state[4] ^= v4 ^ v12
+        state[5] ^= v5 ^ v13
+        state[6] ^= v6 ^ v14
+        state[7] ^= v7 ^ v15
     }
 
-    private static func mix(_ v: inout [UInt64], _ a: Int, _ b: Int, _ c: Int, _ d: Int, _ x: UInt64, _ y: UInt64) {
-        v[a] = v[a] &+ v[b] &+ x
-        v[d] = rotateRight(v[d] ^ v[a], by: 32)
-        v[c] = v[c] &+ v[d]
-        v[b] = rotateRight(v[b] ^ v[c], by: 24)
-        v[a] = v[a] &+ v[b] &+ y
-        v[d] = rotateRight(v[d] ^ v[a], by: 16)
-        v[c] = v[c] &+ v[d]
-        v[b] = rotateRight(v[b] ^ v[c], by: 63)
+    private static func mix(_ a: inout UInt64, _ b: inout UInt64, _ c: inout UInt64, _ d: inout UInt64, _ x: UInt64, _ y: UInt64) {
+        a = a &+ b &+ x
+        d = rotateRight(d ^ a, by: 32)
+        c = c &+ d
+        b = rotateRight(b ^ c, by: 24)
+        a = a &+ b &+ y
+        d = rotateRight(d ^ a, by: 16)
+        c = c &+ d
+        b = rotateRight(b ^ c, by: 63)
     }
 
     private static func rotateRight(_ value: UInt64, by bits: UInt64) -> UInt64 {
