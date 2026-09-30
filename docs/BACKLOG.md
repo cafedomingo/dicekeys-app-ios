@@ -183,13 +183,18 @@ Every user-facing string is a literal. A String Catalog is the modern form, the 
 already sets `LOCALIZATION_PREFERS_STRING_CATALOGS` and `STRING_CATALOG_GENERATE_SYMBOLS`,
 and nothing else stands in the way. Sizeable only because there are a lot of strings.
 
-## iOS 27 as the deployment target
+## Xcode 27, Swift 6.4 and iOS 27, together
 
-Blocked on GitHub's runners, which still carry Xcode 26.6 and no iOS 27 SDK. When they
-update: set `deploymentTarget` to 27.0 in `project.yml`, drop the `#else` branch in
-`Shared/Components/PresentableError.swift`, and consider the camera API in item 1. Nothing
-else in the app wants a 27-only API, and the app already compiles against the 27 SDK
-locally while keeping 26 as its minimum, so there is no urgency.
+Blocked on GitHub's runners: the stable image carries Xcode 26.6 (Swift 6.3.3), and the
+`xcode-27` image is still marked preview. CI pins Xcode 26.6 by path so an image update
+cannot move the compiler under a green build, and the three packages state
+`swift-tools-version: 6.3` as the floor that pin supports. When the Xcode 27 image leaves
+preview, move everything in one change: `runs-on` and `DEVELOPER_DIR` in `build.yml`,
+`xcodeVersion` and `deploymentTarget` 27.0 in `project.yml`, tools-version 6.4 in
+`BuildTools`, `Packages/Derivation` and `Packages/ReadDiceKey`, and the README's Xcode
+line. Then drop the `#else` branch in `Shared/Components/PresentableError.swift` and
+consider the camera API in item 1. Nothing else wants a 27-only API, and the app already
+builds against the 27 SDK locally, so there is no urgency.
 
 ## iPad, the Mac, and later the foldable
 
