@@ -3,6 +3,8 @@
 //  DerivationTests
 //
 
+import CryptoKit
+import Foundation
 import Testing
 @testable import Derivation
 
@@ -14,6 +16,11 @@ struct PasswordFormatterTests {
         #expect(WordList.en1024.words.count == 1024)
         #expect(WordList.en512.words.first == "abide")
         #expect(WordList.en512.words.last == "zippy")
+        #expect(WordList.en1024.words.first == "abacus")
+        #expect(WordList.en1024.words.last == "zoning")
+        // The lists are part of every password ever derived, so the digest pins them once their source is gone.
+        #expect(digest(WordList.en512.words) == "773113b55c0a6adcf4df3b4b43187f37a2fe7a8a104ce4b2f898bb72d99aa07d")
+        #expect(digest(WordList.en1024.words) == "dbf28ffbc01379ca990e2c49158383f4b33ba98c00e306b62033fc866caf7fec")
         #expect(Set(WordList.en512.words).count == 512)
         #expect(Set(WordList.en1024.words).count == 1024)
         #expect(WordList.en512.words.allSatisfy { $0.count <= 5 && $0.allSatisfy(\.isLowercase) })
@@ -48,6 +55,10 @@ struct PasswordFormatterTests {
         #expect(PasswordFormatter.password(from: secret, wordList: .en512, lengthInChars: 8) == "3-Abide-")
         #expect(PasswordFormatter.password(from: secret, wordList: .en512, lengthInChars: 100) == full)
     }
+}
+
+private func digest(_ words: [String]) -> String {
+    SHA256.hash(data: Data(words.joined(separator: "\n").utf8)).map { String(format: "%02x", $0) }.joined()
 }
 
 private extension String {
