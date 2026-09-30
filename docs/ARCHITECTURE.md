@@ -17,6 +17,7 @@ signing key exports and BIP39), `SeededCrypto` beneath it (the vendored libsodiu
 seeded-crypto, going away), and `ReadDiceKey` (the generated face specification and a
 DiceKey scanner written in Swift).
 The `Derivation` package's BLAKE2 target implements the derivation's hash in Swift, proven against the official vectors and libsodium.
+The package also holds a Swift derivation engine and Swift key encoders, compared against the C++ on every vector; the app still derives through the C++ until the swap.
 No CocoaPods, submodules, Objective-C, C++ wrappers or OpenCV remain, and there is not one
 `#if os(...)` left in the app.
 
