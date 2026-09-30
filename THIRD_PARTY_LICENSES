@@ -145,7 +145,15 @@ Where:     Packages/Derivation/Sources/KeyFormats/Wordlist.swift (the 2048 words
            word lists under Packages/SeededCrypto/Vendor/seeded-crypto/lib-seeded/externally-generated.
 
 
-9. Code from other projects, adapted
-------------------------------------
+9. BLAKE2 known-answer test vectors
+-----------------------------------
+Origin:    https://github.com/BLAKE2/BLAKE2/blob/master/testvectors/blake2-kat.json, commit ed1974e
+Owner:     The BLAKE2 authors
+License:   CC0 1.0 Universal (the repository's COPYING).
+Where:     Packages/Derivation/Tests/BLAKE2Tests/Fixtures/blake2b-kat.json (the blake2b entries only).
+
+
+10. Code from other projects, adapted
+-------------------------------------
 - DiceKeys/Services/Camera/CameraSession.swift keeps the upstream header credit
   to https://github.com/RosayGaspard/SwiftUI-Simple-camera-app (MIT).
