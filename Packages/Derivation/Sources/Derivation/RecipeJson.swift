@@ -329,7 +329,12 @@ public struct RecipeJsonParser {
             if byte != UInt8(ascii: "\\") {
                 try flushSurrogate()
                 // Copy one whole UTF-8 sequence.
-                let length = byte < 0x80 ? 1 : byte < 0xE0 ? 2 : byte < 0xF0 ? 3 : 4
+                let length = switch byte {
+                case ..<0x80: 1
+                case ..<0xE0: 2
+                case ..<0xF0: 3
+                default: 4
+                }
                 let text = String(decoding: bytes[cursor..<cursor + length], as: UTF8.self)
                 scalars.append(contentsOf: text.unicodeScalars)
                 cursor += length

@@ -70,17 +70,10 @@ final class CustomRecipeModel: Identifiable {
     }
 
     private func update() {
-        switch buildType {
-        case .purpose:
-            guard !purposeString.isBlank else {
-                progress = .incomplete
-                return
-            }
-        case .rawJson:
-            guard !rawJsonString.isBlank else {
-                progress = .incomplete
-                return
-            }
+        let source = buildType == .purpose ? purposeString : rawJsonString
+        guard !source.isBlank else {
+            progress = .incomplete
+            return
         }
 
         let recipe: String

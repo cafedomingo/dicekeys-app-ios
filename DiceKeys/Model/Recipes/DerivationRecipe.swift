@@ -48,7 +48,12 @@ struct DerivationRecipe: Identifiable, Codable, Equatable {
 
     init(template: DerivationRecipe, sequenceNumber: Int, lengthInChars: Int? = nil, lengthInBytes: Int? = nil) {
         self.type = template.type
-        let typeSuffix = template.type == .password ? " Password" : template.type == .symmetricKey ? " Key" : template.type == .unsealingKey ? " Key Pair" : ""
+        let typeSuffix = switch template.type {
+        case .password: " Password"
+        case .symmetricKey: " Key"
+        case .unsealingKey: " Key Pair"
+        case .secret, .signingKey: ""
+        }
         let sequenceSuffix = sequenceNumber == 1 ? "" : " (\(String(sequenceNumber)))"
         self.name = template.name + typeSuffix + sequenceSuffix
 
