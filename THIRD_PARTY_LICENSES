@@ -49,7 +49,7 @@ Where in this repo:
 
 
 3. dicekeys/seeded-crypto  (lib-seeded, the origin of the derivation port)
--------------------------------------------------------------------------
+--------------------------------------------------------------------------
 Origin:    https://github.com/dicekeys/seeded-crypto, branch primary, commit c9c7740,
            tracked through the fork https://github.com/cafedomingo/seeded-crypto
 Owner:     DiceKeys, LLC

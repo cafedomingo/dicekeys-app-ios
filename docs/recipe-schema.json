@@ -17,7 +17,7 @@
       "default": "BLAKE2b"
     },
     "lengthInBytes": {
-      "description": "Secret: 1 to 8160, default 32. Keys: 32. Password: any integer, then overridden by the word count.",
+      "description": "Secret: 1 to 8160, default 32. Keys: 32. Password: any integer, then overridden by the word count. The bounds are Secret's; a validator rejects values that Password ignores.",
       "type": "integer",
       "minimum": 1,
       "maximum": 8160

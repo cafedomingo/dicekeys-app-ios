@@ -55,8 +55,11 @@ or secret (`pgp`, `ssh` or `wallet`).
 - `lengthInChars` truncates the finished password, the word count prefix included.
 - A key with a `lengthInBytes` other than 32 is `lengthMustBe32`.
 - The upper bounds (8160 bytes, 1020 words) are the HKDF limit of 255 blocks of 32 bytes.
-- The text must be strict JSON, apart from a leading byte order mark, which the parser skips and the hash still includes. Nesting deeper than 128 levels is `invalidJson`.
-- Text that is not a JSON object, whitespace-only text included, is `recipeNotAnObject`.
+- The text must be strict JSON, apart from a leading byte order mark, which the parser skips
+  and the hash still includes.
+- Nesting deeper than 128 levels is `invalidJson`.
+- Whitespace-only text, or valid JSON that is not an object, is `recipeNotAnObject`; any
+  other text that is not valid JSON is `invalidJson`.
 
 An unknown `hashFunction`, `wordList` or `algorithm` is an error rather than a fallback.
 The name is part of the text that gets hashed, so a recipe naming something this app does

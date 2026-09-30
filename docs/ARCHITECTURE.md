@@ -217,7 +217,7 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 ## C++ in Swift or Rust: the decision
 
 The derivation was C++ (`lib-seeded`, about 5k lines, shared with the web
-app) and is now Swift. The risk was a byte-level divergence silently changing every derived
+app). The risk was a byte-level divergence silently changing every derived
 secret, so the port was checked three ways: 168 vectors recorded from the C++, the official
 BLAKE2b known answers for the one primitive written here, and, while the C++ was still in
 the tree, byte-for-byte comparison of the two. `lib-read-dicekey` was ported to Swift stage by

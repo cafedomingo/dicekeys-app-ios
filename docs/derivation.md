@@ -53,7 +53,7 @@ byte arrays are lowercase hex without a prefix.
 
 ## Key formats
 
-`KeyFormats` encodes a `SigningKey`.
+`KeyFormats` encodes a `SigningKey` (OpenSSH, OpenPGP) and Secret bytes (BIP39).
 
 **OpenSSH.** The public line is `ssh-ed25519 <base64> DiceKeys`. The private key is an
 unencrypted `openssh-key-v1` block (cipher and KDF `none`, one key) in 64-column base64 with
@@ -69,7 +69,9 @@ certification self-signature (type 0x13, SHA-256) whose key flags are certify pl
 armor has the blank line after the header and a CRC24 line. Packets use the old framing, with
 1, 2 or 4 length octets as the body needs. The creation time is 0 because the v4 fingerprint
 hashes it, so the fingerprint depends on the key alone. CryptoKit randomizes Ed25519
-signatures, so two exports of one key differ in the 64 signature bytes and in nothing else.
+signatures, so two exports of one key differ in the signature packet's two MPIs (their values
+and bit-length fields) and nowhere else: the public key, fingerprint, secret key material and
+user ID are identical.
 
 **BIP39.** `BIP39.mnemonic(entropy:)` takes 16 to 32 bytes in steps of 4. The English list is
 `Wordlist.swift`.
@@ -77,12 +79,13 @@ signatures, so two exports of one key differ in the 64 signature bytes and in no
 ## The seed string
 
 The seed is the DiceKey's human-readable form: 25 faces of letter, digit and orientation,
-75 characters, rotated to whichever of the four rotations sorts first, so every way of
+75 characters (50 without orientations, which only tests use), rotated to whichever of the four rotations sorts first, so every way of
 holding the key derives the same values. `DiceKey.toSeed()` builds it.
 
-The DiceKey id is a Secret derived from that seed with the recipe
-`{"purpose":"a unique identifier for this DiceKey","lengthInBytes":16}`; for the example key
-it is `31f6979a628e4800780118a5dc466129`.
+`DiceKey.idBytes` is the 16-byte Secret derived from that seed with the recipe
+`{"purpose":"a unique identifier for this DiceKey","lengthInBytes":16}`, and `DiceKey.id` is
+its URL-safe base64 without padding. For the example key the bytes are
+`31f6979a628e4800780118a5dc466129` in hex.
 
 ## Compatibility contract
 
@@ -120,7 +123,7 @@ with its error text.
 | The reference | Here |
 |---|---|
 | `hashFunction: Argon2id` derived through libsodium's internal `argon2id_hash_raw` (salt is the type string plus the recipe, one lane, output of at least 16 bytes cut to the length) | `unsupportedHashFunction` |
-| `16.9` read as 16, `true` as 1, `-1` as 4294967295, values of 2^32 or more cut to 32 bits | `wrongType` or `outOfRange` |
+| `16.9` read as 16, `true` as 1, a negative `lengthInChars` wrapping to no truncation, values of 2^32 or more cut to 32 bits | `wrongType` or `outOfRange` |
 | `lengthInBytes` unbounded, with the HKDF counter wrapping past 8160 bytes | 1 to 8160 |
 | `lengthInBytes: 0` an empty secret, `lengthInChars: 0` an empty password, and 0 for bits or words meaning unset | `outOfRange` |
 | An unknown `wordList` fell back to the 512 list | `unknownWordList` |
@@ -155,7 +158,9 @@ vectors (`Tests/BLAKE2Tests`).
 ## Secrets in memory
 
 Derived values are ordinary Swift values, and nothing zeroes or locks their memory. The
-package never logs them. The app copies a value to the general pasteboard marked local
+package never logs them. The app holds a derived value in the state of the screen showing
+it, so it goes when the screen does; the DiceKey id, which the `DiceKey` caches, is the
+exception. The app copies a value to the general pasteboard marked local
 only, so Universal Clipboard does not carry it, with an expiry one minute out.
 
 ## Adding a hash function or a word list
