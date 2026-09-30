@@ -13,13 +13,19 @@ on:
 permissions:
   contents: read
 
+# One named Xcode rather than the image's default, so a runner image update cannot change
+# the compiler under a green build. Move this, the packages' tools-version and the
+# deployment target together when GitHub's Xcode 27 image leaves preview.
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -44,7 +50,7 @@ jobs:
   # The Derivation package's suites, with plain SwiftPM on the macOS host: the recorded
   # vectors (the tripwire for any change to derived secrets) and BLAKE2b's known answers.
   crypto:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
@@ -55,7 +61,7 @@ jobs:
   # The scanner and its photo corpus, with plain SwiftPM on the macOS host. Release build:
   # the corpus is full-size photos, which take minutes at -Onone and seconds optimized.
   scanner:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -64,7 +70,7 @@ jobs:
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
   unused-code:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
@@ -94,7 +100,7 @@ jobs:
           retention-days: 7
 
   app-tests:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7

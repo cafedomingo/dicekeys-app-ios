@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.3
 //
 // Derivation: recipes and the passwords, secrets and keys derived from a DiceKey seed.
 //
