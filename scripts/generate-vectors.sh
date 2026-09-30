@@ -21,5 +21,6 @@ while IFS= read -r -d '' f; do
   clang++ -std=c++17 -O1 -w -I"$LIB" -I"$PKG/SeededCryptoNative/include" -I"$PKG/CSodium/include" -c "$f" -o "$BUILD/$(basename "$f").o"
 done < <(find "$LIB" "$PKG/SeededCryptoNative" -name '*.cpp' -print0)
 clang++ -std=c++17 -O1 -w -I"$LIB" -I"$PKG/SeededCryptoNative/include" -I"$PKG/CSodium/include" "$ROOT/scripts/generate-vectors.cpp" "$BUILD"/*.o -o "$BUILD/generate-vectors"
-"$BUILD/generate-vectors" > "$OUT"
+"$BUILD/generate-vectors" > "$OUT.tmp"
+mv "$OUT.tmp" "$OUT"
 echo "Wrote ${OUT#"$ROOT"/}"

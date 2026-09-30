@@ -21,7 +21,7 @@ OpenCV remain, and there is not one `#if os(...)` left in the app.
 
 1. **Always be able to read a DiceKey and re-derive the same secrets.** The seed derivation
    (seeded-crypto + libsodium) builds from sources in this repository and the scanner is
-   pure Swift. Golden vectors generated from the reference implementation guard the
+   pure Swift. Vectors generated from the reference implementation guard the
    derivation output; a corpus of photos of real keys guards the scanner.
 2. Build with current Xcode against the current SDKs, Swift 6 language mode, strict
    concurrency, no deprecated APIs. GitHub Actions macOS runners are the compiler for this

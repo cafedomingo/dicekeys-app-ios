@@ -7,7 +7,7 @@
 # Copies src/libsodium, generates include/sodium/version.h with libsodium's own configure
 # (the only generated header), drops the x86 assembly and autotools files, refreshes the
 # private argon2 header that seeded-crypto includes, and rewrites VENDOR.md. Afterwards run
-# scripts/generate-golden-vectors.sh and check that the fixture did not change.
+# scripts/generate-vectors.sh and check that the fixture did not change.
 set -euo pipefail
 URL="${1:-https://github.com/jedisct1/libsodium.git}"
 REF="${2:-1.0.22-RELEASE}"

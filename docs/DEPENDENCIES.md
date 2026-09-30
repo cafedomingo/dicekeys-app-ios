@@ -2,7 +2,7 @@
 
 The app has no external packages. Two libraries are vendored as source, and Dependabot cannot
 see them, so updates are manual. After either update, `scripts/generate-vectors.sh`
-must produce no diff; `GoldenVectorTests` fails CI if derived output changes.
+must produce no diff; `VectorTests` fails CI if derived output changes.
 
 | Library | Packaged as | To update |
 |---|---|---|

@@ -191,7 +191,7 @@ The recorded total in `ScannerCorpusTests` then resets to what the new photos re
 
 - **Swift/C++ interop** could replace the hand-written C ABI over seeded-crypto.
 - **Modernizing the vendored C++** in the subtree is possible now that it is a git subtree;
-  the golden vectors would catch any change to derived output.
+  the vectors would catch any change to derived output.
 - **SwiftLint** as a build plugin, so Xcode shows violations while editing; CI already
   runs it.
 - **The Python generator in Swift.** `generate-app-icon.py` could be a Swift script
@@ -371,7 +371,7 @@ deleted. Four things to establish before believing it:
 - Dropping seal and unseal narrows interoperability with other DiceKeys apps even though
   nothing here uses them. That is a product decision rather than a technical one.
 
-**The golden vectors are the whole proof, and the only one.** Every official implementation
+**The vectors are the whole proof, and the only one.** Every official implementation
 is the same C++ compiled differently: [seeded-crypto-js](https://github.com/dicekeys/seeded-crypto-js)
 through Emscripten, [seeded-crypto-ios](https://github.com/dicekeys/seeded-crypto-ios) as a
 dormant CocoaPods wrapper, which is what this app moved away from. There is no independent

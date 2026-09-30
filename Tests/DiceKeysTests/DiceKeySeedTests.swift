@@ -42,7 +42,7 @@ struct DiceKeySeedTests {
         #expect(diceKey.toSeed(includeOrientations: false) == key.seedWithoutOrientations)
     }
 
-    @Test("DiceKey.Example produces the golden seed")
+    @Test("DiceKey.Example produces the reference seed")
     func exampleSeed() {
         #expect(DiceKey.Example.toSeed() == Self.exampleSeed)
         #expect(DiceKey.Example.toSeed(includeOrientations: false) == Self.exampleSeedWithoutOrientations)

@@ -15,8 +15,8 @@
 # extern/**). Expect a merge conflict on those paths only if upstream bumps its libsodium
 # submodule; keep ours.
 #
-# Afterwards: scripts/generate-golden-vectors.sh must produce no diff unless the derivation
-# itself was deliberately changed, and CI's GoldenVectorTests must stay green.
+# Afterwards: scripts/generate-vectors.sh must produce no diff unless the derivation
+# itself was deliberately changed, and CI's VectorTests must stay green.
 set -euo pipefail
 URL="${1:-https://github.com/cafedomingo/seeded-crypto.git}"
 REF="${2:-primary}"
