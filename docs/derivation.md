@@ -69,9 +69,9 @@ certification self-signature (type 0x13, SHA-256) whose key flags are certify pl
 armor has the blank line after the header and a CRC24 line. Packets use the old framing, with
 1, 2 or 4 length octets as the body needs. The creation time is 0 because the v4 fingerprint
 hashes it, so the fingerprint depends on the key alone. CryptoKit randomizes Ed25519
-signatures, so two exports of one key differ in the signature packet's two MPIs (their values
-and bit-length fields) and nowhere else: the public key, fingerprint, secret key material and
-user ID are identical.
+signatures, so two exports of one key differ only inside the signature packet (the two MPIs,
+their bit-length fields and, when a leading zero byte drops, the packet's length octets); the
+public key, fingerprint, secret key material and user ID are identical.
 
 **BIP39.** `BIP39.mnemonic(entropy:)` takes 16 to 32 bytes in steps of 4. The English list is
 `Wordlist.swift`.
@@ -79,8 +79,9 @@ user ID are identical.
 ## The seed string
 
 The seed is the DiceKey's human-readable form: 25 faces of letter, digit and orientation,
-75 characters (50 without orientations, which only tests use), rotated to whichever of the four rotations sorts first, so every way of
-holding the key derives the same values. `DiceKey.toSeed()` builds it.
+75 characters (50 without orientations, which only tests use), rotated to whichever of the
+four rotations sorts first, so every way of holding the key derives the same values.
+`DiceKey.toSeed()` builds it.
 
 `DiceKey.idBytes` is the 16-byte Secret derived from that seed with the recipe
 `{"purpose":"a unique identifier for this DiceKey","lengthInBytes":16}`, and `DiceKey.id` is

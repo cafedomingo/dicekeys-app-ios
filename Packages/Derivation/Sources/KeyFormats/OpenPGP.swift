@@ -18,8 +18,8 @@ public enum OpenPGP {
 
     /// Timestamp 0 keeps the fingerprint stable across derivations, because the v4
     /// fingerprint hashes the creation time. The self-signature is randomized by CryptoKit,
-    /// so two exports of one key differ in the signature packet's two MPIs (values and bit-length
-    /// fields) and nowhere else.
+    /// so two exports of one key differ only inside the signature packet: the two MPIs, their
+    /// bit-length fields and, when a leading zero byte drops, the packet's length octets.
     public static func secretKeyBlock(_ key: Derivation.SigningKey, userId: String = "", timestamp: UInt32 = 0) -> String {
         let seed = Array(key.signingKeyBytes.prefix(32))
         let publicKey = Array(key.verificationKeyBytes)
