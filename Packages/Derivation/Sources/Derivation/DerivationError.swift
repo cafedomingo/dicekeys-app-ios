@@ -40,7 +40,7 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
             }
             return "\(field) must be between \(allowed.lowerBound) and \(allowed.upperBound)"
         case .typeMismatch(let recipe, let requested):
-            return "The recipe is for a \(recipe), not a \(requested.rawValue)"
+            return "The recipe's type is \(recipe); this needs a \(requested.rawValue)"
         case .invalidAlgorithm(let name):
             return "The algorithm \(name) does not apply here"
         case .unsupportedHashFunction(let name):

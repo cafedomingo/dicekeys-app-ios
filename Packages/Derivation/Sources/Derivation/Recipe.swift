@@ -6,10 +6,9 @@
 /// A recipe, parsed and validated. `json` is the text exactly as given, because that text
 /// is what gets hashed; every other property is what the text means for `type`.
 ///
-/// Parsing is strict where the reference C++ was lenient: integers must be JSON integers,
-/// every length is bounded, and unknown names for `hashFunction`, `wordList` and
-/// `algorithm` are errors. Fields the format defines for other types, and every field it
-/// does not define, are salt only and are not read.
+/// Integers must be JSON integers, every length is bounded, and unknown names for
+/// `hashFunction`, `wordList` and `algorithm` are errors. A field the format defines only
+/// for another type is salt: it is not read.
 public struct Recipe: Sendable, Equatable {
     public let json: String
     public let type: DerivableType
@@ -57,7 +56,7 @@ public struct Recipe: Sendable, Equatable {
             let bits = try fields.integer("lengthInBits", in: bitsRange)
             let words = try fields.integer("lengthInWords", in: 1...Recipe.maximumLengthInWords)
             self.lengthInChars = try fields.integer("lengthInChars", in: 1...Int.max)
-            // A lengthInBytes on a password is salt: the words decide the length.
+            // Type-checked like every integer field, then overridden: the words decide the length.
             _ = try fields.integer("lengthInBytes", in: Int.min...Int.max)
             let resolvedWords: Int
             switch (bits, words) {

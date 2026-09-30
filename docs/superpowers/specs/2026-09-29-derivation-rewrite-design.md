@@ -110,7 +110,7 @@ public enum DerivationError: Error, Equatable {
     case recipeNotAnObject, invalidJson(String), duplicateField(String)
     case wrongType(field: String, expected: String)
     case outOfRange(field: String, allowed: ClosedRange<Int>)
-    case typeMismatch(recipe: DerivableType, requested: DerivableType)
+    case typeMismatch(recipe: String, requested: DerivableType)
     case invalidAlgorithm(String), unsupportedHashFunction(String), unknownWordList(String)
     case lengthMustBe32(DerivableType), bitsAndWordsConflict
 }
