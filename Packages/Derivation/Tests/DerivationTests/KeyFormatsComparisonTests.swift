@@ -151,9 +151,30 @@ struct OpenPGPComparisonTests {
         #expect(walker.packets.count == 3)
     }
 
-    @Test("the CRC24 of the empty input is the initializer")
+    @Test("the CRC24 matches the standard check value")
     func crc24() {
         #expect(Armor.crc24([]) == [0xb7, 0x04, 0xce])
         #expect(Armor.crc24(Array("Hello".utf8)) != [0xb7, 0x04, 0xce])
+        #expect(Armor.crc24(Array("123456789".utf8)) == [0x21, 0xcf, 0x02])
+    }
+
+    @Test("packets and subpackets switch length encoding at the RFC 4880 boundaries")
+    func framingLengthBranches() {
+        // Tag 13 in an old-format header is 0x80 | 13 << 2 = 0xb4, plus the length type in the low two bits.
+        let long = OpenPGP.packet(tag: 13, body: [UInt8](repeating: 0x41, count: 65_536))
+        #expect(Array(long.prefix(5)) == [0xb6, 0x00, 0x01, 0x00, 0x00])
+        #expect(long.count == 5 + 65_536)
+        // Subpacket lengths include the type byte: 190 to 8383 body bytes give 191 to 8384.
+        let lengths: [(body: Int, header: [UInt8])] = [
+            (190, [191, 0x14]),
+            (191, [192, 0, 0x14]),
+            (8382, [223, 255, 0x14]),
+            (8383, [255, 0, 0, 0x20, 0xc0, 0x14])
+        ]
+        for (count, header) in lengths {
+            let framed = OpenPGP.subpacket(type: 0x14, body: [UInt8](repeating: 0x41, count: count))
+            #expect(Array(framed.prefix(header.count)) == header)
+            #expect(framed.count == header.count + count)
+        }
     }
 }
