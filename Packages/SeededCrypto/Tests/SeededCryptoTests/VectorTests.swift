@@ -58,6 +58,24 @@ let fixture: VectorFixture = {
     return try! JSONDecoder().decode(VectorFixture.self, from: Data(contentsOf: url))
 }()
 
+/// The binary body of an OpenSSH private key with its two check-int copies zeroed. The private
+/// section starts after the magic, the cipher, KDF and KDF options strings, the key count, the
+/// public key blob and the section length.
+private func maskedOpenSshKey(_ pem: String) throws -> [UInt8] {
+    let body = pem.split(separator: "\n").filter { !$0.hasPrefix("-----") }.joined()
+    var bytes = [UInt8](try #require(Data(base64Encoded: body)))
+    var offset = "openssh-key-v1\0".utf8.count
+    func uint32(at index: Int) -> Int {
+        bytes[index..<index + 4].reduce(0) { $0 << 8 | Int($1) }
+    }
+    for _ in 0..<3 { offset += 4 + uint32(at: offset) }
+    offset += 4
+    offset += 4 + uint32(at: offset)
+    offset += 4
+    for index in offset..<offset + 8 { bytes[index] = 0 }
+    return bytes
+}
+
 @Suite("Derivation vectors from the reference C++")
 struct VectorTests {
     @Test("libsodium version matches the vendored source")
@@ -68,9 +86,9 @@ struct VectorTests {
     @Test("the fixture holds the expected sections")
     func sections() {
         #expect(fixture.diceKeys.count == 4)
-        #expect(fixture.cases.count > 150)
-        #expect(!fixture.legacy.isEmpty)
-        #expect(!fixture.rejected.isEmpty)
+        #expect(fixture.cases.count == 168)
+        #expect(fixture.legacy.count == 21)
+        #expect(fixture.rejected.count == 16)
         #expect(fixture.legacy.allSatisfy { $0.note != nil })
     }
 
@@ -103,9 +121,10 @@ struct VectorTests {
             #expect(key.toJson() == json)
             #expect(key.openSshPublicKey == vector.openSshPublicKey)
             let sshPrivate = try key.openSshPemPrivateKey(comment: vector.sshComment ?? "")
-            // The OpenSSH private key block embeds a random check value, so only its shape is stable.
-            #expect(sshPrivate.hasPrefix("-----BEGIN OPENSSH PRIVATE KEY-----"))
-            #expect(sshPrivate.count == vector.openSshPemPrivateKey?.count)
+            // The block embeds a random check value, so the Swift output is compared with it zeroed.
+            let recorded = try #require(vector.openSshPemPrivateKey)
+            #expect(sshPrivate.count == recorded.count)
+            #expect(try maskedOpenSshKey(sshPrivate) == maskedOpenSshKey(recorded))
             let pgp = try key.openPgpPemFormatSecretKey(userId: vector.pgpUserId ?? "", timestamp: vector.pgpTimestamp ?? 0)
             #expect(pgp == vector.openPgpPemFormatSecretKey)
         default:
@@ -114,15 +133,15 @@ struct VectorTests {
     }
 
     @Test("every rejected entry throws", arguments: fixture.rejected)
-    func rejects(vector: Vector) {
-        #expect(vector.error?.isEmpty == false)
-        #expect(throws: SeededCryptoError.self) {
+    func rejects(vector: Vector) throws {
+        #expect(throws: SeededCryptoError(message: try #require(vector.error))) {
             switch vector.type {
             case "Password": _ = try Password.deriveFromSeed(withSeedString: vector.seed, recipe: vector.recipe)
             case "Secret": _ = try Secret.deriveFromSeed(withSeedString: vector.seed, recipe: vector.recipe)
             case "SymmetricKey": _ = try SymmetricKey.deriveFromSeed(withSeedString: vector.seed, recipe: vector.recipe)
             case "UnsealingKey": _ = try UnsealingKey.deriveFromSeed(withSeedString: vector.seed, recipe: vector.recipe)
-            default: _ = try SigningKey.deriveFromSeed(withSeedString: vector.seed, recipe: vector.recipe)
+            case "SigningKey": _ = try SigningKey.deriveFromSeed(withSeedString: vector.seed, recipe: vector.recipe)
+            default: Issue.record("unknown type \(vector.type)")
             }
         }
     }
