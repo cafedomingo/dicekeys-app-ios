@@ -85,8 +85,7 @@ let package = Package(
         .testTarget(
             name: "SeededCryptoTests",
             dependencies: ["SeededCrypto"],
-            path: "Tests/SeededCryptoTests",
-            resources: [.copy("Fixtures")]
+            path: "Tests/SeededCryptoTests"
         ),
     ],
     cxxLanguageStandard: .cxx17

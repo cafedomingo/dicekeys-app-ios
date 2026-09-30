@@ -7,7 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG="$ROOT/Packages/SeededCrypto/Sources"
 BUILD="$ROOT/.build/vectors"
-OUT="$ROOT/Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/vectors.json"
+OUT="$ROOT/Packages/Derivation/Tests/DerivationTests/Fixtures/vectors.json"
 # Every object is rebuilt and every object in the directory is linked, so start empty: objects
 # left from a checkout at another path would be linked twice.
 rm -rf "$BUILD"

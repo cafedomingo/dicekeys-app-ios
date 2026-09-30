@@ -1,4 +1,4 @@
-// Generates Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/vectors.json from the
+// Generates Packages/Derivation/Tests/DerivationTests/Fixtures/vectors.json from the
 // reference C++ (lib-seeded + libsodium) through the C ABI shim. Three sections:
 //   cases     what every implementation must reproduce byte for byte
 //   legacy    what the C++ produced for inputs the Swift port rejects or handles differently,
