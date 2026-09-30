@@ -19,8 +19,8 @@ Put your Apple Developer team id in `Config/Signing.xcconfig`, select the `DiceK
 and a device, then Product → Run.
 
 There is no CocoaPods, no git submodule, no Objective-C and no third-party binary.
-libsodium and the DiceKeys seeded-crypto C++ library are vendored as source in
-`Packages/SeededCrypto`; the DiceKey scanner is pure Swift, in `Packages/ReadDiceKey`. See
+Key derivation is pure Swift, in `Packages/Derivation`, and so is the DiceKey scanner, in
+`Packages/ReadDiceKey`. See
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 ## Testing the app

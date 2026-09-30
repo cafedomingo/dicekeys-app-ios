@@ -41,18 +41,14 @@ jobs:
       - name: actionlint
         run: actionlint
 
-  # libsodium and seeded-crypto, built from their vendored C and C++ sources, and the
-  # Derivation package over them, with plain SwiftPM on the macOS host. VectorTests is the
-  # tripwire for any change to derived secrets.
+  # The Derivation package's suites, with plain SwiftPM on the macOS host: the recorded
+  # vectors (the tripwire for any change to derived secrets) and BLAKE2b's known answers.
   crypto:
     runs-on: macos-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - name: Build and test
-        working-directory: Packages/SeededCrypto
-        run: swift test -c release -Xswiftc -enable-testing --parallel
-      - name: Build and test Derivation
         working-directory: Packages/Derivation
         run: swift test -c release -Xswiftc -enable-testing --parallel
 

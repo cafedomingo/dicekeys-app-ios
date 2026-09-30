@@ -3,7 +3,7 @@
 //  DerivationTests
 //
 //  Every value in Fixtures/vectors.json was produced by the reference C++ implementation
-//  (scripts/generate-vectors.sh). If a `cases` or `legacy` test fails, derived passwords
+//  before it was replaced. If a `cases` or `legacy` test fails, derived passwords
 //  and keys have changed for real users. Do not "fix" the fixture; fix the build.
 //
 

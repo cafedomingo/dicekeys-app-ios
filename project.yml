@@ -3,9 +3,8 @@
 #   swift run --package-path BuildTools xcodegen generate
 #   open DiceKeys.xcodeproj
 #
-# Native dependencies come from three local Swift packages: Packages/Derivation (recipes and
-# derived values, over Packages/SeededCrypto, which compiles libsodium and seeded-crypto from
-# vendored sources) and Packages/ReadDiceKey (the scanner, in Swift).
+# The app's logic comes from two local Swift packages: Packages/Derivation (recipes and
+# derived values) and Packages/ReadDiceKey (the scanner).
 
 name: DiceKeys
 options:
