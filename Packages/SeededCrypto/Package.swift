@@ -22,6 +22,9 @@ let package = Package(
     ],
     products: [
         .library(name: "SeededCrypto", targets: ["SeededCrypto"]),
+        // libsodium itself, for tests that compare a Swift primitive against it. Goes away
+        // with the C++.
+        .library(name: "CSodium", targets: ["CSodium"]),
     ],
     targets: [
         // MARK: libsodium, compiled from source.
