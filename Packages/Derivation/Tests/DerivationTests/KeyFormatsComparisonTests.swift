@@ -71,6 +71,14 @@ func decodedPem(_ pem: String) throws -> [UInt8] {
     return [UInt8](try #require(Data(base64Encoded: body)))
 }
 
+/// The binary body of an OpenSSH private key with its two check-int copies zeroed.
+func maskedOpenSshKey(_ pem: String) throws -> [UInt8] {
+    var bytes = try decodedPem(pem)
+    let offset = try privateSectionOffset(bytes)
+    for index in offset..<offset + 8 { bytes[index] = 0 }
+    return bytes
+}
+
 /// Offset of the first `checkint` in an unencrypted `openssh-key-v1` blob.
 func privateSectionOffset(_ bytes: [UInt8]) throws -> Int {
     var offset = "openssh-key-v1\0".utf8.count

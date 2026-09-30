@@ -61,12 +61,18 @@ public enum OpenPGP {
 
     public enum Error: Swift.Error { case malformed }
 
-    static func fingerprint(publicBody: [UInt8]) -> [UInt8] {
+    /// The public key as RFC 4880 frames it for hashing, which starts both the fingerprint and
+    /// the self-signature preimage.
+    private static func keyHashPreimage(publicBody: [UInt8]) -> ByteWriter {
         var preimage = ByteWriter()
         preimage.byte(0x99)
         preimage.uint16(UInt16(publicBody.count))
         preimage.append(publicBody)
-        return Array(Insecure.SHA1.hash(data: preimage.bytes))
+        return preimage
+    }
+
+    static func fingerprint(publicBody: [UInt8]) -> [UInt8] {
+        Array(Insecure.SHA1.hash(data: keyHashPreimage(publicBody: publicBody).bytes))
     }
 
     private static func signaturePacketBody(seed: [UInt8], publicBody: [UInt8], userIdBody: [UInt8], timestamp: UInt32) -> [UInt8] {
@@ -91,10 +97,7 @@ public enum OpenPGP {
         hashedRegion.uint16(UInt16(hashedSubpackets.count))
         hashedRegion.append(hashedSubpackets.bytes)
 
-        var preimage = ByteWriter()
-        preimage.byte(0x99)
-        preimage.uint16(UInt16(publicBody.count))
-        preimage.append(publicBody)
+        var preimage = keyHashPreimage(publicBody: publicBody)
         preimage.byte(0xb4)
         preimage.uint32(UInt32(userIdBody.count))
         preimage.append(userIdBody)

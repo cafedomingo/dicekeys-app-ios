@@ -44,51 +44,6 @@ struct BIP39Tests {
     }
 }
 
-@Suite("Signing key exports from the reference C++")
-struct ExportTests {
-    static let signingCases = fixture.cases.filter { $0.type == "SigningKey" }
-
-    @Test("OpenSSH and OpenPGP exports match the fixture", arguments: signingCases)
-    func exports(vector: Vector) throws {
-        let key = try SigningKey.derive(seed: vector.seed, recipe: vector.recipe)
-        #expect(OpenSSH.publicKeyLine(key) == vector.openSshPublicKey)
-        let recorded = try #require(vector.openSshPemPrivateKey)
-        let sshPrivate = OpenSSH.privateKeyPEM(key, comment: vector.sshComment ?? "")
-        #expect(sshPrivate.count == recorded.count)
-        #expect(try maskedOpenSshKey(sshPrivate) == maskedOpenSshKey(recorded))
-        let ours = try OpenPGPWalker(armored: OpenPGP.secretKeyBlock(key, userId: vector.pgpUserId ?? "", timestamp: vector.pgpTimestamp ?? 0))
-        let theirs = try OpenPGPWalker(armored: try #require(vector.openPgpPemFormatSecretKey))
-        #expect(try ours.secretKey == theirs.secretKey)
-        #expect(try ours.userId == theirs.userId)
-        let (mine, reference) = (try ours.signature, try theirs.signature)
-        #expect(mine.version == reference.version && mine.signatureType == reference.signatureType)
-        #expect(mine.publicKeyAlgorithm == reference.publicKeyAlgorithm && mine.hashAlgorithm == reference.hashAlgorithm)
-        #expect(mine.unhashed == reference.unhashed)
-        // The one deliberate difference: the key flags gain the certify right, 0x03 against 0x01.
-        #expect(mine.hashed.first { $0.type == 0x1b }?.body == [0x03])
-        let flagsAsRecorded = mine.hashed.map { $0.type == 0x1b ? OpenPGPWalker.Subpacket(type: 0x1b, body: [0x01]) : $0 }
-        #expect(flagsAsRecorded == reference.hashed)
-    }
-}
-
-/// The binary body of an OpenSSH private key with its two check-int copies zeroed. The private
-/// section starts after the magic, the cipher, KDF and KDF options strings, the key count, the
-/// public key blob and the section length.
-func maskedOpenSshKey(_ pem: String) throws -> [UInt8] {
-    let body = pem.split(separator: "\n").filter { !$0.hasPrefix("-----") }.joined()
-    var bytes = [UInt8](try #require(Data(base64Encoded: body)))
-    var offset = "openssh-key-v1\0".utf8.count
-    func uint32(at index: Int) -> Int {
-        bytes[index..<index + 4].reduce(0) { $0 << 8 | Int($1) }
-    }
-    for _ in 0..<3 { offset += 4 + uint32(at: offset) }
-    offset += 4
-    offset += 4 + uint32(at: offset)
-    offset += 4
-    for index in offset..<offset + 8 { bytes[index] = 0 }
-    return bytes
-}
-
 private extension Data {
     init?(hexString: String) {
         let chars = Array(hexString.utf8)
