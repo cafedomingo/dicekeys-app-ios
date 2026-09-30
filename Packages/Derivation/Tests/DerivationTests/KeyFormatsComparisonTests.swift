@@ -150,9 +150,8 @@ struct OpenPGPComparisonTests {
         #expect(walker.packets.count == 3)
     }
 
-    @Test("the CRC24 matches RFC 4880's example")
+    @Test("the CRC24 of the empty input is the initializer")
     func crc24() {
-        // RFC 4880 gives no vector; this one is GnuPG's for the empty input and for "Hello".
         #expect(Armor.crc24([]) == [0xb7, 0x04, 0xce])
         #expect(Armor.crc24(Array("Hello".utf8)) != [0xb7, 0x04, 0xce])
     }
