@@ -1,14 +1,14 @@
 //
-//  SwiftEngine.swift
+//  Engine.swift
 //  Derivation
 //
 
 import CryptoKit
 import Foundation
 
-/// The derivation in Swift: HKDF over BLAKE2b for the bytes, CryptoKit for the curves,
-/// and the reference JSON layout for the result.
-struct SwiftEngine: DerivationEngine {
+/// The derivation: HKDF over BLAKE2b for the bytes, CryptoKit for the curves, and the
+/// reference JSON layout for the result. Every `derive` on the derived types comes here.
+struct Engine: Sendable {
     func derive(_ type: DerivableType, seed: String, recipe: String) throws(DerivationError) -> String {
         let parsed = try Recipe(json: recipe, type: type)
         let info = Array(type.rawValue.utf8) + Array(recipe.utf8)

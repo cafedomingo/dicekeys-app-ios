@@ -3,8 +3,8 @@
 // Derivation: recipes and the passwords, secrets and keys derived from a DiceKey seed.
 //
 //   Derivation   recipe parsing and validation, the derived value types, and the engine
-//                that does the hashing (the vendored C++ in SeededCrypto for now)
-//   BLAKE2       the hash the derivation is built on, implemented here
+//                that does the hashing and the key derivation
+//   BLAKE2       the hash the derivation is built on
 //   KeyFormats   OpenSSH, OpenPGP and BIP39 encodings of derived values
 
 import PackageDescription
@@ -19,14 +19,11 @@ let package = Package(
         .library(name: "Derivation", targets: ["Derivation"]),
         .library(name: "KeyFormats", targets: ["KeyFormats"]),
     ],
-    dependencies: [
-        .package(path: "../SeededCrypto"),
-    ],
     targets: [
         .target(name: "BLAKE2"),
         .target(
             name: "Derivation",
-            dependencies: ["BLAKE2", .product(name: "SeededCrypto", package: "SeededCrypto")]
+            dependencies: ["BLAKE2"]
         ),
         .target(
             name: "KeyFormats",
@@ -34,12 +31,12 @@ let package = Package(
         ),
         .testTarget(
             name: "DerivationTests",
-            dependencies: ["Derivation", "KeyFormats", .product(name: "SeededCrypto", package: "SeededCrypto")],
+            dependencies: ["Derivation", "KeyFormats"],
             resources: [.copy("Fixtures")]
         ),
         .testTarget(
             name: "BLAKE2Tests",
-            dependencies: ["BLAKE2", .product(name: "CSodium", package: "SeededCrypto")],
+            dependencies: ["BLAKE2"],
             resources: [.copy("Fixtures")]
         ),
     ]

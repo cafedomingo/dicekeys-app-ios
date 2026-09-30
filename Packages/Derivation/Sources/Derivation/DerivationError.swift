@@ -19,9 +19,6 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
     case unknownWordList(String)
     case lengthMustBe32(DerivableType)
     case bitsAndWordsConflict
-    /// The engine refused a recipe the parser accepted. Only the C++ engine does this, for
-    /// the one check it gets wrong (a consistent lengthInBits and lengthInWords pair).
-    case engineRejected(String)
     case internalError(String)
 
     public var errorDescription: String? {
@@ -51,8 +48,6 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
             return "A \(type.rawValue) is always 32 bytes; leave lengthInBytes out or set it to 32"
         case .bitsAndWordsConflict:
             return "lengthInBits and lengthInWords disagree; give one or the other"
-        case .engineRejected(let reason):
-            return reason
         case .internalError(let reason):
             return "Derivation failed: \(reason)"
         }

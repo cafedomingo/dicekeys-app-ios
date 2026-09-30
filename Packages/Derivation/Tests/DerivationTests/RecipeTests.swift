@@ -142,7 +142,7 @@ struct RecipeTests {
             .recipeNotAnObject, .invalidJson("x"), .duplicateField("a"), .wrongType(field: "a", expected: "an integer"),
             .outOfRange(field: "a", allowed: 1...2), .typeMismatch(recipe: "Secret", requested: .password), .invalidAlgorithm("x"),
             .unsupportedHashFunction("x"), .unknownWordList("x"), .lengthMustBe32(.signingKey), .bitsAndWordsConflict,
-            .engineRejected("x"), .internalError("x")
+            .internalError("x")
         ]
         for error in errors {
             #expect(!(error.errorDescription ?? "").isEmpty)

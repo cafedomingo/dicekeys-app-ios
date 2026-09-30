@@ -2,7 +2,7 @@
 //  Derived.swift
 //  Derivation
 //
-//  The five kinds of derived value. Each is built from the JSON its engine produced, in the
+//  The five kinds of derived value. Each is built from the JSON the engine produced, in the
 //  reference layout: keys in byte order, no whitespace, lowercase hex, and `recipe`
 //  omitted when empty for Password, Secret and SymmetricKey but present for the key pairs.
 //  `toJson()` returns that text unchanged because it is a displayed output format.
@@ -33,7 +33,7 @@ public struct Password: Sendable, Equatable {
 
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> Password {
         let parsed = try Recipe(json: recipe, type: .password)
-        let json = try defaultEngine.derive(.password, seed: seed, recipe: recipe)
+        let json = try Engine().derive(.password, seed: seed, recipe: recipe)
         return Password(password: try decodeFields(Fields.self, from: json).password, recipe: parsed, json: json)
     }
 
@@ -49,7 +49,7 @@ public struct Secret: Sendable, Equatable {
 
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> Secret {
         let parsed = try Recipe(json: recipe, type: .secret)
-        let json = try defaultEngine.derive(.secret, seed: seed, recipe: recipe)
+        let json = try Engine().derive(.secret, seed: seed, recipe: recipe)
         let fields = try decodeFields(Fields.self, from: json)
         return Secret(bytes: try hexField(fields.secretBytes, named: "secretBytes"), recipe: parsed, json: json)
     }
@@ -66,7 +66,7 @@ public struct SymmetricKey: Sendable, Equatable {
 
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> SymmetricKey {
         let parsed = try Recipe(json: recipe, type: .symmetricKey)
-        let json = try defaultEngine.derive(.symmetricKey, seed: seed, recipe: recipe)
+        let json = try Engine().derive(.symmetricKey, seed: seed, recipe: recipe)
         let fields = try decodeFields(Fields.self, from: json)
         return SymmetricKey(keyBytes: try hexField(fields.keyBytes, named: "keyBytes"), recipe: parsed, json: json)
     }
@@ -84,7 +84,7 @@ public struct UnsealingKey: Sendable, Equatable {
 
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> UnsealingKey {
         let parsed = try Recipe(json: recipe, type: .unsealingKey)
-        let json = try defaultEngine.derive(.unsealingKey, seed: seed, recipe: recipe)
+        let json = try Engine().derive(.unsealingKey, seed: seed, recipe: recipe)
         let fields = try decodeFields(Fields.self, from: json)
         return UnsealingKey(
             unsealingKeyBytes: try hexField(fields.unsealingKeyBytes, named: "unsealingKeyBytes"),
@@ -109,7 +109,7 @@ public struct SigningKey: Sendable, Equatable {
 
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> SigningKey {
         let parsed = try Recipe(json: recipe, type: .signingKey)
-        let json = try defaultEngine.derive(.signingKey, seed: seed, recipe: recipe)
+        let json = try Engine().derive(.signingKey, seed: seed, recipe: recipe)
         let fields = try decodeFields(Fields.self, from: json)
         let bytes = try hexField(fields.signingKeyBytes, named: "signingKeyBytes")
         guard bytes.count == 64 else { throw .internalError("the engine produced a \(bytes.count)-byte signing key") }
