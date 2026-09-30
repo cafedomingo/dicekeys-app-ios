@@ -3,9 +3,8 @@
 //  Derivation
 //
 
-/// The JSON layout the C++ produced through nlohmann's `dump()`: keys in byte order, no
-/// whitespace, `/` unescaped, non-ASCII raw. Every derived value's `toJson()` must stay in
-/// this layout because it is what other DiceKeys apps display.
+/// Compact JSON as nlohmann's `dump()` writes it: keys in byte order, `/` unescaped,
+/// non-ASCII raw. Other DiceKeys apps display this layout, so it cannot change.
 enum ReferenceJSON {
     static func object(_ fields: [(key: String, value: String)]) -> String {
         let sorted = fields.sorted { $0.key.utf8.lexicographicallyPrecedes($1.key.utf8) }

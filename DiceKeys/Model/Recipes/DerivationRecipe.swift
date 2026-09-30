@@ -74,8 +74,7 @@ struct DerivationRecipe: Identifiable, Codable, Equatable {
 }
 
 extension DerivationRecipe {
-    /// Throws when the recipe is not valid, which a hand-edited raw JSON recipe or one
-    /// saved before validation existed can be; the message says what is wrong.
+    /// Throws when the recipe is invalid, as a hand-edited raw JSON recipe can be.
     func derivedValue(diceKey: DiceKey) throws -> any DerivedValue {
         let seed = diceKey.toSeed()
         switch type {
@@ -105,8 +104,7 @@ extension DerivationRecipe {
         }
     }
 
-    /// The recipe's fields, or none when the stored text is not a JSON object. Recipes saved
-    /// by earlier versions were not validated, so this never throws.
+    /// The recipe's fields, or none when the text is not a JSON object; never throws.
     var fields: [RecipeJsonField] {
         (try? RecipeJsonParser.parseObject(recipe)) ?? []
     }

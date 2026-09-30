@@ -3,9 +3,8 @@
 //  Derivation
 //
 
-/// Turns derived bytes into the reference password format: the word count, then each word,
-/// joined by hyphens, the first word capitalized. Each 8-byte block picks one word by its
-/// value modulo the list size, which is unbiased because the sizes are powers of two.
+/// The word count, then hyphen-joined words with the first capitalized. Each 8-byte block
+/// picks a word modulo the list size, unbiased because the sizes are powers of two.
 enum PasswordFormatter {
     static let bytesPerWord = 8
 

@@ -4,17 +4,12 @@
 //
 
 /// A recipe, parsed and validated. `json` is the text exactly as given, because that text
-/// is what gets hashed; every other property is what the text means for `type`.
-///
-/// Integers must be JSON integers, every length is bounded, and unknown names for
-/// `hashFunction`, `wordList` and `algorithm` are errors. A field the format defines only
-/// for another type is salt and is not read, except `algorithm`, which only keys may name.
+/// is what gets hashed. A field defined only for another type is salt and is not read,
+/// except `algorithm`, which only keys may name.
 public struct Recipe: Sendable, Equatable {
     public let json: String
     public let type: DerivableType
     public let hashFunction: HashFunction
-    /// The number of bytes the hash must produce: the secret's length, a key's 32, or a
-    /// password's words times 8.
     public let lengthInBytes: Int
     public let lengthInChars: Int?
     public let wordList: WordList

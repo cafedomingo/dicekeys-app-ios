@@ -7,19 +7,17 @@ import CryptoKit
 import Derivation
 import Foundation
 
-/// A transferable secret key (RFC 4880): a v4 secret key packet, a user ID packet and a
-/// positive-certification self-signature, in old-format packet framing. Ed25519 is the
-/// legacy EdDSA algorithm 22 with the Ed25519 curve OID.
+/// A transferable secret key (RFC 4880): v4 secret key, user ID and self-signature packets
+/// in old-format framing, with legacy EdDSA algorithm 22 and the Ed25519 OID.
 public enum OpenPGP {
     static let version: UInt8 = 4
     static let eddsa: UInt8 = 22
     static let sha256: UInt8 = 8
     static let ed25519OID: [UInt8] = [0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01]
 
-    /// Timestamp 0 keeps the fingerprint stable across derivations, because the v4
-    /// fingerprint hashes the creation time. The self-signature is randomized by CryptoKit,
-    /// so two exports of one key differ only inside the signature packet: the two MPIs, their
-    /// bit-length fields and, when a leading zero byte drops, the packet's length octets.
+    /// Timestamp 0 keeps the fingerprint stable, because the v4 fingerprint hashes the
+    /// creation time. CryptoKit randomizes the signature, so exports of one key differ only
+    /// in the signature MPIs, their bit lengths and, if a leading zero drops, the length octets.
     public static func secretKeyBlock(_ key: Derivation.SigningKey, userId: String = "", timestamp: UInt32 = 0) -> String {
         let seed = Array(key.signingKeyBytes.prefix(32))
         let publicKey = Array(key.verificationKeyBytes)
@@ -39,8 +37,7 @@ public enum OpenPGP {
         return Armor.pem("PGP PRIVATE KEY BLOCK", block.bytes, crc: true)
     }
 
-    /// The public key packet body: version, creation time, algorithm, curve OID, and the
-    /// public point as an MPI with the 0x40 prefix for a compressed EdDSA point.
+    /// The public point is an MPI with the 0x40 prefix of a compressed EdDSA point.
     static func publicKeyPacketBody(publicKey: [UInt8], timestamp: UInt32) -> [UInt8] {
         var body = ByteWriter()
         body.byte(version)
@@ -52,7 +49,7 @@ public enum OpenPGP {
         return body.bytes
     }
 
-    /// The public key packet body is a prefix of the secret key packet body.
+    /// The public key packet body is a prefix of the secret key body; throws if it is too short.
     public static func publicKeyPacketBody(from secretKeyBody: [UInt8]) throws -> [UInt8] {
         let fixed = 1 + 4 + 1 + 1 + ed25519OID.count
         guard secretKeyBody.count > fixed + 2 else { throw Error.malformed }
@@ -62,8 +59,7 @@ public enum OpenPGP {
 
     public enum Error: Swift.Error { case malformed }
 
-    /// The public key as RFC 4880 frames it for hashing, which starts both the fingerprint and
-    /// the self-signature preimage.
+    /// The framing that starts both the fingerprint and the self-signature preimage.
     private static func keyHashPreimage(publicBody: [UInt8]) -> ByteWriter {
         var preimage = ByteWriter()
         preimage.byte(0x99)
@@ -108,8 +104,7 @@ public enum OpenPGP {
         preimage.uint32(UInt32(hashedRegion.count))
         let digest = Array(SHA256.hash(data: preimage.bytes))
 
-        // CryptoKit accepts any 32-byte seed and the derived value is always 32 bytes, so a
-        // failure here is a broken framework, not an input.
+        // A 32-byte seed always works, so failure means a broken framework.
         let signature: [UInt8]
         do {
             signature = Array(try Curve25519.Signing.PrivateKey(rawRepresentation: seed).signature(for: digest))

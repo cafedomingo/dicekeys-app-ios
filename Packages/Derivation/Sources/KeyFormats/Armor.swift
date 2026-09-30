@@ -5,8 +5,8 @@
 
 import Foundation
 
-/// PEM-style armor as OpenSSH and OpenPGP write it: 64-column base64 between BEGIN and END
-/// lines. OpenPGP additionally wants a blank line after the header and a CRC24 line.
+/// PEM-style armor: 64-column base64 between BEGIN and END lines. With `crc`, OpenPGP's
+/// blank line after the header and CRC24 line.
 enum Armor {
     static func base64Lines(_ bytes: [UInt8]) -> String {
         let encoded = Data(bytes).base64EncodedString()

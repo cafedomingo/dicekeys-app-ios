@@ -2,10 +2,6 @@
 //  KeyFormatsComparisonTests.swift
 //  DerivationTests
 //
-//  The Swift encoders against the C++ exports recorded in the fixture, for every signing
-//  key in it. The OpenPGP self-signature is randomized in Swift, so that export is compared
-//  by parsed content. These tests read only the recorded fixture.
-//
 
 import CryptoKit
 import Foundation
@@ -59,7 +55,7 @@ struct OpenSSHComparisonTests {
         process.waitUntilExit()
         let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
         #expect(process.terminationStatus == 0)
-        // ssh-keygen prints the key's own comment, the C++ hard-coded "DiceKeys" on the public line.
+        // ssh-keygen prints the key's own comment instead of the fixed "DiceKeys".
         #expect(output == OpenSSH.publicKeyLine(key).replacingOccurrences(of: " DiceKeys", with: " alice@laptop"))
         #endif
     }
@@ -167,11 +163,11 @@ struct OpenPGPComparisonTests {
 
     @Test("packets and subpackets switch length encoding at the RFC 4880 boundaries")
     func framingLengthBranches() {
-        // Tag 13 in an old-format header is 0x80 | 13 << 2 = 0xb4, plus the length type in the low two bits.
+        // 0xb4 is 0x80 | 13 << 2; length type 2 (a four-byte length) makes 0xb6.
         let long = OpenPGP.packet(tag: 13, body: [UInt8](repeating: 0x41, count: 65_536))
         #expect(Array(long.prefix(5)) == [0xb6, 0x00, 0x01, 0x00, 0x00])
         #expect(long.count == 5 + 65_536)
-        // Subpacket lengths include the type byte: 190 to 8383 body bytes give 191 to 8384.
+        // Subpacket lengths include the type byte, so 190 body bytes give 191.
         let lengths: [(body: Int, header: [UInt8])] = [
             (190, [191, 0x14]),
             (191, [192, 0, 0x14]),

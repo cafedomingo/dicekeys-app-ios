@@ -2,11 +2,8 @@
 //  BLAKE2b.swift
 //  BLAKE2
 //
-//  BLAKE2b as specified in RFC 7693, including keyed hashing, which the derivation uses in
-//  place of HMAC. Salt and personalization are always zero here, so the parameter block is
-//  the digest length, the key length, fanout 1 and depth 1.
-//
 
+/// BLAKE2b (RFC 7693) with keyed hashing. Salt and personalization are always zero.
 public struct BLAKE2b: Sendable {
     public static let blockSize = 128
     public static let maximumDigestLength = 64
@@ -78,8 +75,7 @@ public struct BLAKE2b: Sendable {
         }
     }
 
-    /// The digest of everything given to `update` so far. The value is unchanged, so more
-    /// input can follow and produce a longer message's digest.
+    /// The digest of everything given to `update` so far; the hasher stays usable.
     public func finalize() -> [UInt8] {
         var copy = self
         copy.addToCounter(UInt64(copy.pending))

@@ -5,8 +5,7 @@
 
 import Foundation
 
-/// Why a recipe cannot be used. The messages are shown to the user, so they say what to
-/// change.
+/// Why a recipe cannot be used. The messages are shown to the user.
 public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
     case recipeNotAnObject
     case invalidJson(String)

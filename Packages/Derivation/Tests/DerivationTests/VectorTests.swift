@@ -2,9 +2,8 @@
 //  VectorTests.swift
 //  DerivationTests
 //
-//  Every value in Fixtures/vectors.json was recorded from the reference C++ implementation.
-//  If a `cases` or `legacy` test fails, derived passwords and keys have changed for real
-//  users. Do not "fix" the fixture; fix the build.
+//  Fixtures/vectors.json was recorded from the reference C++ implementation. If a `cases` or
+//  `legacy` test fails, real users' derived values changed. Do not fix the fixture; fix the code.
 //
 
 import Foundation
@@ -101,16 +100,13 @@ struct VectorTests {
         }
     }
 
-    // The strict parser refuses every legacy recipe; the fixture records what the C++
-    // produced for them so the behavior could be restored.
     @Test("every legacy entry is refused by the parser", arguments: fixture.legacy)
     func legacy(vector: Vector) throws {
         let type = try #require(vector.derivableType)
         #expect(throws: DerivationError.self) { try Recipe(json: vector.recipe, type: type) }
     }
 
-    // The C++ refused one recipe that is correct, so that entry derives here and every
-    // other entry is refused by the parser.
+    // The C++ refused one correct recipe, so that entry derives here.
     @Test("every rejected entry is refused, except the one the port derives", arguments: fixture.rejected)
     func rejects(vector: Vector) throws {
         let type = try #require(vector.derivableType)

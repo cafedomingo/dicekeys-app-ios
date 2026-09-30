@@ -5,8 +5,7 @@
 
 import BLAKE2
 
-/// The key derivation the reference implementation built: RFC 5869's shape with keyed
-/// BLAKE2b in place of HMAC, 32-byte blocks, and a zero salt.
+/// RFC 5869's shape with keyed BLAKE2b in place of HMAC, 32-byte blocks and a zero salt.
 ///
 ///     PRK  = BLAKE2b(key: 32 zero bytes, message: seed)
 ///     T(i) = BLAKE2b(key: PRK, message: T(i-1) || info || i)      i = 1 ... ceil(L / 32)

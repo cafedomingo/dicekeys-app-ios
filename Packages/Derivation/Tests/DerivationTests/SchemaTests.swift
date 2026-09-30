@@ -2,10 +2,6 @@
 //  SchemaTests.swift
 //  DerivationTests
 //
-//  docs/recipe-schema.json describes the recipe fields `Recipe` reads. These tests keep it
-//  from drifting: it must name every field, carry the bounds the parser enforces, and accept
-//  every recipe in the fixture.
-//
 
 import Foundation
 import Testing
@@ -13,8 +9,7 @@ import Testing
 
 private typealias JSONObject = [String: Any]
 
-/// The schema is a document, so it lives in docs/ rather than in the test bundle, and the
-/// test reads it from the source tree.
+/// Reads docs/recipe-schema.json from the source tree, not the test bundle.
 private func loadSchema() throws -> JSONObject {
     var url = URL(fileURLWithPath: #filePath)
     for _ in 0..<5 { url.deleteLastPathComponent() }

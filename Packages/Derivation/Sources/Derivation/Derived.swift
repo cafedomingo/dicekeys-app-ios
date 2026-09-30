@@ -2,11 +2,6 @@
 //  Derived.swift
 //  Derivation
 //
-//  The five kinds of derived value. Each lays out its JSON in the reference form: keys in
-//  byte order, no whitespace, lowercase hex, and `recipe` omitted when empty for Password,
-//  Secret and SymmetricKey but present for the key pairs. `toJson()` returns that text
-//  because it is a displayed output format.
-//
 
 import Foundation
 
@@ -75,7 +70,7 @@ public struct UnsealingKey: Sendable, Equatable {
 }
 
 public struct SigningKey: Sendable, Equatable {
-    /// The Ed25519 seed followed by the public key, 64 bytes, as libsodium lays it out.
+    /// The Ed25519 seed followed by the public key, 64 bytes.
     public let signingKeyBytes: Data
     public let recipe: Recipe
 

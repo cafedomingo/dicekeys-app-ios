@@ -7,19 +7,18 @@ import CryptoKit
 import Foundation
 import Derivation
 
-/// The OpenSSH encodings of an Ed25519 signing key (PROTOCOL.key in the OpenSSH sources).
+/// OpenSSH encodings of an Ed25519 signing key (PROTOCOL.key).
 public enum OpenSSH {
     static let keyType = "ssh-ed25519"
 
-    /// One line: `ssh-ed25519 <base64> DiceKeys`. The comment is fixed because the reference
-    /// implementation fixed it, and the line is what users have pasted into servers.
+    /// `ssh-ed25519 <base64> DiceKeys`. The comment is fixed so the line users paste into
+    /// servers stays the same.
     public static func publicKeyLine(_ key: Derivation.SigningKey) -> String {
         "\(keyType) " + Data(publicKeyBlob(key)).base64EncodedString() + " DiceKeys"
     }
 
-    /// An unencrypted `openssh-key-v1` block. The check value, random in OpenSSH because
-    /// it exists to detect a wrong passphrase, is derived from the public key so the export
-    /// is the same every time.
+    /// An unencrypted `openssh-key-v1` block. The check value, random in OpenSSH, is derived
+    /// from the public key so the export is deterministic.
     public static func privateKeyPEM(_ key: Derivation.SigningKey, comment: String = "") -> String {
         let publicKey = Array(key.verificationKeyBytes)
         let checkValue = Array(SHA256.hash(data: key.verificationKeyBytes).prefix(4))
