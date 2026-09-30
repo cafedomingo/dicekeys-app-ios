@@ -3,9 +3,9 @@
 //  DiceKeysTests
 //
 //  The seed string is the only input to every derivation. These expectations were
-//  computed independently of the app (see the fixture in
-//  Packages/Derivation/Tests/DerivationTests/Fixtures). If they fail, DiceKey
-//  canonicalization changed and every derived secret changes with it.
+//  computed independently of the app; the fixture under
+//  Packages/Derivation/Tests/DerivationTests/Fixtures is their source. If they fail,
+//  DiceKey canonicalization changed and every derived secret changes with it.
 //
 
 import Foundation

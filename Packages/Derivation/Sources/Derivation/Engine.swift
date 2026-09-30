@@ -13,7 +13,7 @@ struct Engine: Sendable {
         let parsed = try Recipe(json: recipe, type: type)
         let info = Array(type.rawValue.utf8) + Array(recipe.utf8)
         let secret = parsed.hashFunction.derive(seed: Array(seed.utf8), info: info, outputLength: parsed.lengthInBytes)
-        // The C++ omits an empty recipe for these three types and writes it for the key pairs.
+        // The reference layout omits an empty recipe for these three types and writes it for the key pairs.
         let optionalRecipe: [(key: String, value: String)] = recipe.isEmpty ? [] : [(key: "recipe", value: recipe)]
         switch type {
         case .password:

@@ -20,8 +20,8 @@ and a device, then Product → Run.
 
 There is no CocoaPods, no git submodule, no Objective-C and no third-party binary.
 Key derivation is pure Swift, in `Packages/Derivation`, and so is the DiceKey scanner, in
-`Packages/ReadDiceKey`. See
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
+`Packages/ReadDiceKey`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and
+[docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 ## Testing the app
 
