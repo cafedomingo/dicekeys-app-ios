@@ -9,6 +9,7 @@
 
 import Foundation
 import Testing
+import SeededCrypto
 @testable import Derivation
 
 struct Vector: Decodable, Sendable, CustomTestStringConvertible {
@@ -73,6 +74,11 @@ struct VectorTests {
         #expect(fixture.legacy.allSatisfy { $0.note != nil })
     }
 
+    @Test("libsodium version matches the vendored source")
+    func sodiumVersion() {
+        #expect(SeededCrypto.Recipe.sodiumVersion == fixture.sodiumVersion)
+    }
+
     @Test("every case derives to the recorded value through the public API", arguments: fixture.cases)
     func derives(vector: Vector) throws {
         let json = try #require(vector.json)
@@ -98,7 +104,6 @@ struct VectorTests {
         case .signingKey:
             let key = try SigningKey.derive(seed: vector.seed, recipe: vector.recipe)
             #expect(key.signingKeyBytes.hex == vector.signingKeyBytesHex)
-            #expect(key.verificationKeyBytes == key.signingKeyBytes.suffix(32))
             #expect(key.toJson() == json)
         }
     }

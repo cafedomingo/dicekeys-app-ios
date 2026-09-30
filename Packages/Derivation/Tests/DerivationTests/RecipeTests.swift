@@ -105,6 +105,7 @@ struct RecipeTests {
         #expect(try Recipe(json: #"{"lengthInBytes":16}"#, type: .password).lengthInBytes == 120)
         #expect(try Recipe(json: #"{"wordList":"EN_1024_words_6_chars_max_ed_4_20200917"}"#, type: .password).lengthInWords == 13)
         #expect(try Recipe(json: #"{"wordList":"EN_1024_words_6_chars_max_ed_4_20200917","lengthInBits":1}"#, type: .password).lengthInWords == 1)
+        #expect(try Recipe(json: #"{"wordList":"EN_1024_words_6_chars_max_ed_4_20200917","lengthInBits":10200}"#, type: .password).lengthInWords == 1020)
         #expect(throws: DerivationError.bitsAndWordsConflict) { try Recipe(json: #"{"lengthInBits":1,"lengthInWords":9}"#, type: .password) }
         #expect(throws: DerivationError.outOfRange(field: "lengthInWords", allowed: 1...1020)) { try Recipe(json: #"{"lengthInWords":0}"#, type: .password) }
         #expect(throws: DerivationError.outOfRange(field: "lengthInWords", allowed: 1...1020)) { try Recipe(json: #"{"lengthInWords":1021}"#, type: .password) }
