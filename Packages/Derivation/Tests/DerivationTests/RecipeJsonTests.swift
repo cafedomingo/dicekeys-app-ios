@@ -4,7 +4,7 @@
 //
 
 import Testing
-@testable import DiceKeys
+import Derivation
 
 @Suite("Recipe JSON canonical form")
 struct RecipeJsonTests {
@@ -192,7 +192,7 @@ struct RecipeJsonTests {
 
     @Test("errors have a message a person can act on")
     func errorMessages() {
-        #expect(RecipeJsonError.duplicateKey(offset: 1).message == "Each field name may appear only once")
+        #expect(RecipeJsonError.duplicateKey(name: "a", offset: 1).message == "Each field name may appear only once")
         #expect(RecipeJsonError.unrepresentableKey(offset: 1).message == "A field name cannot contain quotes, backslashes or control characters")
         #expect(RecipeJsonError.notAnObject.message == "A recipe must be a JSON object, such as {\"purpose\":\"example\"}")
         #expect(RecipeJsonError.invalid(offset: 7).message == "Not valid JSON near position 7")

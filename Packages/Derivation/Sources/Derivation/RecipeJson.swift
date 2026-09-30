@@ -1,6 +1,6 @@
 //
 //  RecipeJson.swift
-//  DiceKeys
+//  Derivation
 //
 //  A recipe is hashed as text, so the canonical form must be reproducible character for
 //  character across every DiceKeys app. This follows the reference implementation in
@@ -12,7 +12,7 @@
 import Foundation
 
 /// A JSON value that keeps the source text of numbers and strings.
-indirect enum RecipeJsonValue: Equatable {
+public indirect enum RecipeJsonValue: Equatable {
     case object([RecipeJsonField])
     case array([RecipeJsonValue])
     /// The original quoted text, quotes and escapes included.
@@ -22,16 +22,16 @@ indirect enum RecipeJsonValue: Equatable {
     case bool(Bool)
     case null
 
-    static func text(_ value: String) -> RecipeJsonValue {
+    public static func text(_ value: String) -> RecipeJsonValue {
         .string(quoted: quotedJsonString(value))
     }
 
-    static func int(_ value: Int) -> RecipeJsonValue {
+    public static func int(_ value: Int) -> RecipeJsonValue {
         .number(text: String(value))
     }
 
     /// The reference canonical form: no whitespace, fields sorted, source text preserved.
-    var canonicalText: String {
+    public var canonicalText: String {
         switch self {
         case .object(let fields):
             let sorted = fields.enumerated().sorted { lhs, rhs in
@@ -56,14 +56,19 @@ indirect enum RecipeJsonValue: Equatable {
     }
 }
 
-struct RecipeJsonField: Equatable {
+public struct RecipeJsonField: Equatable {
     /// The decoded name, used for ordering and written back between plain quotes.
-    let name: String
-    let value: RecipeJsonValue
+    public let name: String
+    public let value: RecipeJsonValue
+
+    public init(name: String, value: RecipeJsonValue) {
+        self.name = name
+        self.value = value
+    }
 
     /// "#" (the sequence number) always comes last and "purpose" always first; the rest sort
     /// by UTF-16 code unit, which is what JavaScript's `<` on strings compares.
-    static func precedes(_ lhs: String, _ rhs: String) -> Bool {
+    public static func precedes(_ lhs: String, _ rhs: String) -> Bool {
         if lhs.utf16.elementsEqual(rhs.utf16) { return false }
         if lhs == "#" { return false }
         if rhs == "#" { return true }
@@ -75,7 +80,7 @@ struct RecipeJsonField: Equatable {
 
 /// Quotes a string for JSON output the way `JSON.stringify` does: quotes, backslashes and
 /// control characters escaped, everything else written raw.
-func quotedJsonString(_ string: String) -> String {
+public func quotedJsonString(_ string: String) -> String {
     var quoted = "\""
     for scalar in string.unicodeScalars {
         switch scalar {
@@ -93,16 +98,16 @@ func quotedJsonString(_ string: String) -> String {
     return quoted + "\""
 }
 
-enum RecipeJsonError: Error, Equatable {
+public enum RecipeJsonError: Error, Equatable {
     case notAnObject
     /// Byte offset into the UTF-8 text where parsing stopped.
     case invalid(offset: Int)
     /// A field name whose decoded text the reference would write as invalid JSON.
     case unrepresentableKey(offset: Int)
     /// A field name that appears twice in one object.
-    case duplicateKey(offset: Int)
+    case duplicateKey(name: String, offset: Int)
 
-    var message: String {
+    public var message: String {
         switch self {
         case .notAnObject: return "A recipe must be a JSON object, such as {\"purpose\":\"example\"}"
         case .invalid(let offset): return "Not valid JSON near position \(offset)"
@@ -114,7 +119,7 @@ enum RecipeJsonError: Error, Equatable {
 
 /// A strict RFC 8259 parser that records where each number and string came from instead of
 /// converting it, because the recipe's exact text is what gets hashed.
-struct RecipeJsonParser {
+public struct RecipeJsonParser {
     private let bytes: [UInt8]
     private var index = 0
     private var depth = 0
@@ -130,7 +135,7 @@ struct RecipeJsonParser {
 
     /// Parses a whole document that must be a single object. A leading byte order mark is
     /// tolerated because pasted text often carries one.
-    static func parseObject(_ text: String) throws(RecipeJsonError) -> [RecipeJsonField] {
+    public static func parseObject(_ text: String) throws(RecipeJsonError) -> [RecipeJsonField] {
         var parser = RecipeJsonParser(text)
         if parser.bytes.starts(with: [0xEF, 0xBB, 0xBF]) { parser.index = 3 }
         parser.skipWhitespace()
@@ -151,7 +156,7 @@ struct RecipeJsonParser {
     }
 
     /// Decodes a quoted JSON string, escapes included, to the text it denotes.
-    static func decodeString(quoted: String) throws(RecipeJsonError) -> String {
+    public static func decodeString(quoted: String) throws(RecipeJsonError) -> String {
         var parser = RecipeJsonParser(quoted)
         guard parser.peek == UInt8(ascii: "\"") else { throw .invalid(offset: 0) }
         _ = try parser.parseString()
@@ -210,7 +215,7 @@ struct RecipeJsonParser {
             // The reference's order for equal names is engine-dependent and the C++ library
             // keeps the last value, so no order of duplicates could match everywhere.
             guard !fields.contains(where: { $0.name.utf16.elementsEqual(name.utf16) }) else {
-                throw .duplicateKey(offset: nameStart)
+                throw .duplicateKey(name: name, offset: nameStart)
             }
             skipWhitespace()
             guard peek == UInt8(ascii: ":") else { throw .invalid(offset: index) }
@@ -374,7 +379,7 @@ private extension UInt8 {
 
 extension String {
     /// The recipe as the reference canonicalizer writes it.
-    func canonicalizedRecipe() throws(RecipeJsonError) -> String {
+    public func canonicalizedRecipe() throws(RecipeJsonError) -> String {
         RecipeJsonValue.object(try RecipeJsonParser.parseObject(self)).canonicalText
     }
 }

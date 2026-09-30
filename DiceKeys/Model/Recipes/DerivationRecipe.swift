@@ -7,6 +7,7 @@
 
 import Foundation
 import SeededCrypto
+import Derivation
 
 func getRecipeJson(hosts: [String], sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String {
     RecipeJsonValue.object(

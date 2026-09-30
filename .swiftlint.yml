@@ -29,6 +29,8 @@ included:
   - Packages/SeededCrypto/Tests
   - Packages/ReadDiceKey/Sources/ReadDiceKey
   - Packages/ReadDiceKey/Tests
+  - Packages/Derivation/Sources
+  - Packages/Derivation/Tests
 excluded:
   - Packages/SeededCrypto/Sources/CSodium
   - Packages/SeededCrypto/Sources/SeededCryptoNative
