@@ -79,7 +79,7 @@ extension BLAKE2bTests {
         let message = (0..<1000).map { _ in UInt8.random(in: .min ... .max, using: &generator) }
         let key = (0..<32).map { _ in UInt8.random(in: .min ... .max, using: &generator) }
         let expected = BLAKE2b.hash(message, key: key, digestLength: 32)
-        for splits in [[0], [1], [63], [64], [65], [127], [128], [129], [255], [256], [257], [500], [999], [1000], [64, 128], [1, 127, 128, 129], [128, 256, 384]] {
+        for splits in [[0], [1], [63], [64], [65], [127], [128], [129], [255], [256], [257], [500], [999], [1000], [64, 128], [1, 127, 128, 129], [128, 256, 384], [128, 128], [64, 64, 64], [0, 500, 500], [128, 128, 128]] {
             var hasher = BLAKE2b(digestLength: 32, key: key)
             var start = 0
             for split in splits {

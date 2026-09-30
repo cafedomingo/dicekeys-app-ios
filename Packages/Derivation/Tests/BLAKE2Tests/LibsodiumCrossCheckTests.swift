@@ -83,7 +83,10 @@ struct LibsodiumCrossCheckTests {
             let key = (0..<Int.random(in: 0...64, using: &generator)).map { _ in UInt8.random(in: .min ... .max, using: &generator) }
             let digestLength = Int.random(in: 1...64, using: &generator)
             let splitCount = Int.random(in: 0...5, using: &generator)
-            let splits = (0..<splitCount).map { _ in Int.random(in: 0...message.count, using: &generator) }.sorted()
+            var splits = (0..<splitCount).map { _ in Int.random(in: 0...message.count, using: &generator) }
+            // A repeated split point is an empty update between non-empty ones.
+            if iteration % 3 == 0, let first = splits.first { splits.append(first) }
+            splits.sort()
 
             var ours = BLAKE2b(digestLength: digestLength, key: key)
             let initResult = key.withUnsafeBufferPointer { crypto_generichash_blake2b_init(state, $0.baseAddress, key.count, digestLength) }
