@@ -155,8 +155,8 @@ vectors (`Tests/BLAKE2Tests`).
 ## Secrets in memory
 
 Derived values are ordinary Swift values, and nothing zeroes or locks their memory. The
-package never logs them. The app copies a value with `UIPasteboard.general`, which sets no
-expiry and allows Universal Clipboard.
+package never logs them. The app copies a value to the general pasteboard marked local
+only, so Universal Clipboard does not carry it, with an expiry one minute out.
 
 ## Adding a hash function or a word list
 
