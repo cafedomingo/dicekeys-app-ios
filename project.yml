@@ -58,8 +58,6 @@ settings:
 packages:
   Derivation:
     path: Packages/Derivation
-  SeededCrypto:
-    path: Packages/SeededCrypto
   ReadDiceKey:
     path: Packages/ReadDiceKey
 
@@ -93,8 +91,6 @@ targets:
         product: Derivation
       - package: Derivation
         product: KeyFormats
-      - package: SeededCrypto
-        product: SeededCrypto
       - package: ReadDiceKey
         product: DiceKeySpecification
       - package: ReadDiceKey
@@ -115,8 +111,6 @@ targets:
         product: Derivation
       - package: Derivation
         product: KeyFormats
-      - package: SeededCrypto
-        product: SeededCrypto
       - package: ReadDiceKey
         product: DiceKeySpecification
       - package: ReadDiceKey

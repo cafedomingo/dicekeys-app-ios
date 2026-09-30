@@ -10,7 +10,6 @@
 
 import Foundation
 import Testing
-import SeededCrypto
 @testable import DiceKeys
 
 @Suite("DiceKey seed canonicalization")
