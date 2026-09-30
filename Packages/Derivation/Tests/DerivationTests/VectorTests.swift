@@ -112,24 +112,28 @@ struct VectorTests {
         #expect(try LegacyEngine().derive(type, seed: vector.seed, recipe: vector.recipe) == vector.json)
     }
 
-    @Test("every rejected entry throws", arguments: fixture.rejected)
+    // The C++ refuses one recipe the strict Recipe accepts, so that entry is asserted at the
+    // engine and every other entry at the public parser.
+    @Test("every rejected entry is refused", arguments: fixture.rejected)
     func rejects(vector: Vector) throws {
         let type = try #require(vector.derivableType)
-        #expect(throws: DerivationError.self) {
-            switch type {
-            case .password: _ = try Password.derive(seed: vector.seed, recipe: vector.recipe)
-            case .secret: _ = try Secret.derive(seed: vector.seed, recipe: vector.recipe)
-            case .symmetricKey: _ = try SymmetricKey.derive(seed: vector.seed, recipe: vector.recipe)
-            case .unsealingKey: _ = try UnsealingKey.derive(seed: vector.seed, recipe: vector.recipe)
-            case .signingKey: _ = try SigningKey.derive(seed: vector.seed, recipe: vector.recipe)
+        if vector.name == "consistent lengthInBits and lengthInWords" {
+            _ = try Recipe(json: vector.recipe, type: type)
+            #expect(throws: DerivationError.engineRejected(try #require(vector.error))) {
+                try LegacyEngine().derive(type, seed: vector.seed, recipe: vector.recipe)
             }
+        } else {
+            #expect(throws: DerivationError.self) { try Recipe(json: vector.recipe, type: type) }
         }
     }
 
-    @Test("the one check the C++ gets wrong surfaces as an engine rejection, not a parser error")
-    func consistentBitsAndWords() {
+    @Test("the one check the C++ gets wrong is an engine rejection, not a parser error")
+    func consistentBitsAndWords() throws {
+        let json = #"{"lengthInBits":90,"lengthInWords":10}"#
+        #expect(try Recipe(json: json, type: .password).lengthInWords == 10)
+        // The public outcome for this recipe is the Swift engine's to assert.
         #expect(throws: DerivationError.engineRejected("lengthInBits and lengthInWords conflict")) {
-            try Password.derive(seed: fixture.diceKeys[0].seed, recipe: #"{"lengthInBits":90,"lengthInWords":10}"#)
+            try LegacyEngine().derive(.password, seed: fixture.diceKeys[0].seed, recipe: json)
         }
     }
 
