@@ -136,7 +136,7 @@ jobs:
           xcodebuild test-without-building -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination "platform=iOS Simulator,id=$UDID" \
             CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep --line-buffered -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
-          grep -q 'TEST SUCCEEDED' test-ios.log
+          grep -q 'TEST EXECUTE SUCCEEDED' test-ios.log
       - name: Upload logs
         if: always()
         continue-on-error: true
