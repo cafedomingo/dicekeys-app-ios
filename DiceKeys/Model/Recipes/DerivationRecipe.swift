@@ -33,6 +33,8 @@ private func optionalRecipeFields(sequenceNumber: Int, lengthInChars: Int?, leng
 
 struct DerivationRecipe: Identifiable, Codable, Equatable {
     static let rebuildSkipJsonProperties = [Recipe.sequenceNumberField, Recipe.lengthInCharsField, Recipe.lengthInBytesField]
+    /// A wallet seed phrase is offered only for 32-byte secrets, the 24 words wallets expect.
+    private static let bip39SecretLength = 32
 
     let type: DerivableType
     let name: String
@@ -82,7 +84,7 @@ extension DerivationRecipe {
             return DerivedValuePassword(password: try Password.derive(seed: seed, recipe: recipe))
         case .secret:
             let lengthInBytes = lengthInBytes()
-            return DerivedValueSecret(secret: try Secret.derive(seed: seed, recipe: recipe), showBIP39: lengthInBytes == nil || lengthInBytes == Recipe.defaultLengthInBytes)
+            return DerivedValueSecret(secret: try Secret.derive(seed: seed, recipe: recipe), showBIP39: (lengthInBytes ?? Recipe.defaultLengthInBytes) == Self.bip39SecretLength)
         case .signingKey:
             return DerivedValueSigningKey(signingKey: try SigningKey.derive(seed: seed, recipe: recipe))
         case .symmetricKey:

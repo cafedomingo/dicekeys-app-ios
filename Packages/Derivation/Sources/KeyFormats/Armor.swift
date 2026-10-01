@@ -11,9 +11,9 @@ enum Armor {
     private static let lineLength = 64
     /// RFC 4880 section 6.1: the initial value, the generator polynomial and the bit that
     /// signals the 24-bit register has overflowed.
-    private static let crc24Seed: UInt32 = 0xb70_4ce
-    private static let crc24Polynomial: UInt32 = 0x186_4cfb
-    private static let crc24Overflow: UInt32 = 0x100_0000
+    private static let crc24Seed: UInt32 = 0xB704CE
+    private static let crc24Polynomial: UInt32 = 0x1864CFB
+    private static let crc24Overflow: UInt32 = 0x1_000_000
 
     static func base64Lines(_ bytes: [UInt8]) -> String {
         let encoded = Data(bytes).base64EncodedString()
