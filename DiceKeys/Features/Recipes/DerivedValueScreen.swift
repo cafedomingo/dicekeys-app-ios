@@ -13,7 +13,7 @@ struct DerivedValueScreen: View {
     @Environment(DiceKeyMemoryStore.self) private var diceKeyMemoryStore
 
     @State private var builderState = RecipeBuilderState()
-    @State private var outputFormat: DerivedValueView = .JSON
+    @State private var outputFormat: DerivedValueView = .json
     @State private var derivedValue: (any DerivedValue)?
     @State private var derivationError: String?
     @State private var presentQrCode = false

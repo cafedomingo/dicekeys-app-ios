@@ -165,6 +165,6 @@ struct DiceKeyCenterFaceOnlyView: View {
 
 #Preview {
     VStack(alignment: .center) {
-        DiceKeyCenterFaceOnlyView(centerFace: DiceKey.Example.centerFace)
+        DiceKeyCenterFaceOnlyView(centerFace: DiceKey.example.centerFace)
     }
 }

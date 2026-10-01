@@ -36,7 +36,7 @@ struct ValidateBackupView: View {
     }
 
     private var scanningBackupImage: ImageResource {
-        target == .Stickeys ? .scanningAStickey : .scanningADiceKey
+        target == .stickeys ? .scanningAStickey : .scanningADiceKey
     }
 
     var body: some View {
@@ -44,7 +44,7 @@ struct ValidateBackupView: View {
         Spacer()
         if scanningCopy || scanningOriginal {
             ScanDiceKeyView(
-                stickers: target == .Stickeys,
+                stickers: target == .stickeys,
                 checkingACopy: scanningCopy,
                 onDiceKeyRead: { diceKeyScanned in
                     if scanningOriginal {
@@ -116,7 +116,7 @@ struct ValidateBackupView: View {
     @Previewable @State var backupScanned: DiceKey?
     VStack {
         ValidateBackupView(
-            target: .Stickeys, originalDiceKey: DiceKey.createFromRandom(), onOriginalRescanned: { _ in },
+            target: .stickeys, originalDiceKey: DiceKey.createFromRandom(), onOriginalRescanned: { _ in },
             backupScanned: $backupScanned)
     }
 }

@@ -14,11 +14,11 @@ import Testing
 
 @testable import DiceKeys
 
-/// Serialized because every test here works on the one keychain item for `DiceKey.Example`:
+/// Serialized because every test here works on the one keychain item for `DiceKey.example`:
 /// run in parallel, the deletes in one test pull the item out from under another.
 @Suite(.serialized)
 final class DiceKeyKeychainTests {
-    private let diceKey = DiceKey.Example
+    private let diceKey = DiceKey.example
     private let keychain = DiceKeyKeychain()
 
     /// The keychain outlives the test run, so clear the item on the way in and on the way out.

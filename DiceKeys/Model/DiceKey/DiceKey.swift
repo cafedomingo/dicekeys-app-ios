@@ -66,7 +66,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     }
 
     /// A sample DiceKey for use in development, such as generating sample views
-    static var Example: DiceKey {
+    static var example: DiceKey {
         DiceKey(
             (0..<25).map { index in
                 Face(

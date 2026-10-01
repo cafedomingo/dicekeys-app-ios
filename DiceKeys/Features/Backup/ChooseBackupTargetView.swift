@@ -15,7 +15,7 @@ struct ChooseBackupTargetView: View {
             Instruction("Make a backup of your DiceKey by copying it.", lineLimit: 2)
             Spacer()
             Button {
-                choice(.Stickeys)
+                choice(.stickeys)
             } label: {
                 VStack {
                     HStack(alignment: .center, spacing: 0) {
@@ -45,7 +45,7 @@ struct ChooseBackupTargetView: View {
             .buttonStyle(.plain)
             Spacer(minLength: 20)
             Button {
-                choice(.DiceKey)
+                choice(.diceKey)
             } label: {
                 VStack {
                     HStack(alignment: .center, spacing: 0) {

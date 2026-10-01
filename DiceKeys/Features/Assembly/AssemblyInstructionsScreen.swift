@@ -137,29 +137,29 @@ struct AssemblyInstructionsScreen: View {
     var onSuccess: ((DiceKey) -> Void)?
 
     enum Step: Int {
-        case Randomize = 1
-        case DropDice
-        case FillEmptySlots
-        case ScanFirstTime
-        case CreateBackup
-        case SealBox
-        case Done
+        case randomize = 1
+        case dropDice
+        case fillEmptySlots
+        case scanFirstTime
+        case createBackup
+        case sealBox
+        case done
     }
 
     @State private var diceKeyScanned: DiceKey?
     @State private var backupScanned: DiceKey?
-    @State private var step: Step = .Randomize
-    @State private var backupProgress = BackupProgress(target: .Stickeys)
+    @State private var step: Step = .randomize
+    @State private var backupProgress = BackupProgress(target: .stickeys)
     @State private var userChoseToAllowSkipScanningStep: Bool = false
 
-    private let last = Step.Done.rawValue
+    private let last = Step.done.rawValue
 
     private var backupSuccessful: Bool {
         DiceKey.rotationIndependentEquals(diceKeyScanned, backupScanned)
     }
 
     private var showWarning: Bool {
-        step.rawValue > Step.Randomize.rawValue && step.rawValue < Step.SealBox.rawValue
+        step.rawValue > Step.randomize.rawValue && step.rawValue < Step.sealBox.rawValue
     }
 
     var body: some View {
@@ -167,28 +167,28 @@ struct AssemblyInstructionsScreen: View {
             Spacer()
             VStack(alignment: .center) {
                 switch step {
-                case .Randomize: Randomize()
-                case .DropDice: DropDice()
-                case .FillEmptySlots: FillEmptySlots()
-                case .ScanFirstTime: ScanFirstTime(diceKey: $diceKeyScanned)
-                case .CreateBackup:
+                case .randomize: Randomize()
+                case .dropDice: DropDice()
+                case .fillEmptySlots: FillEmptySlots()
+                case .scanFirstTime: ScanFirstTime(diceKey: $diceKeyScanned)
+                case .createBackup:
                     BackupDiceKeyView(
-                        diceKey: diceKeyScanned ?? DiceKey.Example,
+                        diceKey: diceKeyScanned ?? DiceKey.example,
                         onDiceKeyReplaced: { diceKeyScanned = $0 },
-                        onComplete: { step = Step(rawValue: step.rawValue + 1) ?? .Done },
-                        onBackedOut: { step = Step(rawValue: step.rawValue - 1) ?? .Randomize },
+                        onComplete: { step = Step(rawValue: step.rawValue + 1) ?? .done },
+                        onBackedOut: { step = Step(rawValue: step.rawValue - 1) ?? .randomize },
                         thereAreMoreStepsAfterBackup: true,
                         progress: backupProgress
                     )
-                case .SealBox: SealBox()
-                case .Done:
+                case .sealBox: SealBox()
+                case .done:
                     InstructionsDone(createdDiceKey: diceKeyScanned != nil, backedUpSuccessfully: backupSuccessful)
                 }
             }
             .padding(.horizontal, 15)
             Spacer()
             // Forward / Back nav
-            if step != .CreateBackup {
+            if step != .createBackup {
                 StepFooterView(
                     goTo: { destination in
                         if let newStep = Step(rawValue: destination) {
@@ -204,10 +204,10 @@ struct AssemblyInstructionsScreen: View {
                     step: step.rawValue,
                     prev: step.rawValue > 0 ? step.rawValue - 1 : nil,
                     next: step.rawValue + 1,
-                    setMaySkip: step == .ScanFirstTime && diceKeyScanned == nil && !userChoseToAllowSkipScanningStep
+                    setMaySkip: step == .scanFirstTime && diceKeyScanned == nil && !userChoseToAllowSkipScanningStep
                         ? { userChoseToAllowSkipScanningStep = true }
                         : nil,
-                    isLastStep: step == .Done
+                    isLastStep: step == .done
                 )
                 .padding(.bottom)
             }

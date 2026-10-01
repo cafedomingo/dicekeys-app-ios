@@ -26,7 +26,7 @@ struct DiceKeyMemoryStoreLifecycleTests {
     @Test("a DiceKey left on screen expires if the app stays in the background past the countdown")
     func expiresAfterLongBackground() {
         let store = makeStore()
-        store.setDiceKey(diceKey: DiceKey.Example)
+        store.setDiceKey(diceKey: DiceKey.example)
         let backgrounded = Date()
         store.appDidEnterBackground(at: backgrounded)
         store.appDidBecomeActive(at: backgrounded.addingTimeInterval(10 * 60))
@@ -37,7 +37,7 @@ struct DiceKeyMemoryStoreLifecycleTests {
     @Test("a short trip to the background keeps the DiceKey on screen, with the countdown deferred again")
     func survivesShortBackground() {
         let store = makeStore()
-        store.setDiceKey(diceKey: DiceKey.Example)
+        store.setDiceKey(diceKey: DiceKey.example)
         let backgrounded = Date()
         store.appDidEnterBackground(at: backgrounded)
         #expect(store.isCountdownTimerRunning)
@@ -49,7 +49,7 @@ struct DiceKeyMemoryStoreLifecycleTests {
     @Test("after returning from the background, leaving the DiceKey starts a full countdown")
     func leavingAfterReturnRestartsTheCountdown() {
         let store = makeStore()
-        store.setDiceKey(diceKey: DiceKey.Example)
+        store.setDiceKey(diceKey: DiceKey.example)
         let backgrounded = Date().addingTimeInterval(-50)
         store.appDidEnterBackground(at: backgrounded)
         store.appDidBecomeActive(at: backgrounded.addingTimeInterval(50))
@@ -61,7 +61,7 @@ struct DiceKeyMemoryStoreLifecycleTests {
     @Test("keys the user chose to keep until quitting survive the background")
     func keepUntilQuitIsRespected() {
         let store = makeStore()
-        store.setDiceKey(diceKey: DiceKey.Example)
+        store.setDiceKey(diceKey: DiceKey.example)
         store.setKeysNeverExpire()
         let backgrounded = Date()
         store.appDidEnterBackground(at: backgrounded)
@@ -72,7 +72,7 @@ struct DiceKeyMemoryStoreLifecycleTests {
     @Test("an extended countdown keeps running on wall-clock time while in the background")
     func extendedCountdownKeepsRunning() {
         let store = makeStore()
-        store.setDiceKey(diceKey: DiceKey.Example)
+        store.setDiceKey(diceKey: DiceKey.example)
         store.clearForegroundDiceKey()
         store.extendDeadlineBy(seconds: 60 * 60)
         let backgrounded = Date()

@@ -7,31 +7,31 @@ import Derivation
 import KeyFormats
 
 enum DerivedValueView: Int, CaseIterable, Identifiable {
-    case JSON
-    case Password
-    case Hex
-    case HexSigningKey
-    case HexUnsealing
-    case HexSealing
-    case BIP39
-    case OpenPGPPrivateKey
-    case OpenSSHPrivateKey
-    case OpenSSHPublicKey
+    case json
+    case password
+    case hex
+    case hexSigningKey
+    case hexUnsealing
+    case hexSealing
+    case bip39
+    case openPGPPrivateKey
+    case openSSHPrivateKey
+    case openSSHPublicKey
 
     var id: Int { self.rawValue }
 
     var description: String {
         switch self {
-        case .JSON: return "JSON"
-        case .Password: return "Password"
-        case .Hex: return "HEX"
-        case .HexSigningKey: return "HEX (Signing Key)"
-        case .HexUnsealing: return "HEX (Unsealing Key)"
-        case .HexSealing: return "HEX (Sealing Key)"
-        case .BIP39: return "BIP39"
-        case .OpenPGPPrivateKey: return "OpenPGP Private Key"
-        case .OpenSSHPrivateKey: return "OpenSSH Private Key"
-        case .OpenSSHPublicKey: return "OpenSSH Public Key"
+        case .json: return "JSON"
+        case .password: return "Password"
+        case .hex: return "HEX"
+        case .hexSigningKey: return "HEX (Signing Key)"
+        case .hexUnsealing: return "HEX (Unsealing Key)"
+        case .hexSealing: return "HEX (Sealing Key)"
+        case .bip39: return "BIP39"
+        case .openPGPPrivateKey: return "OpenPGP Private Key"
+        case .openSSHPrivateKey: return "OpenSSH Private Key"
+        case .openSSHPublicKey: return "OpenSSH Public Key"
         }
     }
 }
@@ -44,11 +44,11 @@ protocol DerivedValue {
 struct DerivedValuePassword: DerivedValue {
     let password: Password
 
-    let views: [DerivedValueView] = [.Password, .JSON]
+    let views: [DerivedValueView] = [.password, .json]
 
     func valueForView(view: DerivedValueView) -> String {
         switch view {
-        case .Password: return password.password
+        case .password: return password.password
         default: return password.toJson()
         }
     }
@@ -61,13 +61,13 @@ struct DerivedValueSecret: DerivedValue {
 
     init(secret: Secret, showBIP39: Bool) {
         self.secret = secret
-        views = showBIP39 ? [.JSON, .Hex, .BIP39] : [.JSON, .Hex]
+        views = showBIP39 ? [.json, .hex, .bip39] : [.json, .hex]
     }
 
     func valueForView(view: DerivedValueView) -> String {
         switch view {
-        case .Hex: return secret.bytes.asHexString
-        case .BIP39:
+        case .hex: return secret.bytes.asHexString
+        case .bip39:
             // Offered only for 32-byte secrets, which always have a mnemonic.
             return (try? BIP39.mnemonic(entropy: secret.bytes)) ?? secret.bytes.asHexString
         default: return secret.toJson()
@@ -81,7 +81,7 @@ struct DerivedValueSigningKey: DerivedValue {
     let openSshPrivateKey: String
     let openSshPublicKey: String
 
-    let views: [DerivedValueView] = [.JSON, .OpenPGPPrivateKey, .OpenSSHPrivateKey, .OpenSSHPublicKey, .HexSigningKey]
+    let views: [DerivedValueView] = [.json, .openPGPPrivateKey, .openSSHPrivateKey, .openSSHPublicKey, .hexSigningKey]
 
     init(signingKey: SigningKey) {
         self.signingKey = signingKey
@@ -92,10 +92,10 @@ struct DerivedValueSigningKey: DerivedValue {
 
     func valueForView(view: DerivedValueView) -> String {
         switch view {
-        case .OpenPGPPrivateKey: return openPgpSecretKey
-        case .OpenSSHPrivateKey: return openSshPrivateKey
-        case .OpenSSHPublicKey: return openSshPublicKey
-        case .HexSigningKey: return signingKey.signingKeyBytes.asHexString
+        case .openPGPPrivateKey: return openPgpSecretKey
+        case .openSSHPrivateKey: return openSshPrivateKey
+        case .openSSHPublicKey: return openSshPublicKey
+        case .hexSigningKey: return signingKey.signingKeyBytes.asHexString
         default: return signingKey.toJson()
         }
     }
@@ -104,11 +104,11 @@ struct DerivedValueSigningKey: DerivedValue {
 struct DerivedValueSymmetricKey: DerivedValue {
     let symmetricKey: SymmetricKey
 
-    let views: [DerivedValueView] = [.JSON, .Hex]
+    let views: [DerivedValueView] = [.json, .hex]
 
     func valueForView(view: DerivedValueView) -> String {
         switch view {
-        case .Hex: return symmetricKey.keyBytes.asHexString
+        case .hex: return symmetricKey.keyBytes.asHexString
         default: return symmetricKey.toJson()
         }
     }
@@ -117,12 +117,12 @@ struct DerivedValueSymmetricKey: DerivedValue {
 struct DerivedValueUnsealingKey: DerivedValue {
     let unsealingKey: UnsealingKey
 
-    let views: [DerivedValueView] = [.JSON, .HexUnsealing, .HexSealing]
+    let views: [DerivedValueView] = [.json, .hexUnsealing, .hexSealing]
 
     func valueForView(view: DerivedValueView) -> String {
         switch view {
-        case .HexUnsealing: return unsealingKey.unsealingKeyBytes.asHexString
-        case .HexSealing: return unsealingKey.sealingKeyBytes.asHexString
+        case .hexUnsealing: return unsealingKey.unsealingKeyBytes.asHexString
+        case .hexSealing: return unsealingKey.sealingKeyBytes.asHexString
         default: return unsealingKey.toJson()
         }
     }

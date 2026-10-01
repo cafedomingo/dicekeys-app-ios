@@ -65,7 +65,7 @@ struct DerivedValueOutputView: View {
 }
 
 #Preview {
-    @Previewable @State var format: DerivedValueView = .Password
+    @Previewable @State var format: DerivedValueView = .password
     let diceKey = DiceKey.createFromRandom()
     DerivedValueOutputView(
         diceKey: diceKey,
