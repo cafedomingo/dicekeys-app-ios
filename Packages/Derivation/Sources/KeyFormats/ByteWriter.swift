@@ -35,7 +35,12 @@ struct ByteWriter {
     mutating func mpi(_ value: [UInt8]) {
         let leadingZeroBits = value.reduce(into: (bits: 0, done: false)) { count, byte in
             guard !count.done else { return }
-            if byte == 0 { count.bits += 8 } else { count.bits += byte.leadingZeroBitCount; count.done = true }
+            if byte == 0 {
+                count.bits += 8
+            } else {
+                count.bits += byte.leadingZeroBitCount
+                count.done = true
+            }
         }.bits
         uint16(UInt16(value.count * 8 - leadingZeroBits))
         append(value.dropFirst(leadingZeroBits / 8))

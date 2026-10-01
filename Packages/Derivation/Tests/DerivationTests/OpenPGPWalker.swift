@@ -54,7 +54,8 @@ struct OpenPGPWalker {
             if line.hasPrefix("-----END") { break }
             if line.isEmpty { continue }
             if line.hasPrefix("=") {
-                crc = [UInt8](try #require(Data(base64Encoded: String(line.dropFirst())))); continue
+                crc = [UInt8](try #require(Data(base64Encoded: String(line.dropFirst()))))
+                continue
             }
             body += line
         }
@@ -129,11 +130,15 @@ struct OpenPGPWalker {
         var offset = 0
         init(_ bytes: [UInt8]) { self.bytes = bytes }
         var atEnd: Bool { offset == bytes.count }
-        mutating func byte() -> UInt8 { defer { offset += 1 }; return bytes[offset] }
+        mutating func byte() -> UInt8 {
+            defer { offset += 1 }
+            return bytes[offset]
+        }
         mutating func uint16() -> UInt16 { UInt16(byte()) << 8 | UInt16(byte()) }
         mutating func uint32() -> UInt32 { UInt32(uint16()) << 16 | UInt32(uint16()) }
         mutating func take(_ count: Int) -> [UInt8] {
-            defer { offset += count }; return Array(bytes[offset..<offset + count])
+            defer { offset += count }
+            return Array(bytes[offset..<offset + count])
         }
         mutating func mpi() -> [UInt8] {
             let bits = Int(uint16())

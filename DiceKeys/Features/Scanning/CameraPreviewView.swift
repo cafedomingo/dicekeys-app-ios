@@ -3,8 +3,8 @@
 //  DiceKeys
 //
 
-import SwiftUI
 import AVFoundation
+import SwiftUI
 
 /// Hosts the camera preview layer for `camera` and feeds frames to `onFrame`.
 /// The `CameraSession` lives in the coordinator for the lifetime of the view.

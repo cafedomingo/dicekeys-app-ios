@@ -6,6 +6,7 @@
 import CryptoKit
 import Foundation
 import Testing
+
 @testable import Derivation
 
 @Suite("Password words")
@@ -69,6 +70,6 @@ private func digest(_ words: [String]) -> String {
     SHA256.hash(data: Data(words.joined(separator: "\n").utf8)).map { String(format: "%02x", $0) }.joined()
 }
 
-private extension String {
-    var capitalizedFirst: String { prefix(1).uppercased() + dropFirst() }
+extension String {
+    fileprivate var capitalizedFirst: String { prefix(1).uppercased() + dropFirst() }
 }

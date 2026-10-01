@@ -6,6 +6,7 @@
 import DiceKeySpecification
 import ReadDiceKey
 import Testing
+
 @testable import DiceKeys
 
 @Suite("DiceKey from scanned faces")

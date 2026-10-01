@@ -3,8 +3,9 @@
 //  DiceKeysTests
 //
 
-import Testing
 import Derivation
+import Testing
+
 @testable import DiceKeys
 
 @Suite("Building recipes from the app's fields")

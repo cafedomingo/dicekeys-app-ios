@@ -4,6 +4,7 @@
 //
 
 import Testing
+
 @testable import ReadDiceKey
 
 @Suite("twoLevelThreshold")

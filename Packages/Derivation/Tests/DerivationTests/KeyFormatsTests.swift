@@ -3,9 +3,10 @@
 //  DerivationTests
 //
 
+import Derivation
 import Foundation
 import Testing
-import Derivation
+
 @testable import KeyFormats
 
 @Suite("BIP39")
@@ -58,8 +59,8 @@ struct BIP39Tests {
     }
 }
 
-private extension Data {
-    init?(hexString: String) {
+extension Data {
+    fileprivate init?(hexString: String) {
         let chars = Array(hexString.utf8)
         guard chars.count % 2 == 0 else { return nil }
         var bytes = [UInt8]()

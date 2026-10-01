@@ -3,8 +3,8 @@
 //  DiceKeysTests
 //
 
-import Testing
 import Derivation
+import Testing
 
 @Suite("Recipe JSON canonical form")
 struct RecipeJsonTests {

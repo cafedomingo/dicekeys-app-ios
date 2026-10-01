@@ -3,8 +3,8 @@
 //  DiceKeys
 //
 
-import Foundation
 import Derivation
+import Foundation
 
 func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String
 {

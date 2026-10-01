@@ -10,6 +10,7 @@
 import CoreGraphics
 import DiceKeySpecification
 import Foundation
+
 @testable import ReadDiceKey
 
 struct SyntheticDiceKey {

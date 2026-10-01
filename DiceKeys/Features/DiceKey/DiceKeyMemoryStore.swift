@@ -53,7 +53,7 @@ final class DiceKeyMemoryStore {
     // MARK: Countdown timer
 
     private func expirationStateChanged(from oldValue: MemoryStoreExpirationState) {
-        if case let .countdownInProgress(whenExpiring) = oldValue {
+        if case .countdownInProgress(let whenExpiring) = oldValue {
             lastWhenExpiring = whenExpiring
         }
         countdownTask?.cancel()
@@ -72,7 +72,7 @@ final class DiceKeyMemoryStore {
 
     private func tick() {
         currentTime = Date()
-        if case let .countdownInProgress(whenExpiring) = memoryStoreExpirationState,
+        if case .countdownInProgress(let whenExpiring) = memoryStoreExpirationState,
             currentTime > whenExpiring, !keyCache.isEmpty
         {
             expireAllKeys()
@@ -104,7 +104,7 @@ final class DiceKeyMemoryStore {
     }
 
     func extendDeadlineBy(seconds: TimeInterval) {
-        if case let .countdownInProgress(whenExpiring) = memoryStoreExpirationState {
+        if case .countdownInProgress(let whenExpiring) = memoryStoreExpirationState {
             memoryStoreExpirationState = .countdownInProgress(whenExpiring: whenExpiring + seconds)
         } else {
             memoryStoreExpirationState = .countdownInProgress(whenExpiring: Date(timeIntervalSinceNow: seconds))
@@ -143,7 +143,7 @@ final class DiceKeyMemoryStore {
     }
 
     var expirationTime: Date {
-        if case let .countdownInProgress(whenExpiring) = memoryStoreExpirationState {
+        if case .countdownInProgress(let whenExpiring) = memoryStoreExpirationState {
             return whenExpiring
         }
         return .distantFuture
@@ -228,7 +228,7 @@ final class DiceKeyMemoryStore {
         let startedByBackground = countdownStartedByBackground
         countdownStartedByBackground = false
         currentTime = date
-        if case let .countdownInProgress(whenExpiring) = memoryStoreExpirationState, date > whenExpiring {
+        if case .countdownInProgress(let whenExpiring) = memoryStoreExpirationState, date > whenExpiring {
             expireAllKeys()
         } else if startedByBackground && !foregroundDiceKeyId.isEmpty {
             memoryStoreExpirationState = .countdownDeferred

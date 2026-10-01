@@ -6,6 +6,7 @@
 import DiceKeySpecification
 import Foundation
 import Testing
+
 @testable import ReadDiceKey
 
 @Suite("DiceKeyScanner")

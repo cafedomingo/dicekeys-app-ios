@@ -3,10 +3,10 @@
 //
 //
 
+import Derivation
 import DiceKeySpecification
 import Foundation
 import Synchronization
-import Derivation
 
 let clockwise90DegreeRotationIndexesFor5x5Grid = [
     20, 15, 10, 5, 0,

@@ -1,5 +1,4 @@
-#!/usr/bin/env swift
-// Writes the Dark variant of the illustrations that draw black strokes straight onto the
+#!/usr/bin/env swift  // Writes the Dark variant of the illustrations that draw black strokes straight onto the
 // background, such as the dotted guide lines in the scanning drawings. Those strokes vanish on
 // a dark background, so the variant redraws them in light gray and changes nothing else. Line
 // art drawn as filled shapes is left alone: it sits on the drawing's own white and lavender

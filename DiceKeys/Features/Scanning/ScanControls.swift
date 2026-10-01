@@ -5,8 +5,8 @@
 //  The floating controls over the camera preview: camera picker, torch, cancel.
 //
 
-import SwiftUI
 import AVFoundation
+import SwiftUI
 
 struct ScanControls: View {
     let cameras: [AVCaptureDevice]

@@ -3,8 +3,8 @@
 //  DiceKeys
 //
 
-import SwiftUI
 import AVFoundation
+import SwiftUI
 
 /// The camera preview with the read-faces overlay and floating controls.
 /// Calls `onDiceKeyRead` once, when a complete DiceKey has been scanned.

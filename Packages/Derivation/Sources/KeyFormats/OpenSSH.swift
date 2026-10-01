@@ -4,8 +4,8 @@
 //
 
 import CryptoKit
-import Foundation
 import Derivation
+import Foundation
 
 /// OpenSSH encodings of an Ed25519 signing key (PROTOCOL.key).
 public enum OpenSSH {

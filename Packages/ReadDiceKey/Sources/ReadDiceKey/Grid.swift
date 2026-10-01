@@ -17,8 +17,8 @@ struct Slot: Sendable {
     /// The middle of the face.
     var center: Point? {
         switch (underline, overline) {
-        case let (underline?, overline?): (underline.center + overline.center) / 2
-        case let (line?, nil), let (nil, line?): line.faceCenter
+        case (let underline?, let overline?): (underline.center + overline.center) / 2
+        case (let line?, nil), (nil, let line?): line.faceCenter
         case (nil, nil): nil
         }
     }
@@ -27,8 +27,8 @@ struct Slot: Sendable {
     var angle: Float? {
         switch (underline, overline) {
         // The overline is a quarter turn counterclockwise of the reading direction from the underline.
-        case let (underline?, overline?): (overline.center - underline.center).angle + .pi / 2
-        case let (line?, nil), let (nil, line?): line.direction.angle
+        case (let underline?, let overline?): (overline.center - underline.center).angle + .pi / 2
+        case (let line?, nil), (nil, let line?): line.direction.angle
         case (nil, nil): nil
         }
     }
@@ -63,7 +63,8 @@ struct Grid: Sendable {
         guard determinant != 0 else { return nil }
         let column = crossProduct(offset, down) / determinant + 2
         let row = crossProduct(across, offset) / determinant + 2
-        let nearestColumn = column.rounded(), nearestRow = row.rounded()
+        let nearestColumn = column.rounded()
+        let nearestRow = row.rounded()
         guard abs(column - nearestColumn) <= 0.25, abs(row - nearestRow) <= 0.25,
             (0...4).contains(nearestColumn), (0...4).contains(nearestRow)
         else { return nil }
@@ -130,7 +131,8 @@ private func fitGrid(to faces: [Slot], faceSize: Float) -> Grid? {
         // A row runs along or across the reading direction; take whichever is within 45
         // degrees of the image's x axis, so rows run left to right and columns top to bottom.
         let rowAngle = angle - (angle / (.pi / 2)).rounded() * (.pi / 2)
-        let alongRow = Point(angle: rowAngle), alongColumn = alongRow.turnedClockwise
+        let alongRow = Point(angle: rowAngle)
+        let alongColumn = alongRow.turnedClockwise
         let row = centers.filter { abs(crossProduct($0 - origin, alongRow)) <= faceSize }
             .sorted { simd_dot($0 - origin, alongRow) < simd_dot($1 - origin, alongRow) }
         let column = centers.filter { abs(crossProduct($0 - origin, alongColumn)) <= faceSize }

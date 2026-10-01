@@ -45,7 +45,7 @@ struct CustomRecipeForm: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 
-                if case let .error(errorString) = model.progress {
+                if case .error(let errorString) = model.progress {
                     Text(errorString).font(.footnote).foregroundStyle(Color.Interface.errorText)
                 }
             }
@@ -90,9 +90,9 @@ struct CustomRecipeForm: View {
     }
 }
 
-private extension View {
+extension View {
     /// Text entry without autocorrection or automatic capitalization.
-    func plainTextEntry() -> some View {
+    fileprivate func plainTextEntry() -> some View {
         self
             .autocorrectionDisabled()
             .font(.body)

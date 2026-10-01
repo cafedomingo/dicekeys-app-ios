@@ -16,6 +16,7 @@
 import Darwin
 import Foundation
 import Testing
+
 @testable import ReadDiceKey
 
 @Suite("Scanner benchmark (opt-in)", .enabled(if: ProcessInfo.processInfo.environment["SCANNER_BENCHMARK"] != nil))

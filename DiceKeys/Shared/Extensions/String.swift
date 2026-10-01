@@ -3,10 +3,10 @@
 //  DiceKeys
 //
 
-import Foundation
 import CoreGraphics
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import Foundation
 import UIKit
 import UniformTypeIdentifiers
 

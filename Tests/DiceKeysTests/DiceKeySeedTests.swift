@@ -9,6 +9,7 @@
 
 import Foundation
 import Testing
+
 @testable import DiceKeys
 
 @Suite("DiceKey seed canonicalization")

@@ -11,6 +11,7 @@
 import Foundation
 import Testing
 import UIKit
+
 @testable import DiceKeys
 
 @MainActor
@@ -27,7 +28,10 @@ struct ColorContrastTests {
     private static func rgba(_ color: UIColor, _ style: UIUserInterfaceStyle, _ level: UIUserInterfaceLevel = .base)
         -> RGBA
     {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
         color.resolvedColor(with: traits(style, level)).getRed(&r, green: &g, blue: &b, alpha: &a)
         return RGBA(r: r, g: g, b: b, a: a)
     }

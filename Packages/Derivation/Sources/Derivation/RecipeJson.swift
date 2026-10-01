@@ -188,9 +188,15 @@ public struct RecipeJsonParser {
         case UInt8(ascii: "{"): return try parseObjectBody()
         case UInt8(ascii: "["): return try parseArray()
         case UInt8(ascii: "\""): return .string(quoted: try parseString())
-        case UInt8(ascii: "t"): try expect("true"); return .bool(true)
-        case UInt8(ascii: "f"): try expect("false"); return .bool(false)
-        case UInt8(ascii: "n"): try expect("null"); return .null
+        case UInt8(ascii: "t"):
+            try expect("true")
+            return .bool(true)
+        case UInt8(ascii: "f"):
+            try expect("false")
+            return .bool(false)
+        case UInt8(ascii: "n"):
+            try expect("null")
+            return .null
         case UInt8(ascii: "-"), UInt8(ascii: "0")...UInt8(ascii: "9"): return try parseNumber()
         default: throw .invalid(offset: index)
         }
@@ -207,7 +213,10 @@ public struct RecipeJsonParser {
         index += 1
         var fields: [RecipeJsonField] = []
         skipWhitespace()
-        if peek == UInt8(ascii: "}") { index += 1; return .object(fields) }
+        if peek == UInt8(ascii: "}") {
+            index += 1
+            return .object(fields)
+        }
         while true {
             skipWhitespace()
             guard peek == UInt8(ascii: "\"") else { throw .invalid(offset: index) }
@@ -235,7 +244,9 @@ public struct RecipeJsonParser {
             skipWhitespace()
             switch peek {
             case UInt8(ascii: ","): index += 1
-            case UInt8(ascii: "}"): index += 1; return .object(fields)
+            case UInt8(ascii: "}"):
+                index += 1
+                return .object(fields)
             default: throw .invalid(offset: index)
             }
         }
@@ -247,14 +258,19 @@ public struct RecipeJsonParser {
         index += 1
         var items: [RecipeJsonValue] = []
         skipWhitespace()
-        if peek == UInt8(ascii: "]") { index += 1; return .array(items) }
+        if peek == UInt8(ascii: "]") {
+            index += 1
+            return .array(items)
+        }
         while true {
             skipWhitespace()
             items.append(try parseValue())
             skipWhitespace()
             switch peek {
             case UInt8(ascii: ","): index += 1
-            case UInt8(ascii: "]"): index += 1; return .array(items)
+            case UInt8(ascii: "]"):
+                index += 1
+                return .array(items)
             default: throw .invalid(offset: index)
             }
         }

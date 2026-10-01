@@ -3,9 +3,9 @@
 //  BLAKE2Tests
 //
 
+import BLAKE2
 import Foundation
 import Testing
-import BLAKE2
 
 func hex(_ bytes: [UInt8]) -> String {
     bytes.map { String(format: "%02x", $0) }.joined()

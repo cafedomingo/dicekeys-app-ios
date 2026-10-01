@@ -3,8 +3,8 @@
 //  DerivationTests
 //
 
-import Testing
 import Derivation
+import Testing
 
 @Suite("Recipe parsing and validation")
 struct RecipeTests {

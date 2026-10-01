@@ -5,6 +5,7 @@
 
 import CoreGraphics
 import Testing
+
 @testable import DiceKeys
 
 @Suite("Zoom for scanning")

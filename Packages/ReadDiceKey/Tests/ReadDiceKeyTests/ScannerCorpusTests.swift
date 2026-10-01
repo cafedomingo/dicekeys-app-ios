@@ -18,6 +18,7 @@ import DiceKeySpecification
 import Foundation
 import ImageIO
 import Testing
+
 @testable import ReadDiceKey
 
 // MARK: - Corpus
@@ -154,7 +155,8 @@ enum Corpus {
         var candidate = expected
         var best = (right: -1, wrong: 0)
         for _ in 0..<4 {
-            var right = 0, wrong = 0
+            var right = 0
+            var wrong = 0
             for (face, want) in zip(read, candidate) {
                 guard let face, let want else { continue }
                 if face == want { right += 1 } else { wrong += 1 }

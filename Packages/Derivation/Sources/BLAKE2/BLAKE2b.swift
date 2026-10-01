@@ -127,11 +127,22 @@ public struct BLAKE2b: Sendable {
             }
             words[word] = value
         }
-        var v0 = state[0], v1 = state[1], v2 = state[2], v3 = state[3]
-        var v4 = state[4], v5 = state[5], v6 = state[6], v7 = state[7]
-        var v8 = Self.iv[0], v9 = Self.iv[1], v10 = Self.iv[2], v11 = Self.iv[3]
-        var v12 = Self.iv[4] ^ counterLow, v13 = Self.iv[5] ^ counterHigh
-        var v14 = final ? ~Self.iv[6] : Self.iv[6], v15 = Self.iv[7]
+        var v0 = state[0]
+        var v1 = state[1]
+        var v2 = state[2]
+        var v3 = state[3]
+        var v4 = state[4]
+        var v5 = state[5]
+        var v6 = state[6]
+        var v7 = state[7]
+        var v8 = Self.iv[0]
+        var v9 = Self.iv[1]
+        var v10 = Self.iv[2]
+        var v11 = Self.iv[3]
+        var v12 = Self.iv[4] ^ counterLow
+        var v13 = Self.iv[5] ^ counterHigh
+        var v14 = final ? ~Self.iv[6] : Self.iv[6]
+        var v15 = Self.iv[7]
         for round in 0..<Self.rounds {
             let s = Self.sigma[round % Self.sigma.count]
             Self.mix(&v0, &v4, &v8, &v12, words[s[0]], words[s[1]])

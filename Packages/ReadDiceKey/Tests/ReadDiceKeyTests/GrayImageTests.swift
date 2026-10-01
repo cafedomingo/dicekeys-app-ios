@@ -5,6 +5,7 @@
 
 import CoreVideo
 import Testing
+
 @testable import ReadDiceKey
 
 @Suite("GrayImage from a camera frame")

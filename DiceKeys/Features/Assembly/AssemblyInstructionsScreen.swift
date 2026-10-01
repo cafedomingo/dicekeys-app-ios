@@ -76,12 +76,14 @@ private struct ScanFirstTime: View {
         if let diceKey {
             DiceKeyView(diceKey: diceKey)
             PrimaryButton("Scan again") {
-                self.diceKey = nil; scanning = true
+                self.diceKey = nil
+                scanning = true
             }
         } else if scanning {
             ScanDiceKeyView(
                 onDiceKeyRead: {
-                    diceKey = $0; scanning = false
+                    diceKey = $0
+                    scanning = false
                 },
                 onCancel: { scanning = false })
         } else {

@@ -189,7 +189,8 @@ final class CameraSession {
     nonisolated static func zoomForScanning(minimumFocusDistance: Double, fieldOfView: Double, frameSize: CGSize)
         -> Double
     {
-        let longSide = max(frameSize.width, frameSize.height), shortSide = min(frameSize.width, frameSize.height)
+        let longSide = max(frameSize.width, frameSize.height)
+        let shortSide = min(frameSize.width, frameSize.height)
         let halfAngleOfSquare = atan(tan(fieldOfView * .pi / 360) * shortSide / longSide)
         let pitchesAcrossSquare = 6 / Double(ScanningTarget.windowFraction)
         let distanceToTarget = pitchesAcrossSquare * 17 / 2 / tan(halfAngleOfSquare)
