@@ -7,6 +7,7 @@
 /// picks a word modulo the list size, unbiased because the sizes are powers of two.
 enum PasswordFormatter {
     static let bytesPerWord = 8
+    private static let wordSeparator = "-"
 
     static func password(from secret: [UInt8], wordList: WordList, lengthInChars: Int?) -> String {
         let words = wordList.words
@@ -22,10 +23,10 @@ enum PasswordFormatter {
         }
         var joined = String(chosen.count)
         if let first = chosen.first {
-            joined += "-" + first.prefix(1).uppercased() + first.dropFirst()
+            joined += wordSeparator + first.prefix(1).uppercased() + first.dropFirst()
         }
         for word in chosen.dropFirst() {
-            joined += "-" + word
+            joined += wordSeparator + word
         }
         if let lengthInChars {
             return String(joined.prefix(lengthInChars))

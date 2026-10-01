@@ -5,6 +5,7 @@
 //  Created by Stuart Schechter on 2020/12/11.
 //
 
+import Derivation
 import SwiftUI
 
 /// The form for `CustomRecipeModel`: source picker, the matching text fields,
@@ -52,13 +53,13 @@ struct CustomRecipeForm: View {
 
             if model.buildType != .rawJson {
                 if model.type == .password {
-                    Section("Maximum Length, in Characters (8 - 999)") {
+                    Section("Maximum Length, in Characters (\(CustomRecipeModel.lengthInCharsEntryRange.lowerBound) - \(CustomRecipeModel.lengthInCharsEntryRange.upperBound))") {
                         TextField("no length limit", value: $model.lengthInCharsEntry, format: .number)
                             .keyboardType(.numberPad)
                     }
                 } else if model.type == .secret {
-                    Section("Length, in Bytes (16 - 999)") {
-                        TextField("32", value: $model.lengthInBytesEntry, format: .number)
+                    Section("Length, in Bytes (\(CustomRecipeModel.lengthInBytesEntryRange.lowerBound) - \(CustomRecipeModel.lengthInBytesEntryRange.upperBound))") {
+                        TextField(String(Recipe.defaultLengthInBytes), value: $model.lengthInBytesEntry, format: .number)
                             .keyboardType(.numberPad)
                     }
                 }

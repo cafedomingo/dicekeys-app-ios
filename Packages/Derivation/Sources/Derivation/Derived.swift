@@ -62,7 +62,7 @@ public struct UnsealingKey: Sendable, Equatable {
 
     public func toJson() -> String {
         ReferenceJSON.object([
-            (key: "recipe", value: recipe.json),
+            (key: ReferenceJSON.recipeKey, value: recipe.json),
             (key: "sealingKeyBytes", value: ReferenceJSON.hex(sealingKeyBytes)),
             (key: "unsealingKeyBytes", value: ReferenceJSON.hex(unsealingKeyBytes))
         ])
@@ -74,7 +74,10 @@ public struct SigningKey: Sendable, Equatable {
     public let signingKeyBytes: Data
     public let recipe: Recipe
 
-    public var verificationKeyBytes: Data { Data(signingKeyBytes.suffix(32)) }
+    public static let seedLength = 32
+    public static let publicKeyLength = 32
+
+    public var verificationKeyBytes: Data { Data(signingKeyBytes.suffix(Self.publicKeyLength)) }
 
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> SigningKey {
         let parsed = try Recipe(json: recipe, type: .signingKey)
@@ -84,7 +87,7 @@ public struct SigningKey: Sendable, Equatable {
 
     public func toJson() -> String {
         ReferenceJSON.object([
-            (key: "recipe", value: recipe.json),
+            (key: ReferenceJSON.recipeKey, value: recipe.json),
             (key: "signingKeyBytes", value: ReferenceJSON.hex(signingKeyBytes))
         ])
     }

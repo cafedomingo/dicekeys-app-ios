@@ -10,7 +10,7 @@ import Derivation
 
 func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String {
     RecipeJsonValue.object(
-        [RecipeJsonField(name: "purpose", value: .text(purpose))]
+        [RecipeJsonField(name: Recipe.purposeField, value: .text(purpose))]
         + optionalRecipeFields(sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
     ).canonicalText
 }
@@ -20,19 +20,19 @@ func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int 
 private func optionalRecipeFields(sequenceNumber: Int, lengthInChars: Int?, lengthInBytes: Int?) -> [RecipeJsonField] {
     var fields: [RecipeJsonField] = []
     if let lengthInChars, lengthInChars > 1 {
-        fields.append(RecipeJsonField(name: "lengthInChars", value: .int(lengthInChars)))
+        fields.append(RecipeJsonField(name: Recipe.lengthInCharsField, value: .int(lengthInChars)))
     }
     if let lengthInBytes, lengthInBytes > 1 {
-        fields.append(RecipeJsonField(name: "lengthInBytes", value: .int(lengthInBytes)))
+        fields.append(RecipeJsonField(name: Recipe.lengthInBytesField, value: .int(lengthInBytes)))
     }
     if sequenceNumber > 1 {
-        fields.append(RecipeJsonField(name: "#", value: .int(sequenceNumber)))
+        fields.append(RecipeJsonField(name: Recipe.sequenceNumberField, value: .int(sequenceNumber)))
     }
     return fields
 }
 
 struct DerivationRecipe: Identifiable, Codable, Equatable {
-    static let rebuildSkipJsonProperties = ["#", "lengthInChars", "lengthInBytes"]
+    static let rebuildSkipJsonProperties = [Recipe.sequenceNumberField, Recipe.lengthInCharsField, Recipe.lengthInBytesField]
 
     let type: DerivableType
     let name: String
@@ -82,7 +82,7 @@ extension DerivationRecipe {
             return DerivedValuePassword(password: try Password.derive(seed: seed, recipe: recipe))
         case .secret:
             let lengthInBytes = lengthInBytes()
-            return DerivedValueSecret(secret: try Secret.derive(seed: seed, recipe: recipe), showBIP39: lengthInBytes == nil || lengthInBytes == 32)
+            return DerivedValueSecret(secret: try Secret.derive(seed: seed, recipe: recipe), showBIP39: lengthInBytes == nil || lengthInBytes == Recipe.defaultLengthInBytes)
         case .signingKey:
             return DerivedValueSigningKey(signingKey: try SigningKey.derive(seed: seed, recipe: recipe))
         case .symmetricKey:
@@ -110,16 +110,16 @@ extension DerivationRecipe {
     }
 
     func purpose() -> String? {
-        guard case .string(let quoted) = fields.first(where: { $0.name == "purpose" })?.value else { return nil }
+        guard case .string(let quoted) = fields.first(where: { $0.name == Recipe.purposeField })?.value else { return nil }
         return try? RecipeJsonParser.decodeString(quoted: quoted)
     }
 
     func lengthInChars() -> Int? {
-        integerField("lengthInChars")
+        integerField(Recipe.lengthInCharsField)
     }
 
     func lengthInBytes() -> Int? {
-        integerField("lengthInBytes")
+        integerField(Recipe.lengthInBytesField)
     }
 
     private func integerField(_ name: String) -> Int? {

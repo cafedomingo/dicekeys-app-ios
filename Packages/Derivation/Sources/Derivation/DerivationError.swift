@@ -22,7 +22,7 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .recipeNotAnObject:
-            return "A recipe must be a JSON object, such as {\"purpose\":\"example\"}"
+            return RecipeJsonError.notAnObjectMessage
         case .invalidJson(let reason):
             return reason
         case .duplicateField(let name):
