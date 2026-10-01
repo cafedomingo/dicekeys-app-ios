@@ -21,7 +21,7 @@ OpenCV remain, and there is not one `#if os(...)` left in the app.
 
 1. **Always be able to read a DiceKey and re-derive the same secrets.** The seed derivation
    (seeded-crypto + libsodium) builds from sources in this repository and the scanner is
-   pure Swift. Golden vectors generated from the reference implementation guard the
+   pure Swift. Vectors generated from the reference implementation guard the
    derivation output; a corpus of photos of real keys guards the scanner.
 2. Build with current Xcode against the current SDKs, Swift 6 language mode, strict
    concurrency, no deprecated APIs. GitHub Actions macOS runners are the compiler for this
@@ -179,7 +179,7 @@ permissions error until it is accepted.
 
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
-- `swift test -c release` for each package: in `Packages/SeededCrypto` the golden derivation
+- `swift test -c release` for each package: in `Packages/SeededCrypto` the derivation
   vectors and concurrent first use of libsodium, and in `Packages/ReadDiceKey` the scanner over
   upstream's photos, the owner's photos and video, and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
@@ -198,8 +198,8 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## How the safety nets work
 
-- `Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/golden-vectors.json` came from the
-  reference C++ (`scripts/generate-golden-vectors.sh`). If `GoldenVectorTests` fails, derived
+- `Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/vectors.json` came from the
+  reference C++ (`scripts/generate-vectors.sh`). If `VectorTests` fails, derived
   secrets have changed; do not update the fixture without understanding why.
 - `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to the
   same fixture, and proves every rotation of a key derives the same seed. That last test is
@@ -210,14 +210,14 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
   codes cover reading across frames: a quarter turn between frames, a second key, a frame
   that reads nothing.
 - Re-vendoring: `scripts/vendor-libsodium.sh [url] [tag]` and
-  `scripts/update-seeded-crypto.sh [url] [ref]`; run the golden-vector script after either
+  `scripts/update-seeded-crypto.sh [url] [ref]`; run the vector script after either
   and expect no diff.
 
 ## C++ in Swift or Rust: the decision
 
 Keep the C++. `lib-seeded` is about 5k real lines over libsodium and is the reference
 implementation shared with the web app; any byte-level divergence in a rewrite silently
-changes every derived secret, and the golden vectors can only cover cases someone wrote
+changes every derived secret, and the vectors can only cover cases someone wrote
 down. `lib-read-dicekey` was the exception, because it needed OpenCV: it was ported to Swift
 stage by stage and checked face by face against the C++ output, then rewritten around the two
 bar codes once the port showed what mattered (`SCANNING.md`). It still follows upstream's
