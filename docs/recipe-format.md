@@ -83,6 +83,14 @@ The recipe builder and the raw JSON editor write recipes in the form
 
 `Derivation` never rewrites a recipe: it hashes the text it is given, canonical or not.
 
+This is not RFC 8785 (JSON Canonicalization Scheme), which would be the choice for a format
+starting fresh. JCS sorts every key by UTF-16 code unit with no exceptions, re-serializes
+numbers as ECMAScript does (`1.0` becomes `1`) and re-escapes strings minimally. The
+reference form puts `purpose` first and `#` last and keeps numbers and strings as typed.
+Because the text is the salt, moving to JCS would change the derived value of nearly every
+recipe and silently break the promise that any DiceKeys app derives the same secrets from the
+same dice, so the form stays the reference's unless the ecosystem moves together.
+
 ## Word lists
 
 | Name | Words | Bits per word |
