@@ -18,7 +18,7 @@ struct PasswordFormatterTests {
         #expect(WordList.en512.words.last == "zippy")
         #expect(WordList.en1024.words.first == "abacus")
         #expect(WordList.en1024.words.last == "zoning")
-        // The lists are part of every password ever derived, so the digest pins them once their source is gone.
+        // The lists are hashed into every password, so this digest pins them.
         #expect(digest(WordList.en512.words) == "773113b55c0a6adcf4df3b4b43187f37a2fe7a8a104ce4b2f898bb72d99aa07d")
         #expect(digest(WordList.en1024.words) == "dbf28ffbc01379ca990e2c49158383f4b33ba98c00e306b62033fc866caf7fec")
         #expect(Set(WordList.en512.words).count == 512)
@@ -38,7 +38,7 @@ struct PasswordFormatterTests {
     func indexing() {
         var secret = [UInt8](repeating: 0, count: 16)
         secret[7] = 1
-        secret[14] = 1   // 256 + ...
+        secret[14] = 1   // block value 0x01ff
         secret[15] = 0xff
         let expected = "2-" + WordList.en512.words[1].capitalizedFirst + "-" + WordList.en512.words[(256 + 255) % 512]
         #expect(PasswordFormatter.password(from: secret, wordList: .en512, lengthInChars: nil) == expected)

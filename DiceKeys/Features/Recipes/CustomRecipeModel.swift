@@ -16,6 +16,11 @@ enum RecipeBuildType: CaseIterable {
 /// Every edit recomputes `progress`.
 @MainActor @Observable
 final class CustomRecipeModel: Identifiable {
+    /// Shown in the form's section titles, so the limit the model enforces and the one the
+    /// user reads are the same.
+    static let lengthInCharsEntryRange = 8...999
+    static let lengthInBytesEntryRange = 16...999
+
     let type: DerivableType
 
     private(set) var progress: RecipeBuilderProgress = .incomplete
@@ -38,22 +43,22 @@ final class CustomRecipeModel: Identifiable {
     var showRawJsonAlert: Bool = false
 
     /// Text-field view of `lengthInChars`: empty means "no limit"; values
-    /// outside 8...999 are ignored.
+    /// outside `lengthInCharsEntryRange` are ignored.
     var lengthInCharsEntry: Int? {
         get { lengthInChars == 0 ? nil : lengthInChars }
         set {
             guard let newValue else { lengthInChars = 0; return }
-            if (8...999).contains(newValue) { lengthInChars = newValue }
+            if Self.lengthInCharsEntryRange.contains(newValue) { lengthInChars = newValue }
         }
     }
 
-    /// Text-field view of `lengthInBytes`: empty means the default (32);
-    /// values outside 16...999 are ignored.
+    /// Text-field view of `lengthInBytes`: empty means the default length;
+    /// values outside `lengthInBytesEntryRange` are ignored.
     var lengthInBytesEntry: Int? {
         get { lengthInBytes == 0 ? nil : lengthInBytes }
         set {
             guard let newValue else { lengthInBytes = 0; return }
-            if (16...999).contains(newValue) { lengthInBytes = newValue }
+            if Self.lengthInBytesEntryRange.contains(newValue) { lengthInBytes = newValue }
         }
     }
 
@@ -70,17 +75,10 @@ final class CustomRecipeModel: Identifiable {
     }
 
     private func update() {
-        switch buildType {
-        case .purpose:
-            guard !purposeString.isBlank else {
-                progress = .incomplete
-                return
-            }
-        case .rawJson:
-            guard !rawJsonString.isBlank else {
-                progress = .incomplete
-                return
-            }
+        let source = buildType == .purpose ? purposeString : rawJsonString
+        guard !source.isBlank else {
+            progress = .incomplete
+            return
         }
 
         let recipe: String

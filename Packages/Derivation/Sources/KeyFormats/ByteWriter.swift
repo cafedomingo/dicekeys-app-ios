@@ -3,7 +3,7 @@
 //  KeyFormats
 //
 
-/// Big-endian building blocks shared by the OpenSSH and OpenPGP encoders.
+/// Big-endian writer shared by the OpenSSH and OpenPGP encoders.
 struct ByteWriter {
     private(set) var bytes: [UInt8] = []
 
@@ -24,7 +24,6 @@ struct ByteWriter {
 
     mutating func append(_ more: some Sequence<UInt8>) { bytes.append(contentsOf: more) }
 
-    /// An SSH `string`: four-byte length, then the bytes.
     mutating func sshString(_ value: [UInt8]) {
         uint32(UInt32(value.count))
         append(value)
@@ -32,8 +31,7 @@ struct ByteWriter {
 
     mutating func sshString(_ text: String) { sshString(Array(text.utf8)) }
 
-    /// An OpenPGP multiprecision integer: the value's bit length, then the value with its
-    /// leading zero bytes removed.
+    /// An OpenPGP multiprecision integer: bit length, then the value without leading zero bytes.
     mutating func mpi(_ value: [UInt8]) {
         let leadingZeroBits = value.reduce(into: (bits: 0, done: false)) { count, byte in
             guard !count.done else { return }

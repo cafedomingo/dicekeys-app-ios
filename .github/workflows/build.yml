@@ -13,13 +13,16 @@ on:
 permissions:
   contents: read
 
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -41,25 +44,21 @@ jobs:
       - name: actionlint
         run: actionlint
 
-  # libsodium and seeded-crypto, built from their vendored C and C++ sources, and the
-  # Derivation package over them, with plain SwiftPM on the macOS host. VectorTests is the
-  # tripwire for any change to derived secrets.
+  # The Derivation package's suites, with plain SwiftPM on the macOS host: the recorded
+  # vectors (the tripwire for any change to derived secrets) and BLAKE2b's known answers.
   crypto:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - name: Build and test
-        working-directory: Packages/SeededCrypto
-        run: swift test -c release -Xswiftc -enable-testing --parallel
-      - name: Build and test Derivation
         working-directory: Packages/Derivation
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
   # The scanner and its photo corpus, with plain SwiftPM on the macOS host. Release build:
   # the corpus is full-size photos, which take minutes at -Onone and seconds optimized.
   scanner:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
@@ -68,7 +67,7 @@ jobs:
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
   unused-code:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
@@ -80,7 +79,7 @@ jobs:
           set -o pipefail
           xcodebuild build -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep -E 'error:|warning: unre|BUILD|\*\*' || true
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep --line-buffered -E 'error:|warning: unre|^Ld |BUILD|\*\*' || true
           grep -q 'BUILD SUCCEEDED' build-ios.log
       # .swiftlint-analyze.yml limits it to the app target.
       - name: Unused code (swiftlint analyze)
@@ -98,7 +97,7 @@ jobs:
           retention-days: 7
 
   app-tests:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
@@ -129,7 +128,7 @@ jobs:
           # every SecItem call fails with errSecMissingEntitlement (-34018).
           xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination "platform=iOS Simulator,id=$UDID" \
-            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
+            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep --line-buffered -E 'error:|^Ld |^Testing started|Test Case|Test Suite|passed|failed|\*\*' || true
           grep -q 'TEST SUCCEEDED' test-ios.log
       - name: Upload logs
         if: always()

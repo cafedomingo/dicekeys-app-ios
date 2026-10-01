@@ -1,4 +1,4 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 6.3
 //
 // ReadDiceKey: the DiceKey scanner, in Swift, and the face specification it reads with. The
 // app uses both. See docs/SCANNING.md.

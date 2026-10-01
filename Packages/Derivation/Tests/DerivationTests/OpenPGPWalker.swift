@@ -2,14 +2,12 @@
 //  OpenPGPWalker.swift
 //  DerivationTests
 //
-//  Enough of RFC 4880 to compare two secret key blocks by content: the packets, the secret
-//  key fields, the user ID, and the self-signature's parts. The C++ wrote one-byte lengths
-//  and no CRC; the Swift encoder writes proper lengths and a CRC, so the walker accepts both.
-//
 
 import Foundation
 import Testing
 
+/// Reads enough of RFC 4880 to compare secret key blocks by content. It accepts the recorded
+/// export's one-byte lengths and missing CRC as well as the encoder's.
 struct OpenPGPWalker {
     struct SecretKeyPacket: Equatable {
         var version: UInt8
@@ -20,7 +18,7 @@ struct OpenPGPWalker {
         var s2kUsage: UInt8
         var secretKeyMPI: [UInt8]
         var checksum: UInt16
-        var body: [UInt8]              // the whole packet body
+        var body: [UInt8]
     }
 
     struct Subpacket: Equatable {

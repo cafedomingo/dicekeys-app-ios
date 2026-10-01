@@ -5,8 +5,7 @@
 
 import Foundation
 
-/// Why a recipe cannot be used, or a derivation failed. The messages are shown to the
-/// user, so they say what to change.
+/// Why a recipe cannot be used. The messages are shown to the user.
 public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
     case recipeNotAnObject
     case invalidJson(String)
@@ -19,15 +18,11 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
     case unknownWordList(String)
     case lengthMustBe32(DerivableType)
     case bitsAndWordsConflict
-    /// The engine refused a recipe the parser accepted. Only the C++ engine does this, for
-    /// the one check it gets wrong (a consistent lengthInBits and lengthInWords pair).
-    case engineRejected(String)
-    case internalError(String)
 
     public var errorDescription: String? {
         switch self {
         case .recipeNotAnObject:
-            return "A recipe must be a JSON object, such as {\"purpose\":\"example\"}"
+            return RecipeJsonError.notAnObjectMessage
         case .invalidJson(let reason):
             return reason
         case .duplicateField(let name):
@@ -51,10 +46,6 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
             return "A \(type.rawValue) is always 32 bytes; leave lengthInBytes out or set it to 32"
         case .bitsAndWordsConflict:
             return "lengthInBits and lengthInWords disagree; give one or the other"
-        case .engineRejected(let reason):
-            return reason
-        case .internalError(let reason):
-            return "Derivation failed: \(reason)"
         }
     }
 }

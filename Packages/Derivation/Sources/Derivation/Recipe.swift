@@ -4,26 +4,33 @@
 //
 
 /// A recipe, parsed and validated. `json` is the text exactly as given, because that text
-/// is what gets hashed; every other property is what the text means for `type`.
-///
-/// Integers must be JSON integers, every length is bounded, and unknown names for
-/// `hashFunction`, `wordList` and `algorithm` are errors. A field the format defines only
-/// for another type is salt: it is not read.
+/// is what gets hashed. A field defined only for another type is salt and is not read,
+/// except `algorithm`, which only keys may name.
 public struct Recipe: Sendable, Equatable {
     public let json: String
     public let type: DerivableType
     public let hashFunction: HashFunction
-    /// The number of bytes the hash must produce: the secret's length, a key's 32, or a
-    /// password's words times 8.
     public let lengthInBytes: Int
     public let lengthInChars: Int?
     public let wordList: WordList
     /// Password only; 0 for every other type.
     public let lengthInWords: Int
 
-    /// The longest output the HKDF construction can produce: 255 blocks of 32 bytes.
-    public static let maximumLengthInBytes = 8160
-    public static let maximumLengthInWords = maximumLengthInBytes / 8
+    /// The longest output the HKDF construction can produce.
+    public static let maximumLengthInBytes = HKDFBlake2b.maximumOutputLength
+    public static let maximumLengthInWords = maximumLengthInBytes / PasswordFormatter.bytesPerWord
+
+    /// A secret's length when the recipe names none.
+    public static let defaultLengthInBytes = 32
+    /// The fixed length of every key type.
+    public static let keyLengthInBytes = 32
+    private static let defaultLengthInBits = 128
+
+    public static let purposeField = "purpose"
+    /// The sequence number, written as `#` so it sorts after every other field.
+    public static let sequenceNumberField = "#"
+    public static let lengthInCharsField = "lengthInChars"
+    public static let lengthInBytesField = "lengthInBytes"
 
     public init(json: String, type: DerivableType) throws(DerivationError) {
         let fields = try Recipe.parse(json)
@@ -55,13 +62,13 @@ public struct Recipe: Sendable, Equatable {
             let bitsRange = 1...(Recipe.maximumLengthInWords * bitsPerWord)
             let bits = try fields.integer("lengthInBits", in: bitsRange)
             let words = try fields.integer("lengthInWords", in: 1...Recipe.maximumLengthInWords)
-            self.lengthInChars = try fields.integer("lengthInChars", in: 1...Int.max)
+            self.lengthInChars = try fields.integer(Recipe.lengthInCharsField, in: 1...Int.max)
             // Type-checked like every integer field, then overridden: the words decide the length.
-            _ = try fields.integer("lengthInBytes", in: Int.min...Int.max)
+            _ = try fields.integer(Recipe.lengthInBytesField, in: Int.min...Int.max)
             let resolvedWords: Int
             switch (bits, words) {
             case (nil, nil):
-                resolvedWords = Recipe.wordsFor(bits: 128, bitsPerWord: bitsPerWord)
+                resolvedWords = Recipe.wordsFor(bits: Recipe.defaultLengthInBits, bitsPerWord: bitsPerWord)
             case (nil, let words?):
                 resolvedWords = words
             case (let bits?, nil):
@@ -71,17 +78,17 @@ public struct Recipe: Sendable, Equatable {
                 resolvedWords = words
             }
             self.lengthInWords = resolvedWords
-            self.lengthInBytes = resolvedWords * 8
+            self.lengthInBytes = resolvedWords * PasswordFormatter.bytesPerWord
         case .secret:
-            self.lengthInBytes = try fields.integer("lengthInBytes", in: 1...Recipe.maximumLengthInBytes) ?? 32
+            self.lengthInBytes = try fields.integer(Recipe.lengthInBytesField, in: 1...Recipe.maximumLengthInBytes) ?? Recipe.defaultLengthInBytes
             self.lengthInChars = nil
             self.wordList = .en512
             self.lengthInWords = 0
         case .symmetricKey, .unsealingKey, .signingKey:
-            if let bytes = try fields.integer("lengthInBytes", in: Int.min...Int.max), bytes != 32 {
+            if let bytes = try fields.integer(Recipe.lengthInBytesField, in: Int.min...Int.max), bytes != Recipe.keyLengthInBytes {
                 throw .lengthMustBe32(type)
             }
-            self.lengthInBytes = 32
+            self.lengthInBytes = Recipe.keyLengthInBytes
             self.lengthInChars = nil
             self.wordList = .en512
             self.lengthInWords = 0
@@ -126,7 +133,7 @@ private struct RecipeFields {
         guard let value = Int(text) else {
             // A JSON integer too large for Int is out of range, not the wrong type.
             let digits = text.hasPrefix("-") ? text.dropFirst() : Substring(text)
-            if !digits.isEmpty, digits.utf8.allSatisfy({ $0 >= 0x30 && $0 <= 0x39 }) {
+            if !digits.isEmpty, digits.utf8.allSatisfy(\.isDigit) {
                 throw .outOfRange(field: name, allowed: allowed)
             }
             throw .wrongType(field: name, expected: "an integer")

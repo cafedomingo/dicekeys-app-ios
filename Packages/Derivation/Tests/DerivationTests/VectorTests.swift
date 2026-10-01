@@ -2,14 +2,12 @@
 //  VectorTests.swift
 //  DerivationTests
 //
-//  Every value in Fixtures/vectors.json was produced by the reference C++ implementation
-//  (scripts/generate-vectors.sh). If a `cases` or `legacy` test fails, derived passwords
-//  and keys have changed for real users. Do not "fix" the fixture; fix the build.
+//  Fixtures/vectors.json was recorded from the reference C++ implementation. If a `cases` or
+//  `legacy` test fails, real users' derived values changed. Do not fix the fixture; fix the code.
 //
 
 import Foundation
 import Testing
-import SeededCrypto
 @testable import Derivation
 
 struct Vector: Decodable, Sendable, CustomTestStringConvertible {
@@ -46,7 +44,6 @@ struct FixtureDiceKey: Decodable, Sendable {
 }
 
 struct VectorFixture: Decodable, Sendable {
-    let sodiumVersion: String
     let diceKeys: [FixtureDiceKey]
     let cases: [Vector]
     let legacy: [Vector]
@@ -72,11 +69,6 @@ struct VectorTests {
         #expect(fixture.legacy.count == 21)
         #expect(fixture.rejected.count == 16)
         #expect(fixture.legacy.allSatisfy { $0.note != nil })
-    }
-
-    @Test("libsodium version matches the vendored source")
-    func sodiumVersion() {
-        #expect(SeededCrypto.Recipe.sodiumVersion == fixture.sodiumVersion)
     }
 
     @Test("every case derives to the recorded value through the public API", arguments: fixture.cases)
@@ -108,37 +100,21 @@ struct VectorTests {
         }
     }
 
-    // The strict parser refuses every legacy recipe; the engine behind it still produces
-    // the recorded value, which is what lets the behavior be restored if ever wanted.
-    @Test("every legacy entry is refused by the parser and still derived by the legacy engine", arguments: fixture.legacy)
+    @Test("every legacy entry is refused by the parser", arguments: fixture.legacy)
     func legacy(vector: Vector) throws {
         let type = try #require(vector.derivableType)
         #expect(throws: DerivationError.self) { try Recipe(json: vector.recipe, type: type) }
-        #expect(try LegacyEngine().derive(type, seed: vector.seed, recipe: vector.recipe) == vector.json)
     }
 
-    // The C++ refuses one recipe the strict Recipe accepts, so that entry is asserted at the
-    // engine and every other entry at the public parser.
-    @Test("every rejected entry is refused", arguments: fixture.rejected)
+    // The C++ refused one correct recipe, so that entry derives here.
+    @Test("every rejected entry is refused, except the one the port derives", arguments: fixture.rejected)
     func rejects(vector: Vector) throws {
         let type = try #require(vector.derivableType)
         if vector.name == "consistent lengthInBits and lengthInWords" {
-            _ = try Recipe(json: vector.recipe, type: type)
-            #expect(throws: DerivationError.engineRejected(try #require(vector.error))) {
-                try LegacyEngine().derive(type, seed: vector.seed, recipe: vector.recipe)
-            }
+            #expect(try Recipe(json: vector.recipe, type: type).lengthInWords == 10)
+            #expect(try Password.derive(seed: vector.seed, recipe: vector.recipe).password.hasPrefix("10-"))
         } else {
             #expect(throws: DerivationError.self) { try Recipe(json: vector.recipe, type: type) }
-        }
-    }
-
-    @Test("the one check the C++ gets wrong is an engine rejection, not a parser error")
-    func consistentBitsAndWords() throws {
-        let json = #"{"lengthInBits":90,"lengthInWords":10}"#
-        #expect(try Recipe(json: json, type: .password).lengthInWords == 10)
-        // The public outcome for this recipe is the Swift engine's to assert.
-        #expect(throws: DerivationError.engineRejected("lengthInBits and lengthInWords conflict")) {
-            try LegacyEngine().derive(.password, seed: fixture.diceKeys[0].seed, recipe: json)
         }
     }
 

@@ -2,15 +2,20 @@
 //  BLAKE2b.swift
 //  BLAKE2
 //
-//  BLAKE2b as specified in RFC 7693, including keyed hashing, which the derivation uses in
-//  place of HMAC. Salt and personalization are always zero here, so the parameter block is
-//  the digest length, the key length, fanout 1 and depth 1.
-//
 
+/// BLAKE2b (RFC 7693) with keyed hashing. Salt and personalization are always zero.
 public struct BLAKE2b: Sendable {
     public static let blockSize = 128
     public static let maximumDigestLength = 64
     public static let maximumKeyLength = 64
+
+    /// The block as 64-bit words (RFC 7693 section 2.2).
+    private static let wordsPerBlock = blockSize / 8
+    /// RFC 7693 section 3.2: BLAKE2b mixes in 12 rounds, cycling through the ten sigma rows.
+    private static let rounds = 12
+    /// Parameter block word 0 above the digest and key length bytes: fanout 1 and depth 1,
+    /// which is sequential hashing (RFC 7693 section 2.5).
+    private static let sequentialModeParameters: UInt64 = 0x0101_0000
 
     private static let iv: [UInt64] = [
         0x6a09_e667_f3bc_c908, 0xbb67_ae85_84ca_a73b, 0x3c6e_f372_fe94_f82b, 0xa54f_f53a_5f1d_36f1,
@@ -37,18 +42,18 @@ public struct BLAKE2b: Sendable {
     /// because the last block, full or not, is compressed with the final flag.
     private var block: [UInt8]
     /// The block as 16 little-endian words, kept between blocks to avoid an allocation each.
-    private var words = [UInt64](repeating: 0, count: 16)
+    private var words = [UInt64](repeating: 0, count: Self.wordsPerBlock)
     private var pending = 0
     private var counterLow: UInt64 = 0
     /// Reached only past 2^64 bytes, so no test can pin it; the carry is kept for RFC conformance.
     private var counterHigh: UInt64 = 0
 
-    public init(digestLength: Int = 64, key: [UInt8] = []) {
+    public init(digestLength: Int = Self.maximumDigestLength, key: [UInt8] = []) {
         precondition((1...Self.maximumDigestLength).contains(digestLength), "BLAKE2b digests are 1 to 64 bytes")
         precondition(key.count <= Self.maximumKeyLength, "BLAKE2b keys are at most 64 bytes")
         self.digestLength = digestLength
         state = Self.iv
-        state[0] ^= 0x0101_0000 ^ (UInt64(key.count) << 8) ^ UInt64(digestLength)
+        state[0] ^= Self.sequentialModeParameters ^ (UInt64(key.count) << 8) ^ UInt64(digestLength)
         block = [UInt8](repeating: 0, count: Self.blockSize)
         // A key is hashed as a first block padded with zeros; it counts as 128 bytes of input.
         if !key.isEmpty {
@@ -78,8 +83,7 @@ public struct BLAKE2b: Sendable {
         }
     }
 
-    /// The digest of everything given to `update` so far. The value is unchanged, so more
-    /// input can follow and produce a longer message's digest.
+    /// The digest of everything given to `update` so far; the hasher stays usable.
     public func finalize() -> [UInt8] {
         var copy = self
         copy.addToCounter(UInt64(copy.pending))
@@ -97,7 +101,7 @@ public struct BLAKE2b: Sendable {
         return Array(digest.prefix(digestLength))
     }
 
-    public static func hash(_ message: some Sequence<UInt8>, key: [UInt8] = [], digestLength: Int = 64) -> [UInt8] {
+    public static func hash(_ message: some Sequence<UInt8>, key: [UInt8] = [], digestLength: Int = Self.maximumDigestLength) -> [UInt8] {
         var hasher = BLAKE2b(digestLength: digestLength, key: key)
         hasher.update(message)
         return hasher.finalize()
@@ -114,7 +118,7 @@ public struct BLAKE2b: Sendable {
     /// The working vector lives in sixteen locals, not an array, so the 96 mixes per block
     /// are register arithmetic with no bounds checks.
     private mutating func compress(final: Bool) {
-        for word in 0..<16 {
+        for word in 0..<Self.wordsPerBlock {
             var value: UInt64 = 0
             for byte in 0..<8 {
                 value |= UInt64(block[word * 8 + byte]) << UInt64(8 * byte)
@@ -126,8 +130,8 @@ public struct BLAKE2b: Sendable {
         var v8 = Self.iv[0], v9 = Self.iv[1], v10 = Self.iv[2], v11 = Self.iv[3]
         var v12 = Self.iv[4] ^ counterLow, v13 = Self.iv[5] ^ counterHigh
         var v14 = final ? ~Self.iv[6] : Self.iv[6], v15 = Self.iv[7]
-        for round in 0..<12 {
-            let s = Self.sigma[round % 10]
+        for round in 0..<Self.rounds {
+            let s = Self.sigma[round % Self.sigma.count]
             Self.mix(&v0, &v4, &v8, &v12, words[s[0]], words[s[1]])
             Self.mix(&v1, &v5, &v9, &v13, words[s[2]], words[s[3]])
             Self.mix(&v2, &v6, &v10, &v14, words[s[4]], words[s[5]])

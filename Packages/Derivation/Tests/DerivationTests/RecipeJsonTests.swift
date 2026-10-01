@@ -48,6 +48,7 @@ struct RecipeJsonTests {
         #expect(RecipeJsonValue.text("say \"hi\" \\ tab\tend").canonicalText == #""say \"hi\" \\ tab\tend""#)
         #expect(RecipeJsonValue.text("\u{01}\u{08}\u{0C}\n\r").canonicalText == #""\u0001\b\f\n\r""#)
         #expect(RecipeJsonValue.text("café/😀").canonicalText == #""café/😀""#)
+        #expect(RecipeJsonValue.text("a\u{7f}b").canonicalText == "\"a\u{7f}b\"")
     }
 
     @Test("canonically equivalent names still sort by their UTF-16 code units")
@@ -59,9 +60,7 @@ struct RecipeJsonTests {
         #expect(object.canonicalText == "{\"e\u{301}\":2,\"\u{E9}\":1}")
     }
 
-    // The reference's own test cases, from
-    // dicekeys-app-typescript/web/src/tests/recipe-canonicalization.test.ts, plus the Android
-    // ones this app already carried. Both apps agree on all of these.
+    // From the reference's recipe-canonicalization.test.ts, plus the Android cases.
     static let referenceVectors: [(input: String, expected: String)] = [
         (##"{"#":3,"allow":[{"host":"*.example.com"}]}"##, ##"{"allow":[{"host":"*.example.com"}],"#":3}"##),
         (##"{"#":3,"allow":[{"host":"*.example.com"}],"purpose":"Life? Don't talk to me about life!" }"##,
@@ -81,8 +80,7 @@ struct RecipeJsonTests {
         #expect(try vector.input.canonicalizedRecipe() == vector.expected)
     }
 
-    // Source text the old JSONSerialization-based canonicalizer rewrote. Each of these is a
-    // fixed point: the reference emits numbers and strings exactly as written.
+    // Each is a fixed point: numbers and strings are emitted exactly as written.
     static let preservedText: [String] = [
         #"{"a":1.50,"b":1e3,"c":-0,"d":0.30000000000000004,"e":12345678901234567890123}"#,
         #"{"a":true,"b":false,"c":null}"#,
