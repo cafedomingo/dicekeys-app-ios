@@ -2,8 +2,6 @@
 //  CameraSampleBufferDelegate.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/11/23.
-//
 
 import AVFoundation
 import ReadDiceKey

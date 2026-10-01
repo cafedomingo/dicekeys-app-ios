@@ -2,8 +2,6 @@
 //  String.swift
 //  DiceKeys
 //
-//  Created by Angelos Veglektsis on 7/20/22.
-//
 
 import Foundation
 import CoreGraphics

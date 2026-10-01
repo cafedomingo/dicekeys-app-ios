@@ -2,8 +2,6 @@
 //  DerivationRecipeStore.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2021/02/08.
-//
 
 import Foundation
 import Observation

@@ -2,8 +2,6 @@
 //  FacesReadOverlay.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/11/20.
-//
 
 import DiceKeySpecification
 import ReadDiceKey

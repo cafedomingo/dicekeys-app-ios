@@ -2,8 +2,6 @@
 //  LoadDiceKeyScreen.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2021/01/25.
-//
 
 import SwiftUI
 

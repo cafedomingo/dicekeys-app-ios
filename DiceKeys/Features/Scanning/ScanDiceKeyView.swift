@@ -2,8 +2,6 @@
 //  ScanDiceKeyView.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/11/24.
-//
 
 import SwiftUI
 import AVFoundation

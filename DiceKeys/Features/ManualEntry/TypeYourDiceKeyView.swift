@@ -2,8 +2,6 @@
 //  TypeYourDiceKeyView.swift
 //  DiceKeys
 //
-//  Created by Kevin Shah on 13/01/21.
-//
 
 import SwiftUI
 

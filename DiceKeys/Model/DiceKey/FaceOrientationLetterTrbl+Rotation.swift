@@ -2,8 +2,6 @@
 //  FaceOrientationLetterTrbl.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2021/01/22.
-//
 
 import DiceKeySpecification
 

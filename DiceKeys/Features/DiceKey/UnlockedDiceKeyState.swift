@@ -2,8 +2,6 @@
 //  UnlockedDiceKeyState.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/01.
-//
 
 import Observation
 

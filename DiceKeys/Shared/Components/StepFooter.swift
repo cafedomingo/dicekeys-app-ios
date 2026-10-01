@@ -2,8 +2,6 @@
 //  StepFooter.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/16.
-//
 
 import SwiftUI
 

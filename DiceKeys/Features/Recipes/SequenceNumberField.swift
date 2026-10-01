@@ -2,8 +2,6 @@
 //  SequenceNumberField.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/18.
-//
 
 import SwiftUI
 

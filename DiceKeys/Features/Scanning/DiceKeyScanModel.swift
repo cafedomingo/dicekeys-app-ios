@@ -2,8 +2,6 @@
 //  DiceKeyScanModel.swift
 //  DiceKeys
 //
-//  Created by Kevin Shah on 27/01/21.
-//
 
 import DiceKeySpecification
 import Foundation
