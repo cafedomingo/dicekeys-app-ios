@@ -34,7 +34,8 @@ jobs:
           "$RUNNER_TEMP/lint/bin/pip" install -r scripts/requirements-lint.txt
           echo "$RUNNER_TEMP/lint/bin" >> "$GITHUB_PATH"
       - name: swift-format
-        run: swift format lint --strict --recursive DiceKeys Packages Tests scripts BuildTools/Package.swift
+        # Not scripts: the formatter folds the comment lines after a shebang into it, one per run.
+        run: swift format lint --strict --recursive DiceKeys Packages Tests BuildTools/Package.swift
       - name: SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
       - name: ruff check
