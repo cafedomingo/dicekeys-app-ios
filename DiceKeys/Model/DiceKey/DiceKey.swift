@@ -8,7 +8,7 @@
 import DiceKeySpecification
 import Foundation
 import Synchronization
-import SeededCrypto
+import Derivation
 
 let clockwise90DegreeRotationIndexesFor5x5Grid = [
     20, 15, 10, 5, 0,
@@ -222,7 +222,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
             if let cached { return cached }
             // A fixed, valid recipe: derivation cannot fail.
             // swiftlint:disable:next force_try
-            let bytes = try! Secret.deriveFromSeed(withSeedString: toSeed(), recipe: recipeFor16ByteUniqueIdentifier).secretBytes()
+            let bytes = try! Secret.derive(seed: toSeed(), recipe: recipeFor16ByteUniqueIdentifier).bytes
             cached = bytes
             return bytes
         }

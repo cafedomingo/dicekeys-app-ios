@@ -5,24 +5,22 @@
 //  Created by Stuart Schechter on 2020/12/11.
 //
 
-import Foundation
+import Derivation
 import Observation
 
-enum RecipeBuildType {
-    case hosts
-    case purpose
-    case rawJson
+enum RecipeBuildType: CaseIterable {
+    case purpose, rawJson
 }
 
-/// Builds a custom recipe from a web address, a purpose string, or raw JSON.
+/// Builds a custom recipe from a purpose string or raw JSON.
 /// Every edit recomputes `progress`.
 @MainActor @Observable
 final class CustomRecipeModel: Identifiable {
-    let type: SeededCryptoRecipeType
+    let type: DerivableType
 
     private(set) var progress: RecipeBuilderProgress = .incomplete
 
-    var buildType: RecipeBuildType = .hosts {
+    var buildType: RecipeBuildType = .purpose {
         didSet {
             update()
             if buildType == .rawJson {
@@ -30,7 +28,6 @@ final class CustomRecipeModel: Identifiable {
             }
         }
     }
-    var urlString: String = "" { didSet { update() } }
     var purposeString: String = "" { didSet { update() } }
     var rawJsonString: String = "{}" { didSet { update() } }
     var nameString: String = "" { didSet { update() } }
@@ -60,49 +57,20 @@ final class CustomRecipeModel: Identifiable {
         }
     }
 
-    var hosts: [String]? {
-        if let host = URL(string: urlString)?.host {
-            // The field contains a valid URL from which to take a host
-            return [host]
-        } else if urlString.contains("/") || urlString.contains(":") {
-            // The field was an invalid URL and not a list of URLs
-            return nil
-        } else {
-            // Assume the field was meant to be a URL or list of URLs
-            return urlString
-                .split(whereSeparator: { $0 == "/" || $0 == " " })
-                .map {
-                    // Use built-in URL parser to parse domain name, returning empty string if it fails
-                    URL(string: "https://\($0.trimmingCharacters(in: .whitespacesAndNewlines))")?.host ?? ""
-                }
-                .filter { !$0.isEmpty }
-        }
-    }
-
     var name: String {
         switch buildType {
-        case .hosts: return hosts?.joined(separator: ", ") ?? ""
         case .purpose: return purposeString
         case .rawJson: return nameString
         }
     }
 
-    init(type: SeededCryptoRecipeType) {
+    init(type: DerivableType) {
         self.type = type
         update()
     }
 
     private func update() {
         switch buildType {
-        case .hosts:
-            guard let hosts else {
-                progress = .error("Field does not contain a valid URL or domain list")
-                return
-            }
-            guard hosts.contains(where: { $0 != "example.com" }) else {
-                progress = .incomplete
-                return
-            }
         case .purpose:
             guard !purposeString.isBlank else {
                 progress = .incomplete
@@ -116,12 +84,10 @@ final class CustomRecipeModel: Identifiable {
         }
 
         let recipe: String
-        let lengthInChars = type == .Password ? lengthInChars : 0
-        let lengthInBytes = type == .Secret ? lengthInBytes : 0
+        let lengthInChars = type == .password ? lengthInChars : 0
+        let lengthInBytes = type == .secret ? lengthInBytes : 0
 
         switch buildType {
-        case .hosts:
-            recipe = getRecipeJson(hosts: hosts ?? [""], sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
         case .purpose:
             recipe = getRecipeJson(purpose: purposeString.trim(), sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
         case .rawJson:

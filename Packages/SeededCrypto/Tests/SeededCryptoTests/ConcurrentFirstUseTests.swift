@@ -16,7 +16,7 @@ import Testing
 struct ConcurrentFirstUseTests {
     @Test("many threads may derive at once, including the very first derivation")
     func concurrentDerivations() async throws {
-        let seed = fixture.exampleDiceKeySeed
+        let seed = exampleDiceKeySeed
         let expected = try Secret.deriveFromSeed(withSeedString: seed, recipe: #"{"purpose":"concurrency"}"#).secretBytes()
         try await withThrowingTaskGroup(of: Data.self) { group in
             for i in 0..<64 {

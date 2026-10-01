@@ -6,14 +6,7 @@
 //
 
 import Foundation
-import SeededCrypto
-
-func getRecipeJson(hosts: [String], sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String {
-    RecipeJsonValue.object(
-        [RecipeJsonField(name: "allow", value: .array(hosts.sorted().map { .text($0) }))]
-        + optionalRecipeFields(sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
-    ).canonicalText
-}
+import Derivation
 
 func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String {
     RecipeJsonValue.object(
@@ -41,13 +34,13 @@ private func optionalRecipeFields(sequenceNumber: Int, lengthInChars: Int?, leng
 struct DerivationRecipe: Identifiable, Codable, Equatable {
     static let rebuildSkipJsonProperties = ["#", "lengthInChars", "lengthInBytes"]
 
-    let type: SeededCryptoRecipeType
+    let type: DerivableType
     let name: String
     let recipe: String
 
     var id: String { "\(type):\(name):\(recipe)" }
 
-    init(type: SeededCryptoRecipeType, name: String, recipe: String) {
+    init(type: DerivableType, name: String, recipe: String) {
         self.type = type
         self.name = name
         self.recipe = recipe
@@ -55,15 +48,15 @@ struct DerivationRecipe: Identifiable, Codable, Equatable {
 
     init(template: DerivationRecipe, sequenceNumber: Int, lengthInChars: Int? = nil, lengthInBytes: Int? = nil) {
         self.type = template.type
-        let typeSuffix = template.type == .Password ? " Password" : template.type == .SymmetricKey ? " Key" : template.type == .UnsealingKey ? " Key Pair" : ""
+        let typeSuffix = template.type == .password ? " Password" : template.type == .symmetricKey ? " Key" : template.type == .unsealingKey ? " Key Pair" : ""
         let sequenceSuffix = sequenceNumber == 1 ? "" : " (\(String(sequenceNumber)))"
         self.name = template.name + typeSuffix + sequenceSuffix
 
         let kept = template.fields.filter { !DerivationRecipe.rebuildSkipJsonProperties.contains($0.name) }
         let added = optionalRecipeFields(
             sequenceNumber: sequenceNumber,
-            lengthInChars: template.type == .Password ? lengthInChars : nil,
-            lengthInBytes: template.type == .Secret ? lengthInBytes : nil
+            lengthInChars: template.type == .password ? lengthInChars : nil,
+            lengthInBytes: template.type == .secret ? lengthInBytes : nil
         )
         self.recipe = RecipeJsonValue.object(kept + added).canonicalText
     }
@@ -76,23 +69,22 @@ struct DerivationRecipe: Identifiable, Codable, Equatable {
 }
 
 extension DerivationRecipe {
-    /// Throws when SeededCrypto rejects the recipe, which a hand-edited raw JSON recipe can be.
+    /// Throws when the recipe is not valid, which a hand-edited raw JSON recipe or one
+    /// saved before validation existed can be; the message says what is wrong.
     func derivedValue(diceKey: DiceKey) throws -> any DerivedValue {
         let seed = diceKey.toSeed()
-        let recipe = self.recipe
-
-        switch self.type {
-        case .Password:
-            return DerivedValuePassword(password: try Password.deriveFromSeed(withSeedString: seed, recipe: recipe))
-        case .Secret:
-            let lengthInBytes = self.lengthInBytes()
-            return DerivedValueSecret(secret: try Secret.deriveFromSeed(withSeedString: seed, recipe: recipe), showBIP39: (lengthInBytes == nil || lengthInBytes == 32))
-        case .SigningKey:
-            return DerivedValueSigningKey(signingKey: try SigningKey.deriveFromSeed(withSeedString: seed, recipe: recipe))
-        case .SymmetricKey:
-            return DerivedValueSymmetricKey(symmetricKey: try SymmetricKey.deriveFromSeed(withSeedString: seed, recipe: recipe))
-        case .UnsealingKey:
-            return DerivedValueUnsealingKey(unsealingKey: try UnsealingKey.deriveFromSeed(withSeedString: seed, recipe: recipe))
+        switch type {
+        case .password:
+            return DerivedValuePassword(password: try Password.derive(seed: seed, recipe: recipe))
+        case .secret:
+            let lengthInBytes = lengthInBytes()
+            return DerivedValueSecret(secret: try Secret.derive(seed: seed, recipe: recipe), showBIP39: lengthInBytes == nil || lengthInBytes == 32)
+        case .signingKey:
+            return try DerivedValueSigningKey(signingKey: try SigningKey.derive(seed: seed, recipe: recipe))
+        case .symmetricKey:
+            return DerivedValueSymmetricKey(symmetricKey: try SymmetricKey.derive(seed: seed, recipe: recipe))
+        case .unsealingKey:
+            return DerivedValueUnsealingKey(unsealingKey: try UnsealingKey.derive(seed: seed, recipe: recipe))
         }
     }
 
@@ -101,9 +93,9 @@ extension DerivationRecipe {
     /// (the password itself, for passwords).
     func defaultOutputFormat(for derivedValue: any DerivedValue) -> DerivedValueView {
         switch (purpose(), type) {
-        case ("pgp", .SigningKey): return .OpenPGPPrivateKey
-        case ("ssh", .SigningKey): return .OpenSSHPrivateKey
-        case ("wallet", .Secret) where derivedValue.views.contains(.BIP39): return .BIP39
+        case ("pgp", .signingKey): return .OpenPGPPrivateKey
+        case ("ssh", .signingKey): return .OpenSSHPrivateKey
+        case ("wallet", .secret) where derivedValue.views.contains(.BIP39): return .BIP39
         default: return derivedValue.views.first ?? .JSON
         }
     }

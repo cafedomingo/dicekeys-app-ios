@@ -5,7 +5,8 @@
 //  Created by Angelos Veglektsis on 7/6/22.
 //
 
-import SeededCrypto
+import Derivation
+import KeyFormats
 
 enum DerivedValueView: Int, CaseIterable, Identifiable {
     case JSON
@@ -77,10 +78,10 @@ struct DerivedValueSecret: DerivedValue {
 
     func valueForView(view: DerivedValueView) -> String {
         switch view {
-        case .Hex: return secret.secretBytes().asHexString
+        case .Hex: return secret.bytes.asHexString
         case .BIP39:
             // Offered only for 32-byte secrets, which always have a mnemonic.
-            return (try? Mnemonic.toMnemonic([UInt8](secret.secretBytes())))?.joined(separator: " ") ?? secret.secretBytes().asHexString
+            return (try? BIP39.mnemonic(entropy: secret.bytes)) ?? secret.bytes.asHexString
         default: return secret.toJson()
         }
     }
@@ -88,14 +89,24 @@ struct DerivedValueSecret: DerivedValue {
 
 struct DerivedValueSigningKey: DerivedValue {
     let signingKey: SigningKey
+    let openPgpSecretKey: String
+    let openSshPrivateKey: String
+    let openSshPublicKey: String
 
     var views: [DerivedValueView] = [.JSON, .OpenPGPPrivateKey, .OpenSSHPrivateKey, .OpenSSHPublicKey, .HexSigningKey]
 
+    init(signingKey: SigningKey) throws {
+        self.signingKey = signingKey
+        openPgpSecretKey = try OpenPGP.secretKeyBlock(signingKey)
+        openSshPrivateKey = try OpenSSH.privateKeyPEM(signingKey)
+        openSshPublicKey = try OpenSSH.publicKeyLine(signingKey)
+    }
+
     func valueForView(view: DerivedValueView) -> String {
         switch view {
-        case .OpenPGPPrivateKey: return signingKey.openPgpPemFormatSecretKey
-        case .OpenSSHPrivateKey: return signingKey.openSshPemPrivateKey
-        case .OpenSSHPublicKey: return signingKey.openSshPublicKey
+        case .OpenPGPPrivateKey: return openPgpSecretKey
+        case .OpenSSHPrivateKey: return openSshPrivateKey
+        case .OpenSSHPublicKey: return openSshPublicKey
         case .HexSigningKey: return signingKey.signingKeyBytes.asHexString
         default: return signingKey.toJson()
         }

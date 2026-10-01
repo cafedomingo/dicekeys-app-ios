@@ -11,11 +11,13 @@ Companion documents:
 A single iOS app target: SwiftUI on Observation, `NavigationStack`, async/await and Swift 6
 strict concurrency, with Liquid Glass chrome. It scans a physical DiceKey with the camera or
 takes one typed by hand, holds it in memory behind Face ID, and derives passwords, keys and
-seeds from it. Two local Swift packages supply the rest, with no external dependencies:
-`SeededCrypto` holds libsodium as a source copy and DiceKeys' seeded-crypto as an unmodified
-git subtree behind a small C ABI, and `ReadDiceKey` holds the generated face specification and
-a DiceKey scanner written in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or
-OpenCV remain, and there is not one `#if os(...)` left in the app.
+seeds from it. Three local Swift packages supply the rest, with no external dependencies:
+`Derivation` (products `Derivation`, for recipes and derived values, and `KeyFormats`, for
+signing key exports and BIP39), `SeededCrypto` beneath it (the vendored libsodium and
+seeded-crypto, going away), and `ReadDiceKey` (the generated face specification and a
+DiceKey scanner written in Swift).
+No CocoaPods, submodules, Objective-C, C++ wrappers or OpenCV remain, and there is not one
+`#if os(...)` left in the app.
 
 ## Goals, in priority order
 
@@ -31,7 +33,7 @@ OpenCV remain, and there is not one `#if os(...)` left in the app.
    controls, nothing fighting the system look.
 
 Nothing here changes what the app derives. Any change that alters derived output is a bug,
-and `Packages/SeededCrypto/Tests/SeededCryptoTests` exists to catch it.
+and `Packages/Derivation/Tests/DerivationTests` exists to catch it.
 
 ---
 
@@ -47,9 +49,8 @@ DiceKeys/
   Model/          value types and domain logic; nothing here knows about SwiftUI state
     DiceKey/      DiceKey, Face, PartialFace,
                   FaceOrientationLetterTrbl+Rotation
-    Recipes/      DerivationRecipe (was Derivables), RecipeJson,
+    Recipes/      DerivationRecipe (was Derivables), DerivableType+Descriptions,
                   DerivationRecipeTemplates, DerivedValue (was DerivedValueView)
-    BIP39/        Mnemonic, Wordlist
     Settings.swift
   Services/       things that talk to the OS
     Keychain/     DiceKeyKeychain (was EncryptedDiceKeyStore)
@@ -179,8 +180,8 @@ permissions error until it is accepted.
 
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
-- `swift test -c release` for each package: in `Packages/SeededCrypto` the derivation
-  vectors and concurrent first use of libsodium, and in `Packages/ReadDiceKey` the scanner over
+- `swift test -c release` for each package: in `Packages/Derivation` the derivation
+  vectors, in `Packages/SeededCrypto` concurrent first use of libsodium, and in `Packages/ReadDiceKey` the scanner over
   upstream's photos, the owner's photos and video, and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
 
@@ -198,7 +199,7 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## How the safety nets work
 
-- `Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/vectors.json` came from the
+- `Packages/Derivation/Tests/DerivationTests/Fixtures/vectors.json` came from the
   reference C++ (`scripts/generate-vectors.sh`). If `VectorTests` fails, derived
   secrets have changed; do not update the fixture without understanding why.
 - `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to the
