@@ -10,4 +10,10 @@ runs:
     - shell: bash
       run: |
         swift package --package-path BuildTools resolve
-        echo "$PWD/BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle/macos" >> "$GITHUB_PATH"
+        # The bundle ships macOS and Linux builds; lint runs on Ubuntu, the Xcode jobs on macOS.
+        BUNDLE="$PWD/BuildTools/.build/artifacts/swiftlintplugins/SwiftLintBinary/SwiftLintBinary.artifactbundle"
+        case "$RUNNER_OS-$RUNNER_ARCH" in
+          Linux-X64) echo "$BUNDLE/linux/amd64" >> "$GITHUB_PATH" ;;
+          Linux-ARM64) echo "$BUNDLE/linux/arm64" >> "$GITHUB_PATH" ;;
+          *) echo "$BUNDLE/macos" >> "$GITHUB_PATH" ;;
+        esac

@@ -21,8 +21,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Nothing here needs Xcode, and an Ubuntu runner starts in seconds and costs a tenth.
   lint:
-    runs-on: macos-26
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -124,6 +125,9 @@ jobs:
           print(best[1] if best else "")')
           echo "Simulator: $UDID"
           test -n "$UDID"
+          # Booting takes minutes on a fresh runner; started now, it overlaps the build instead
+          # of following it, and `xcodebuild test` waits for the device to be ready.
+          xcrun simctl boot "$UDID"
           # Ad-hoc signing: with no entitlements the app has no keychain access at all and
           # every SecItem call fails with errSecMissingEntitlement (-34018).
           xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
