@@ -9,82 +9,33 @@ import Foundation
 import SeededCrypto
 
 func getRecipeJson(hosts: [String], sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String {
-    var recipe = [String: Any]()
-
-    recipe["allow"] = hosts.sorted()
-    recipe.addSequenceNumberToDerivationOptionsJson(sequenceNumber)
-    recipe.addLengthInCharsToDerivationOptionsJson(lengthInChars)
-    recipe.addLengthInBytesToDerivationOptionsJson(lengthInBytes)
-
-    return recipe.canonicalize()
+    RecipeJsonValue.object(
+        [RecipeJsonField(name: "allow", value: .array(hosts.sorted().map { .text($0) }))]
+        + optionalRecipeFields(sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
+    ).canonicalText
 }
 
 func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String {
-    var recipe = [String: Any]()
-
-    recipe["purpose"] = purpose
-    recipe.addSequenceNumberToDerivationOptionsJson(sequenceNumber)
-    recipe.addLengthInCharsToDerivationOptionsJson(lengthInChars)
-    recipe.addLengthInBytesToDerivationOptionsJson(lengthInBytes)
-
-    return recipe.canonicalize()
+    RecipeJsonValue.object(
+        [RecipeJsonField(name: "purpose", value: .text(purpose))]
+        + optionalRecipeFields(sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
+    ).canonicalText
 }
 
-extension Dictionary where Key == String, Value == Any {
-    func rebuild(updateJsonObject: [String: Any], skipProperties: [String]) -> [String: Any] {
-        var dict = [String: Any]()
-
-        let keys = self.keys.filter { key in
-            return !skipProperties.contains(key)
-        }
-
-        keys.forEach { key in
-            dict[key] = self[key]
-        }
-
-        updateJsonObject.forEach { (key: String, value: Any) in
-            dict[key] = value
-        }
-
-        return dict
+/// The fields a user can set on any recipe. Each is written only when it differs from the
+/// default, because a recipe with `"#":1` derives a different secret from one without it.
+private func optionalRecipeFields(sequenceNumber: Int, lengthInChars: Int?, lengthInBytes: Int?) -> [RecipeJsonField] {
+    var fields: [RecipeJsonField] = []
+    if let lengthInChars, lengthInChars > 1 {
+        fields.append(RecipeJsonField(name: "lengthInChars", value: .int(lengthInChars)))
     }
-
-    func canonicalize() -> String {
-        return toCanonicalizeRecipeJson(self)
+    if let lengthInBytes, lengthInBytes > 1 {
+        fields.append(RecipeJsonField(name: "lengthInBytes", value: .int(lengthInBytes)))
     }
-
-    mutating func addLengthInCharsToDerivationOptionsJson(_ lengthInChars: Int?) {
-        if let lengthInChars = lengthInChars, lengthInChars > 1 {
-            self["lengthInChars"] = lengthInChars
-        }
+    if sequenceNumber > 1 {
+        fields.append(RecipeJsonField(name: "#", value: .int(sequenceNumber)))
     }
-
-    mutating func addLengthInBytesToDerivationOptionsJson(_ lengthInBytes: Int?) {
-        if let lengthInBytes = lengthInBytes, lengthInBytes > 1 {
-            self["lengthInBytes"] = lengthInBytes
-        }
-    }
-
-    mutating func addSequenceNumberToDerivationOptionsJson(_ sequenceNumber: Int) {
-        if sequenceNumber > 1 {
-            self["#"] = sequenceNumber
-        }
-    }
-}
-
-extension String {
-    func parseJsonObject() -> [String: Any]? {
-        if let data = self.data(using: .utf8) {
-            if let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                return json
-            }
-        }
-        return nil
-    }
-
-    func canonicalizeRecipeJson() -> String {
-        return parseJsonObject()?.canonicalize() ?? self
-    }
+    return fields
 }
 
 struct DerivationRecipe: Identifiable, Codable, Equatable {
@@ -108,17 +59,13 @@ struct DerivationRecipe: Identifiable, Codable, Equatable {
         let sequenceSuffix = sequenceNumber == 1 ? "" : " (\(String(sequenceNumber)))"
         self.name = template.name + typeSuffix + sequenceSuffix
 
-        var updateJsonObject = [String: Any]()
-
-        updateJsonObject.addSequenceNumberToDerivationOptionsJson(sequenceNumber)
-
-        if template.type == .Password {
-            updateJsonObject.addLengthInCharsToDerivationOptionsJson(lengthInChars)
-        } else if template.type == .Secret {
-            updateJsonObject.addLengthInBytesToDerivationOptionsJson(lengthInBytes)
-        }
-
-        self.recipe = template.recipe.parseJsonObject()!.rebuild(updateJsonObject: updateJsonObject, skipProperties: DerivationRecipe.rebuildSkipJsonProperties).canonicalize()
+        let kept = template.fields.filter { !DerivationRecipe.rebuildSkipJsonProperties.contains($0.name) }
+        let added = optionalRecipeFields(
+            sequenceNumber: sequenceNumber,
+            lengthInChars: template.type == .Password ? lengthInChars : nil,
+            lengthInBytes: template.type == .Secret ? lengthInBytes : nil
+        )
+        self.recipe = RecipeJsonValue.object(kept + added).canonicalText
     }
 
     static func listFromJson(_ json: String) throws -> [DerivationRecipe]? {
@@ -161,33 +108,27 @@ extension DerivationRecipe {
         }
     }
 
-    func purpose() -> String? {
-        if let json = recipe.parseJsonObject() {
-            if let purpose = json["purpose"] as? String {
-                return purpose
-            }
-        }
+    /// The recipe's fields, or none when the stored text is not a JSON object. Recipes saved
+    /// by earlier versions were not validated, so this never throws.
+    var fields: [RecipeJsonField] {
+        (try? RecipeJsonParser.parseObject(recipe)) ?? []
+    }
 
-        return nil
+    func purpose() -> String? {
+        guard case .string(let quoted) = fields.first(where: { $0.name == "purpose" })?.value else { return nil }
+        return try? RecipeJsonParser.decodeString(quoted: quoted)
     }
 
     func lengthInChars() -> Int? {
-        if let json = recipe.parseJsonObject() {
-            if let lengthInChars = json["lengthInChars"] as? Int {
-                return lengthInChars
-            }
-        }
-
-        return nil
+        integerField("lengthInChars")
     }
 
     func lengthInBytes() -> Int? {
-        if let json = recipe.parseJsonObject() {
-            if let lengthInBytes = json["lengthInBytes"] as? Int {
-                return lengthInBytes
-            }
-        }
+        integerField("lengthInBytes")
+    }
 
-        return nil
+    private func integerField(_ name: String) -> Int? {
+        guard case .number(let text) = fields.first(where: { $0.name == name })?.value else { return nil }
+        return Int(text)
     }
 }

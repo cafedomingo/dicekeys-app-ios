@@ -1,13 +1,13 @@
 name: Build
 
-# Pushes to main, and pull requests into it. A branch push that is also a PR would
-# otherwise run every job twice (the push and the pull_request event), and the concurrency
-# group cannot merge them because the two events have different refs.
+# Pushes to main, and every pull request, whichever branch it targets, so a stacked PR is
+# checked too. A branch push that is also a PR would otherwise run every job twice (the
+# push and the pull_request event), and the concurrency group cannot merge them because the
+# two events have different refs.
 on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
