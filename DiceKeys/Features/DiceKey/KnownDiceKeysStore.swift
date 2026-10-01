@@ -2,8 +2,6 @@
 //  KnownDiceKeysStore.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2021/02/07.
-//
 
 import Foundation
 import Observation

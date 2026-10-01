@@ -1,25 +1,29 @@
 name: Build
 
-# Pushes to main, and pull requests into it. A branch push that is also a PR would
-# otherwise run every job twice (the push and the pull_request event), and the concurrency
-# group cannot merge them because the two events have different refs.
+# Pushes to main, and every pull request, whichever branch it targets, so a stacked PR is
+# checked too. A branch push that is also a PR would otherwise run every job twice (the
+# push and the pull_request event), and the concurrency group cannot merge them because the
+# two events have different refs.
 on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
   contents: read
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Nothing here needs Xcode, and an Ubuntu runner starts in seconds and costs a tenth.
   lint:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -41,31 +45,25 @@ jobs:
       - name: actionlint
         run: actionlint
 
-  # libsodium and seeded-crypto, built from their vendored C and C++ sources with plain
-  # SwiftPM on the macOS host. GoldenVectorTests is the tripwire for any change to derived
-  # secrets.
-  crypto:
-    runs-on: macos-latest
+  # Both local packages with plain SwiftPM on the macOS host, in one job because each
+  # takes about a minute and a macOS runner costs half that just to start. Derivation: the
+  # recorded vectors (the tripwire for any change to derived secrets) and BLAKE2b's known
+  # answers. ReadDiceKey: the scanner over its photo corpus, built optimized because the
+  # full-size photos take minutes at -Onone and seconds at -O.
+  packages:
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
-      - name: Build and test
-        working-directory: Packages/SeededCrypto
+      - name: Derivation
+        working-directory: Packages/Derivation
         run: swift test -c release -Xswiftc -enable-testing --parallel
-
-  # The scanner and its photo corpus, with plain SwiftPM on the macOS host. Release build:
-  # the corpus is full-size photos, which take minutes at -Onone and seconds optimized.
-  scanner:
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-      - name: Build and test
+      - name: ReadDiceKey
         working-directory: Packages/ReadDiceKey
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
   unused-code:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
@@ -77,7 +75,7 @@ jobs:
           set -o pipefail
           xcodebuild build -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep -E 'error:|warning: unre|BUILD|\*\*' || true
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep --line-buffered -E 'error:|warning: unre|^Ld |BUILD|\*\*' || true
           grep -q 'BUILD SUCCEEDED' build-ios.log
       # .swiftlint-analyze.yml limits it to the app target.
       - name: Unused code (swiftlint analyze)
@@ -95,18 +93,17 @@ jobs:
           retention-days: 7
 
   app-tests:
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/build-tools
       - name: Generate project
         run: swift run --package-path BuildTools xcodegen generate
-      - name: App unit tests (simulator)
+      - name: Pick a simulator
         run: |
-          set -o pipefail
-          # Pick the newest available iPhone simulator by UDID (names alone can be ambiguous
-          # across runtimes on the hosted runners).
+          # The newest available iPhone, by UDID: names alone can be ambiguous across runtimes
+          # on the hosted runners.
           UDID=$(xcrun simctl list devices available -j | python3 -c '
           import json,sys,re
           devices=json.load(sys.stdin)["devices"]
@@ -122,17 +119,31 @@ jobs:
           print(best[1] if best else "")')
           echo "Simulator: $UDID"
           test -n "$UDID"
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+      - name: Build for testing
+        run: |
+          set -o pipefail
           # Ad-hoc signing: with no entitlements the app has no keychain access at all and
           # every SecItem call fails with errSecMissingEntitlement (-34018).
-          xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
+          xcodebuild build-for-testing -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination "platform=iOS Simulator,id=$UDID" \
-            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
-          grep -q 'TEST SUCCEEDED' test-ios.log
+            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep --line-buffered -E 'error:|warning: unre|^Ld |BUILD|\*\*' || true
+          grep -q 'BUILD SUCCEEDED' build-ios.log
+      # Its duration is the simulator's install-and-launch time plus the tests themselves.
+      - name: Test without building
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building -project DiceKeys.xcodeproj -scheme DiceKeys \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep --line-buffered -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
+          grep -q 'TEST EXECUTE SUCCEEDED' test-ios.log
       - name: Upload logs
         if: always()
         continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: app-tests-logs
-          path: "*.log"
+          path: |
+            *.log
+            ~/Library/Logs/CoreSimulator/CoreSimulator.log
           retention-days: 7

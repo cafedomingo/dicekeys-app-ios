@@ -2,14 +2,13 @@
 //  String.swift
 //  DiceKeys
 //
-//  Created by Angelos Veglektsis on 7/20/22.
-//
 
 import Foundation
 import CoreGraphics
 import CoreImage
 import CoreImage.CIFilterBuiltins
 import UIKit
+import UniformTypeIdentifiers
 
 extension String {
     var isBlank: Bool {
@@ -31,9 +30,12 @@ extension String {
         return context.createCGImage(outputImage, from: outputImage.extent)
     }
 
-    /// Copies the string to the system pasteboard.
+    /// Copies the string to this device's pasteboard for one minute.
     @MainActor
     func copyToPasteboard() {
-        UIPasteboard.general.string = self
+        UIPasteboard.general.setItems(
+            [[UTType.utf8PlainText.identifier: self]],
+            options: [.localOnly: true, .expirationDate: Date(timeIntervalSinceNow: 60)]
+        )
     }
 }

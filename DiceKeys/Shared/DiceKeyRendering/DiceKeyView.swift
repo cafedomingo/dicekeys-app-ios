@@ -2,8 +2,6 @@
 //  DiceKeyView.swift
 //  
 //
-//  Created by Stuart Schechter on 2020/11/18.
-//
 
 import SwiftUI
 

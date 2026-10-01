@@ -3,9 +3,8 @@
 #   swift run --package-path BuildTools xcodegen generate
 #   open DiceKeys.xcodeproj
 #
-# Native dependencies come from two local Swift packages: Packages/SeededCrypto (libsodium
-# and seeded-crypto compiled from vendored sources) and Packages/ReadDiceKey (the scanner,
-# in Swift).
+# The app's logic comes from two local Swift packages: Packages/Derivation (recipes and
+# derived values) and Packages/ReadDiceKey (the scanner).
 
 name: DiceKeys
 options:
@@ -56,8 +55,8 @@ settings:
       ENABLE_TESTABILITY: YES
 
 packages:
-  SeededCrypto:
-    path: Packages/SeededCrypto
+  Derivation:
+    path: Packages/Derivation
   ReadDiceKey:
     path: Packages/ReadDiceKey
 
@@ -87,8 +86,10 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
     dependencies:
-      - package: SeededCrypto
-        product: SeededCrypto
+      - package: Derivation
+        product: Derivation
+      - package: Derivation
+        product: KeyFormats
       - package: ReadDiceKey
         product: DiceKeySpecification
       - package: ReadDiceKey
@@ -105,8 +106,10 @@ targets:
       - path: Tests/DiceKeysTests
     dependencies:
       - target: DiceKeys
-      - package: SeededCrypto
-        product: SeededCrypto
+      - package: Derivation
+        product: Derivation
+      - package: Derivation
+        product: KeyFormats
       - package: ReadDiceKey
         product: DiceKeySpecification
       - package: ReadDiceKey

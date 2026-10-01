@@ -2,9 +2,8 @@
 //  RecipeListView.swift
 //  DiceKeys
 //
-//  Created by Angelos Veglektsis on 7/6/22.
-//
 
+import Derivation
 import SwiftUI
 
 /// The list of saved, built-in, and custom recipes. Selecting one pushes the
@@ -33,7 +32,7 @@ struct RecipeListView: View {
             }
 
             Section("Custom Recipe") {
-                ForEach(SeededCryptoRecipeType.allCases) { type in
+                ForEach(DerivableType.allCases) { type in
                     Button(type.description) {
                         customRecipeModel = CustomRecipeModel(type: type)
                     }

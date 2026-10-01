@@ -2,27 +2,28 @@
 //  CustomRecipeModel.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/11.
-//
 
-import Foundation
+import Derivation
 import Observation
 
-enum RecipeBuildType {
-    case hosts
-    case purpose
-    case rawJson
+enum RecipeBuildType: CaseIterable {
+    case purpose, rawJson
 }
 
-/// Builds a custom recipe from a web address, a purpose string, or raw JSON.
+/// Builds a custom recipe from a purpose string or raw JSON.
 /// Every edit recomputes `progress`.
 @MainActor @Observable
 final class CustomRecipeModel: Identifiable {
-    let type: SeededCryptoRecipeType
+    /// Shown in the form's section titles, so the limit the model enforces and the one the
+    /// user reads are the same.
+    static let lengthInCharsEntryRange = 8...999
+    static let lengthInBytesEntryRange = 16...999
+
+    let type: DerivableType
 
     private(set) var progress: RecipeBuilderProgress = .incomplete
 
-    var buildType: RecipeBuildType = .hosts {
+    var buildType: RecipeBuildType = .purpose {
         didSet {
             update()
             if buildType == .rawJson {
@@ -30,7 +31,6 @@ final class CustomRecipeModel: Identifiable {
             }
         }
     }
-    var urlString: String = "" { didSet { update() } }
     var purposeString: String = "" { didSet { update() } }
     var rawJsonString: String = "{}" { didSet { update() } }
     var nameString: String = "" { didSet { update() } }
@@ -41,91 +41,58 @@ final class CustomRecipeModel: Identifiable {
     var showRawJsonAlert: Bool = false
 
     /// Text-field view of `lengthInChars`: empty means "no limit"; values
-    /// outside 8...999 are ignored.
+    /// outside `lengthInCharsEntryRange` are ignored.
     var lengthInCharsEntry: Int? {
         get { lengthInChars == 0 ? nil : lengthInChars }
         set {
             guard let newValue else { lengthInChars = 0; return }
-            if (8...999).contains(newValue) { lengthInChars = newValue }
+            if Self.lengthInCharsEntryRange.contains(newValue) { lengthInChars = newValue }
         }
     }
 
-    /// Text-field view of `lengthInBytes`: empty means the default (32);
-    /// values outside 16...999 are ignored.
+    /// Text-field view of `lengthInBytes`: empty means the default length;
+    /// values outside `lengthInBytesEntryRange` are ignored.
     var lengthInBytesEntry: Int? {
         get { lengthInBytes == 0 ? nil : lengthInBytes }
         set {
             guard let newValue else { lengthInBytes = 0; return }
-            if (16...999).contains(newValue) { lengthInBytes = newValue }
-        }
-    }
-
-    var hosts: [String]? {
-        if let host = URL(string: urlString)?.host {
-            // The field contains a valid URL from which to take a host
-            return [host]
-        } else if urlString.contains("/") || urlString.contains(":") {
-            // The field was an invalid URL and not a list of URLs
-            return nil
-        } else {
-            // Assume the field was meant to be a URL or list of URLs
-            return urlString
-                .split(whereSeparator: { $0 == "/" || $0 == " " })
-                .map {
-                    // Use built-in URL parser to parse domain name, returning empty string if it fails
-                    URL(string: "https://\($0.trimmingCharacters(in: .whitespacesAndNewlines))")?.host ?? ""
-                }
-                .filter { !$0.isEmpty }
+            if Self.lengthInBytesEntryRange.contains(newValue) { lengthInBytes = newValue }
         }
     }
 
     var name: String {
         switch buildType {
-        case .hosts: return hosts?.joined(separator: ", ") ?? ""
         case .purpose: return purposeString
         case .rawJson: return nameString
         }
     }
 
-    init(type: SeededCryptoRecipeType) {
+    init(type: DerivableType) {
         self.type = type
         update()
     }
 
     private func update() {
-        switch buildType {
-        case .hosts:
-            guard let hosts else {
-                progress = .error("Field does not contain a valid URL or domain list")
-                return
-            }
-            guard hosts.contains(where: { $0 != "example.com" }) else {
-                progress = .incomplete
-                return
-            }
-        case .purpose:
-            guard !purposeString.isBlank else {
-                progress = .incomplete
-                return
-            }
-        case .rawJson:
-            guard !rawJsonString.isBlank else {
-                progress = .incomplete
-                return
-            }
+        let source = buildType == .purpose ? purposeString : rawJsonString
+        guard !source.isBlank else {
+            progress = .incomplete
+            return
         }
 
         let recipe: String
-        let lengthInChars = type == .Password ? lengthInChars : 0
-        let lengthInBytes = type == .Secret ? lengthInBytes : 0
+        let lengthInChars = type == .password ? lengthInChars : 0
+        let lengthInBytes = type == .secret ? lengthInBytes : 0
 
         switch buildType {
-        case .hosts:
-            recipe = getRecipeJson(hosts: hosts ?? [""], sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
         case .purpose:
             recipe = getRecipeJson(purpose: purposeString.trim(), sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
         case .rawJson:
-            recipe = rawJsonString.canonicalizeRecipeJson()
+            do {
+                recipe = try rawJsonString.canonicalizedRecipe()
+            } catch {
+                progress = .error(error.message)
+                return
+            }
         }
 
         progress = .ready(DerivationRecipe(type: type, name: name, recipe: recipe))

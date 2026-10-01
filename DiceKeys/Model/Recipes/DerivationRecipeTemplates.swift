@@ -16,40 +16,40 @@
 //
 
 let derivationRecipeTemplates: [DerivationRecipe] = [
-	DerivationRecipe(type: .Password, name: "1Password", recipe: """
+	DerivationRecipe(type: .password, name: "1Password", recipe: """
 {"allow":[{"host":"*.1password.com"}]}
 """),
-	DerivationRecipe(type: .Password, name: "Apple", recipe: """
+	DerivationRecipe(type: .password, name: "Apple", recipe: """
 {"allow":[{"host":"*.apple.com"},{"host":"*.icloud.com"}],"lengthInChars":64}
 """),
-	DerivationRecipe(type: .Password, name: "Authy", recipe: """
+	DerivationRecipe(type: .password, name: "Authy", recipe: """
 {"allow":[{"host":"*.authy.com"}]}
 """),
-	DerivationRecipe(type: .Password, name: "Bitwarden", recipe: """
+	DerivationRecipe(type: .password, name: "Bitwarden", recipe: """
 {"allow":[{"host":"*.bitwarden.com"}]}
 """),
-	DerivationRecipe(type: .Password, name: "Facebook", recipe: """
+	DerivationRecipe(type: .password, name: "Facebook", recipe: """
 {"allow":[{"host":"*.facebook.com"}]}
 """),
-	DerivationRecipe(type: .Password, name: "Google", recipe: """
+	DerivationRecipe(type: .password, name: "Google", recipe: """
 {"allow":[{"host":"*.google.com"}]}
 """),
-	DerivationRecipe(type: .Password, name: "Keeper", recipe: """
+	DerivationRecipe(type: .password, name: "Keeper", recipe: """
 {"allow":[{"host":"*.keepersecurity.com"},{"host":"*.keepersecurity.eu"}]}
 """),
-	DerivationRecipe(type: .Password, name: "LastPass", recipe: """
+	DerivationRecipe(type: .password, name: "LastPass", recipe: """
 {"allow":[{"host":"*.lastpass.com"}]}
 """),
-	DerivationRecipe(type: .Password, name: "Microsoft", recipe: """
+	DerivationRecipe(type: .password, name: "Microsoft", recipe: """
 {"allow":[{"host":"*.microsoft.com"},{"host":"*.live.com"}]}
 """),
-    DerivationRecipe(type: .SigningKey, name: "SSH", recipe: """
+    DerivationRecipe(type: .signingKey, name: "SSH", recipe: """
 {"purpose":"ssh"}
 """),
-    DerivationRecipe(type: .SigningKey, name: "PGP", recipe: """
+    DerivationRecipe(type: .signingKey, name: "PGP", recipe: """
 {"purpose":"pgp"}
 """),
-    DerivationRecipe(type: .Secret, name: "Cryptocurrency wallet seed", recipe: """
+    DerivationRecipe(type: .secret, name: "Cryptocurrency wallet seed", recipe: """
 {"purpose":"wallet"}
 """)
 ]

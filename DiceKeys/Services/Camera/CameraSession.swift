@@ -2,9 +2,6 @@
 //  CameraSession.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/11/23.
-//  Using code from https://github.com/RosayGaspard/SwiftUI-Simple-camera-app/blob/master/SwiftUI-CameraApp/CameraController.swift
-//
 
 import AVFoundation
 import Foundation

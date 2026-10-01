@@ -2,13 +2,11 @@
 //  DerivedValueScreen.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/03.
-//
 
 import SwiftUI
 
 /// Derives a password, key, or secret from the foreground DiceKey and shows it
-/// in the chosen output format, with a QR code option.
+/// in the chosen output format, with a QR code option; shows nothing when no DiceKey is loaded.
 struct DerivedValueScreen: View {
     let source: RecipeSource
 
@@ -20,9 +18,7 @@ struct DerivedValueScreen: View {
     @State private var derivationError: String?
     @State private var presentQrCode = false
 
-    private var diceKey: DiceKey {
-        diceKeyMemoryStore.diceKeyLoaded ?? DiceKey.Example
-    }
+    private var diceKey: DiceKey? { diceKeyMemoryStore.diceKeyLoaded }
 
     /// The finished recipe: either given directly, or produced by the builder.
     private var recipe: DerivationRecipe? {
@@ -39,7 +35,7 @@ struct DerivedValueScreen: View {
                 .padding(.horizontal, 10)
                 .layoutPriority(1)
             Spacer()
-            if let derivedValue {
+            if let derivedValue, let diceKey {
                 DerivedValueOutputView(
                     diceKey: diceKey,
                     derivedValue: derivedValue,
@@ -64,7 +60,7 @@ struct DerivedValueScreen: View {
         .onChange(of: recipe, initial: true) { _, recipe in
             let hadValue = derivedValue != nil
             do {
-                derivedValue = try recipe?.derivedValue(diceKey: diceKey)
+                derivedValue = try diceKey.flatMap { try recipe?.derivedValue(diceKey: $0) }
                 derivationError = nil
             } catch {
                 derivedValue = nil

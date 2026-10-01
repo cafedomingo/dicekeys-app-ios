@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DiceKeys recipe",
+  "description": "The fields Packages/Derivation reads, and the two the app writes (`purpose`, `#`), from a recipe that is a JSON object; a recipe may also be the empty string. Any other field is salt: it is hashed with the rest of the text and never read. recipe-format.md has the rules a schema cannot express.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "description": "Must equal the type being derived.",
+      "enum": ["Password", "Secret", "SymmetricKey", "UnsealingKey", "SigningKey"]
+    },
+    "algorithm": {
+      "description": "Keys only: XSalsa20Poly1305 for SymmetricKey, X25519 for UnsealingKey, Ed25519 for SigningKey. An error on Password and Secret.",
+      "enum": ["XSalsa20Poly1305", "X25519", "Ed25519"]
+    },
+    "hashFunction": {
+      "enum": ["BLAKE2b"],
+      "default": "BLAKE2b"
+    },
+    "lengthInBytes": {
+      "description": "Secret: 1 to 8160, default 32. Keys: 32. Password: any integer, then overridden by the word count. The bounds are Secret's; a validator rejects values that Password ignores.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8160
+    },
+    "lengthInChars": {
+      "description": "Password only. Truncates the finished password.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "lengthInBits": {
+      "description": "Password only. Default 128. The resolved word count must not exceed 1020.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "lengthInWords": {
+      "description": "Password only. Given with lengthInBits, it must equal ceil(lengthInBits / bits per word).",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1020
+    },
+    "wordList": {
+      "description": "Password only.",
+      "enum": [
+        "EN_512_words_5_chars_max_ed_4_20200917",
+        "EN_1024_words_6_chars_max_ed_4_20200917"
+      ],
+      "default": "EN_512_words_5_chars_max_ed_4_20200917"
+    },
+    "purpose": {
+      "description": "The recipe's label. Written by the app, not read by Derivation.",
+      "type": "string"
+    },
+    "#": {
+      "description": "The sequence number. Written by the app when above 1, not read by Derivation.",
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": true
+}

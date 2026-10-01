@@ -26,10 +26,10 @@ Scope of this license
 
 The MIT license above covers the original work in this repository: the
 modernized app (DiceKeys/App, DiceKeys/Features, DiceKeys/Shared,
-DiceKeys/Services/Camera), the Swift wrappers and C ABI in
-Packages/SeededCrypto/Sources/SeededCrypto and SeededCryptoNative, the Swift
-scanner in Packages/ReadDiceKey/Sources/ReadDiceKey, the tests, scripts,
-project.yml, CI configuration and docs.
+DiceKeys/Services/Camera), the Swift derivation in Packages/Derivation (apart
+from the BIP-39 word list, item 5 in THIRD_PARTY_LICENSES), the Swift scanner in
+Packages/ReadDiceKey/Sources/ReadDiceKey, the tests, scripts, project.yml, CI
+configuration and docs.
 
 Portions of this repository are derived from, or copied from, code and
 assets owned by DiceKeys, LLC and others. Those portions remain under their

@@ -2,7 +2,10 @@
 
 Companion documents:
 - `BACKLOG.md`: everything deliberately left undone, sized and explained.
-- `DEPENDENCIES.md`: the vendored C and C++ libraries and how to update them.
+- `derivation.md`: how a seed and a recipe become a password or a key, and the contract that
+  keeps every derived byte stable.
+- `recipe-format.md`: what a recipe may contain, and `recipe-schema.json`, the same as a
+  JSON Schema.
 - `SCANNING.md`: how the scanner reads a DiceKey, and why it works that way rather than the
   alternatives measured.
 
@@ -12,17 +15,18 @@ A single iOS app target: SwiftUI on Observation, `NavigationStack`, async/await 
 strict concurrency, with Liquid Glass chrome. It scans a physical DiceKey with the camera or
 takes one typed by hand, holds it in memory behind Face ID, and derives passwords, keys and
 seeds from it. Two local Swift packages supply the rest, with no external dependencies:
-`SeededCrypto` holds libsodium as a source copy and DiceKeys' seeded-crypto as an unmodified
-git subtree behind a small C ABI, and `ReadDiceKey` holds the generated face specification and
-a DiceKey scanner written in Swift. No CocoaPods, submodules, Objective-C, C++ wrappers or
-OpenCV remain, and there is not one `#if os(...)` left in the app.
+`Derivation` (targets `Derivation`, for recipes and derived values, `KeyFormats`, for signing
+key exports and BIP39, and `BLAKE2`, the hash the derivation is built on) and `ReadDiceKey`
+(the generated face specification and a DiceKey scanner written in Swift).
+No CocoaPods, submodules, Objective-C, C++ wrappers or OpenCV remain, and there is not one
+`#if os(...)` left in the app.
 
 ## Goals, in priority order
 
-1. **Always be able to read a DiceKey and re-derive the same secrets.** The seed derivation
-   (seeded-crypto + libsodium) builds from sources in this repository and the scanner is
-   pure Swift. Golden vectors generated from the reference implementation guard the
-   derivation output; a corpus of photos of real keys guards the scanner.
+1. **Always be able to read a DiceKey and re-derive the same secrets.** The derivation and
+   the scanner are Swift, built from sources in this repository. Vectors recorded from the
+   reference implementation guard the derivation output; a corpus of photos of real keys
+   guards the scanner.
 2. Build with current Xcode against the current SDKs, Swift 6 language mode, strict
    concurrency, no deprecated APIs. GitHub Actions macOS runners are the compiler for this
    branch, so the SDK floor follows what they ship (Xcode 26.6 today).
@@ -31,7 +35,7 @@ OpenCV remain, and there is not one `#if os(...)` left in the app.
    controls, nothing fighting the system look.
 
 Nothing here changes what the app derives. Any change that alters derived output is a bug,
-and `Packages/SeededCrypto/Tests/SeededCryptoTests` exists to catch it.
+and `Packages/Derivation/Tests/DerivationTests` exists to catch it.
 
 ---
 
@@ -47,9 +51,8 @@ DiceKeys/
   Model/          value types and domain logic; nothing here knows about SwiftUI state
     DiceKey/      DiceKey, Face, PartialFace,
                   FaceOrientationLetterTrbl+Rotation
-    Recipes/      DerivationRecipe (was Derivables), CanonicalizeJsonRecipe,
+    Recipes/      DerivationRecipe (was Derivables), DerivableType+Descriptions,
                   DerivationRecipeTemplates, DerivedValue (was DerivedValueView)
-    BIP39/        Mnemonic, Wordlist
     Settings.swift
   Services/       things that talk to the OS
     Keychain/     DiceKeyKeychain (was EncryptedDiceKeyStore)
@@ -179,9 +182,10 @@ permissions error until it is accepted.
 
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
-- `swift test -c release` for each package: in `Packages/SeededCrypto` the golden derivation
-  vectors and concurrent first use of libsodium, and in `Packages/ReadDiceKey` the scanner over
-  upstream's photos, the owner's photos and video, and drawn keys.
+- `swift test -c release` for each package: in `Packages/Derivation` the recorded vectors,
+  recipe validation, the key formats and the BLAKE2b known answers, and in
+  `Packages/ReadDiceKey` the scanner over upstream's photos, the owner's photos and video,
+  and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
 
 The runners have no iOS 27 SDK, which is why the deployment target is 26 and the one
@@ -198,9 +202,9 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## How the safety nets work
 
-- `Packages/SeededCrypto/Tests/SeededCryptoTests/Fixtures/golden-vectors.json` came from the
-  reference C++ (`scripts/generate-golden-vectors.sh`). If `GoldenVectorTests` fails, derived
-  secrets have changed; do not update the fixture without understanding why.
+- `Packages/Derivation/Tests/DerivationTests/Fixtures/vectors.json` was recorded from the
+  reference C++ and cannot be regenerated. If `VectorTests` fails, derived secrets have
+  changed; fix the code, not the fixture.
 - `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to the
   same fixture, and proves every rotation of a key derives the same seed. That last test is
   why the rotation bugs were display problems rather than security ones.
@@ -209,28 +213,25 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
   face wrong, must read well-framed keys, and must read nothing where there is no key. Keys drawn from the face
   codes cover reading across frames: a quarter turn between frames, a second key, a frame
   that reads nothing.
-- Re-vendoring: `scripts/vendor-libsodium.sh [url] [tag]` and
-  `scripts/update-seeded-crypto.sh [url] [ref]`; run the golden-vector script after either
-  and expect no diff.
 
 ## C++ in Swift or Rust: the decision
 
-Keep the C++. `lib-seeded` is about 5k real lines over libsodium and is the reference
-implementation shared with the web app; any byte-level divergence in a rewrite silently
-changes every derived secret, and the golden vectors can only cover cases someone wrote
-down. `lib-read-dicekey` was the exception, because it needed OpenCV: it was ported to Swift
-stage by stage and checked face by face against the C++ output, then rewritten around the two
-bar codes once the port showed what mattered (`SCANNING.md`). It still follows upstream's
-approach to finding and decoding the bars, so it is covered by the licensing question below.
-Rust would add a second toolchain and an FFI layer for no gain on a
-single-platform personal app. What *was* removed is every line of Objective-C: the shims are
-C++ behind a C header, which Swift imports natively.
+The derivation was C++ (`lib-seeded`, about 5k lines, shared with the web app). The risk was a
+byte-level divergence silently changing every derived secret, so the port was checked three
+ways: 168 vectors recorded from the C++, the official BLAKE2b known answers for the one
+primitive written here, and, while the C++ was still in the tree, byte-for-byte comparison of
+the two. `lib-read-dicekey` was ported to Swift stage by stage and checked face by face against
+the C++ output, then rewritten around the two bar codes once the port showed what mattered
+(`SCANNING.md`); it still follows upstream's approach to finding and decoding the bars, so it is
+covered by the licensing question below. Rust would have added a second toolchain and an FFI
+layer for no gain on a single-platform personal app.
 
 ## Licensing, before this goes anywhere public
 
-seeded-crypto and the BIP-39 word list are MIT, libsodium is ISC, Inconsolata is OFL, and
-`THIRD_PARTY_LICENSES` records each one with its origin and commit. The DiceKeys-derived
-parts, meaning the app itself, the scanner, the photo corpus and the icon mark, still
-carry only upstream's "all rights reserved while we choose a license" placeholder. That is
-why the README says personal use and TestFlight only, and why publishing needs DiceKeys, LLC
-to choose a license (license@dicekeys.com).
+seeded-crypto (the origin of the derivation port) and the BIP-39 word list are MIT,
+Inconsolata is OFL, the BLAKE2 test vectors are CC0, and `THIRD_PARTY_LICENSES` records
+each one with its origin and commit. The DiceKeys-derived parts, meaning the app itself,
+the scanner, the photo corpus and the icon mark, still carry only upstream's "all rights
+reserved while we choose a license" placeholder. That is why the README says personal use
+and TestFlight only, and why publishing needs DiceKeys, LLC to choose a license
+(license@dicekeys.com).

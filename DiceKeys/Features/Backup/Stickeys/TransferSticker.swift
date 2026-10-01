@@ -2,8 +2,6 @@
 //  TransferSticker.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/02.
-//
 
 import SwiftUI
 
