@@ -12,11 +12,11 @@ let package = Package(
     name: "ReadDiceKey",
     platforms: [
         .iOS(.v26),
-        .macOS(.v26),
+        .macOS(.v26)
     ],
     products: [
         .library(name: "DiceKeySpecification", targets: ["DiceKeySpecification"]),
-        .library(name: "ReadDiceKey", targets: ["ReadDiceKey"]),
+        .library(name: "ReadDiceKey", targets: ["ReadDiceKey"])
     ],
     targets: [
         .target(name: "DiceKeySpecification"),
@@ -26,13 +26,13 @@ let package = Package(
             name: "ReadDiceKey",
             dependencies: ["DiceKeySpecification"],
             swiftSettings: [
-                .unsafeFlags(["-O"], .when(configuration: .debug)),
+                .unsafeFlags(["-O"], .when(configuration: .debug))
             ]
         ),
         .testTarget(
             name: "ReadDiceKeyTests",
             dependencies: ["ReadDiceKey", "DiceKeySpecification"],
             resources: [.copy("Fixtures")]
-        ),
+        )
     ]
 )
