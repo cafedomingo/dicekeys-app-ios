@@ -26,15 +26,15 @@ let package = Package(
         .target(name: "BLAKE2"),
         .target(
             name: "Derivation",
-            dependencies: [.product(name: "SeededCrypto", package: "SeededCrypto")]
+            dependencies: ["BLAKE2", .product(name: "SeededCrypto", package: "SeededCrypto")]
         ),
         .target(
             name: "KeyFormats",
-            dependencies: ["Derivation", .product(name: "SeededCrypto", package: "SeededCrypto")]
+            dependencies: ["Derivation"]
         ),
         .testTarget(
             name: "DerivationTests",
-            dependencies: ["Derivation", "KeyFormats"],
+            dependencies: ["Derivation", "KeyFormats", .product(name: "SeededCrypto", package: "SeededCrypto")],
             resources: [.copy("Fixtures")]
         ),
         .testTarget(

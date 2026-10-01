@@ -80,7 +80,7 @@ extension DerivationRecipe {
             let lengthInBytes = lengthInBytes()
             return DerivedValueSecret(secret: try Secret.derive(seed: seed, recipe: recipe), showBIP39: lengthInBytes == nil || lengthInBytes == 32)
         case .signingKey:
-            return try DerivedValueSigningKey(signingKey: try SigningKey.derive(seed: seed, recipe: recipe))
+            return DerivedValueSigningKey(signingKey: try SigningKey.derive(seed: seed, recipe: recipe))
         case .symmetricKey:
             return DerivedValueSymmetricKey(symmetricKey: try SymmetricKey.derive(seed: seed, recipe: recipe))
         case .unsealingKey:

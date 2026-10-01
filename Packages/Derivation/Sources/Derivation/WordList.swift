@@ -22,4 +22,11 @@ public enum WordList: String, CaseIterable, Sendable {
         case .en1024: return 10
         }
     }
+
+    public var words: [String] {
+        switch self {
+        case .en512: return en512Words
+        case .en1024: return en1024Words
+        }
+    }
 }
