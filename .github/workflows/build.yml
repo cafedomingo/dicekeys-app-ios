@@ -13,9 +13,6 @@ on:
 permissions:
   contents: read
 
-# One named Xcode rather than the image's default, so a runner image update cannot change
-# the compiler under a green build. Move this, the packages' tools-version and the
-# deployment target together when GitHub's Xcode 27 image leaves preview.
 env:
   DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
 

@@ -50,8 +50,7 @@ Where in this repo:
 
 3. dicekeys/seeded-crypto  (lib-seeded, the origin of the derivation port)
 --------------------------------------------------------------------------
-Origin:    https://github.com/dicekeys/seeded-crypto, branch primary, commit c9c7740,
-           tracked through the fork https://github.com/cafedomingo/seeded-crypto
+Origin:    https://github.com/dicekeys/seeded-crypto, branch primary, commit c9c7740
 Owner:     DiceKeys, LLC
 License:   MIT. Copyright (c) 2020 DiceKeys, LLC.
 Where:     the derivation construction, JSON layouts, key formats and word lists in
@@ -105,9 +104,3 @@ Origin:    https://github.com/BLAKE2/BLAKE2/blob/master/testvectors/blake2-kat.j
 Owner:     The BLAKE2 authors
 License:   CC0 1.0 Universal (the repository's COPYING).
 Where:     Packages/Derivation/Tests/BLAKE2Tests/Fixtures/blake2b-kat.json (the blake2b entries only).
-
-
-7. Code from other projects, adapted
-------------------------------------
-- DiceKeys/Services/Camera/CameraSession.swift keeps the upstream header credit
-  to https://github.com/RosayGaspard/SwiftUI-Simple-camera-app (MIT).

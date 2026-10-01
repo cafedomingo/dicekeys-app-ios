@@ -3,7 +3,7 @@
 //  Derivation
 //
 //  The word lists seeded-crypto shipped, copied verbatim. A word is chosen by index, so the
-//  order is part of every password ever derived; `PasswordFormatterTests` pins each list by digest.
+//  order is part of every password ever derived.
 //
 
 let en512Words: [String] = [
