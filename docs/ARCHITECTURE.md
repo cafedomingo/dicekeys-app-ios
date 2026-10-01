@@ -196,7 +196,8 @@ The runners have no iOS 27 SDK, which is why the deployment target is 26 and the
 Installed from TestFlight on an iPhone: the app runs, the camera previews, and the scanner
 reads a real DiceKey at a speed the owner called fine. Rotation was wrong on the device and
 has been through two fixes; `BACKLOG.md` records what still needs confirming. The scanner has
-since been rewritten (`SCANNING.md`), and the rewrite has not been on a device yet.
+since been rewritten (`SCANNING.md`) and scans the back wide-angle camera rather than the
+ultra wide; on an iPhone 17 Pro the rewrite reads keys quickly.
 
 Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
