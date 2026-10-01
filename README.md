@@ -12,9 +12,12 @@ use (about a minute):
 
 ```
 swift run --package-path BuildTools xcodegen generate
-swift format format --in-place --recursive DiceKeys Packages Tests   # before committing
+git config core.hooksPath .githooks   # the pre-commit hook refuses unformatted or unlinted Swift
 open DiceKeys.xcodeproj
 ```
+
+Format with `swift format format --in-place --recursive DiceKeys Packages Tests`; Xcode can do
+it on save once it sees `.swift-format`.
 
 Put your Apple Developer team id in `Config/Signing.xcconfig`, select the `DiceKeys` scheme
 and a device, then Product → Run.
