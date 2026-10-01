@@ -23,10 +23,12 @@ struct UndoverlineView: View {
     var dotTop: CGFloat { faceSize * FaceDimensionsFractional.undoverlineMarginAlongLength }
     var marginAtStartAndEnd: CGFloat { faceSize * FaceDimensionsFractional.undoverlineMarginAtLineStartAndEnd }
     var dotStep: CGFloat { (width - 2 * marginAtStartAndEnd) / numberOfDots }
-    var dotWidth: CGFloat { faceSize *
-        // Add buffer of 0.1% of the die width to ensure that
-        // white box edges touch
-        (FaceDimensionsFractional.undoverlineDotWidth + 0.001) }
+    var dotWidth: CGFloat {
+        faceSize
+            // Add buffer of 0.1% of the die width to ensure that
+            // white box edges touch
+            * (FaceDimensionsFractional.undoverlineDotWidth + 0.001)
+    }
     var dotHeight: CGFloat { faceSize * FaceDimensionsFractional.undoverlineDotHeight }
 
     private struct BitPositionSet: Identifiable {
@@ -38,7 +40,7 @@ struct UndoverlineView: View {
         return (0...10).filter { bitPositionLeftToRight in
             (code & (1 << (10 - bitPositionLeftToRight))) != 0
         }.map { bitPositionLeftToRight in
-            BitPositionSet(bitPositionLeftToRight: bitPositionLeftToRight )
+            BitPositionSet(bitPositionLeftToRight: bitPositionLeftToRight)
         }
     }
 
@@ -73,8 +75,14 @@ struct DieFaceUprightView: View {
 
     var hCenter: CGFloat { dieSize / 2 }
 
-    var underlineVCenter: CGFloat { top + ( FaceDimensionsFractional.underlineTop + FaceDimensionsFractional.undoverlineThickness / 2) * sizeOfRenderedFace }
-    var overlineVCenter: CGFloat { top + ( FaceDimensionsFractional.overlineTop + FaceDimensionsFractional.undoverlineThickness / 2) * sizeOfRenderedFace }
+    var underlineVCenter: CGFloat {
+        top + (FaceDimensionsFractional.underlineTop + FaceDimensionsFractional.undoverlineThickness / 2)
+            * sizeOfRenderedFace
+    }
+    var overlineVCenter: CGFloat {
+        top + (FaceDimensionsFractional.overlineTop + FaceDimensionsFractional.undoverlineThickness / 2)
+            * sizeOfRenderedFace
+    }
     var fontSize: CGFloat {
         FaceDimensionsFractional.fontSize * sizeOfRenderedFace
     }
@@ -85,13 +93,11 @@ struct DieFaceUprightView: View {
         FaceDimensionsFractional.textRegionWidth * sizeOfRenderedFace / 2
     }
     var textCenterY: CGFloat {
-        (
-            dieSize
+        (dieSize
             // Move down to remove region above capital letter
             + (uiFont.capHeight - uiFont.ascender)
             // Move up to remove region below capital letter
-            - uiFont.descender
-        ) / 2 // take center
+            - uiFont.descender) / 2  // take center
     }
 
     var body: some View {
@@ -119,10 +125,16 @@ struct DieFaceUprightView: View {
                     .foregroundStyle(penColor)
             }
             if let face = face.face {
-                UndoverlineView(face: face, faceSize: sizeOfRenderedFace, isOverline: false, penColor: penColor, holeColor: faceSurfaceColor)
-                    .position(x: hCenter, y: underlineVCenter)
-                UndoverlineView(face: face, faceSize: sizeOfRenderedFace, isOverline: true, penColor: penColor, holeColor: faceSurfaceColor)
-                    .position(x: hCenter, y: overlineVCenter)
+                UndoverlineView(
+                    face: face, faceSize: sizeOfRenderedFace, isOverline: false, penColor: penColor,
+                    holeColor: faceSurfaceColor
+                )
+                .position(x: hCenter, y: underlineVCenter)
+                UndoverlineView(
+                    face: face, faceSize: sizeOfRenderedFace, isOverline: true, penColor: penColor,
+                    holeColor: faceSurfaceColor
+                )
+                .position(x: hCenter, y: overlineVCenter)
             }
         }
         .frame(width: dieSize, height: dieSize)
@@ -157,8 +169,10 @@ struct DiceKeyFaceArray: View {
         GeometryReader { geometry in
             HStack(alignment: .center, spacing: 0) {
                 ForEach(0..<25, id: \.self) { index in
-                    DieFaceView(face: PartialFace(diceKey.faces[index], index: index), dieSize: geometry.size.width/CGFloat(25),
-                        linearFractionOfFaceRenderedToDieSize: 1-marginBetweenDiceFractional/2)
+                    DieFaceView(
+                        face: PartialFace(diceKey.faces[index], index: index),
+                        dieSize: geometry.size.width / CGFloat(25),
+                        linearFractionOfFaceRenderedToDieSize: 1 - marginBetweenDiceFractional / 2)
                 }
             }
         }
@@ -168,32 +182,45 @@ struct DiceKeyFaceArray: View {
 struct DieView: View {
     let partialFace: PartialFace
     let dieSize: CGFloat
-    let linearFractionOfFaceRenderedToDieSize: CGFloat = CGFloat(5)/8
+    let linearFractionOfFaceRenderedToDieSize: CGFloat = CGFloat(5) / 8
     var penColor: Color = Color.Depiction.diePen
     var faceSurfaceColor: Color = Color.Depiction.dieFace
     var faceBorderColor: Color?
 
     var body: some View {
-        DieFaceView(face: partialFace, dieSize: dieSize, linearFractionOfFaceRenderedToDieSize: linearFractionOfFaceRenderedToDieSize, penColor: penColor, faceSurfaceColor: faceSurfaceColor, faceBorderColor: faceBorderColor)
+        DieFaceView(
+            face: partialFace, dieSize: dieSize,
+            linearFractionOfFaceRenderedToDieSize: linearFractionOfFaceRenderedToDieSize, penColor: penColor,
+            faceSurfaceColor: faceSurfaceColor, faceBorderColor: faceBorderColor)
     }
 }
 
 extension DieView {
-    init(face: Face, dieSize: CGFloat, penColor: Color = Color.Depiction.diePen, faceSurfaceColor: Color = Color.Depiction.dieFace, faceBorderColor: Color? = nil) {
-        self.init(partialFace: PartialFace(face), dieSize: dieSize, penColor: penColor, faceSurfaceColor: faceSurfaceColor, faceBorderColor: faceBorderColor)
+    init(
+        face: Face, dieSize: CGFloat, penColor: Color = Color.Depiction.diePen,
+        faceSurfaceColor: Color = Color.Depiction.dieFace, faceBorderColor: Color? = nil
+    ) {
+        self.init(
+            partialFace: PartialFace(face), dieSize: dieSize, penColor: penColor, faceSurfaceColor: faceSurfaceColor,
+            faceBorderColor: faceBorderColor)
     }
 }
 
 #Preview {
     VStack {
-        UndoverlineView(face: Face(letter: FaceLetter.A, digit: FaceDigit._3, orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.Top), faceSize: 400, isOverline: false)
+        UndoverlineView(
+            face: Face(
+                letter: FaceLetter.A, digit: FaceDigit._3,
+                orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.Top), faceSize: 400, isOverline: false)
         DieFaceView(
             face: PartialFace(letter: FaceLetter.L, digit: FaceDigit._3, orientation: FaceOrientationLetterTrbl.Right),
             dieSize: 200
         )
         DiceKeyFaceArray(diceKey: DiceKey.createFromRandom())
         DieView(
-            face: Face(letter: FaceLetter.L, digit: FaceDigit._3, orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.Right),
+            face: Face(
+                letter: FaceLetter.L, digit: FaceDigit._3,
+                orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.Right),
             dieSize: 200
         )
     }

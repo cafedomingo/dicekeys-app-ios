@@ -38,31 +38,33 @@ struct OpenSSHComparisonTests {
     @Test("ssh-keygen reads the private key and derives the same public line")
     func sshKeygen() throws {
         #if os(macOS)
-        guard FileManager.default.isExecutableFile(atPath: "/usr/bin/ssh-keygen") else { return }
-        let key = try SigningKey.derive(seed: fixture.diceKeys[1].seed, recipe: #"{"purpose":"ssh"}"#)
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
-        let file = directory.appendingPathComponent("key")
-        try OpenSSH.privateKeyPEM(key, comment: "alice@laptop").write(to: file, atomically: true, encoding: .utf8)
-        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/ssh-keygen")
-        process.arguments = ["-y", "-f", file.path]
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        try process.run()
-        process.waitUntilExit()
-        let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
-        #expect(process.terminationStatus == 0)
-        // ssh-keygen prints the key's own comment instead of the fixed "DiceKeys".
-        #expect(output == OpenSSH.publicKeyLine(key).replacingOccurrences(of: " DiceKeys", with: " alice@laptop"))
+            guard FileManager.default.isExecutableFile(atPath: "/usr/bin/ssh-keygen") else { return }
+            let key = try SigningKey.derive(seed: fixture.diceKeys[1].seed, recipe: #"{"purpose":"ssh"}"#)
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: directory) }
+            let file = directory.appendingPathComponent("key")
+            try OpenSSH.privateKeyPEM(key, comment: "alice@laptop").write(to: file, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/ssh-keygen")
+            process.arguments = ["-y", "-f", file.path]
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            try process.run()
+            process.waitUntilExit()
+            let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            #expect(process.terminationStatus == 0)
+            // ssh-keygen prints the key's own comment instead of the fixed "DiceKeys".
+            #expect(output == OpenSSH.publicKeyLine(key).replacingOccurrences(of: " DiceKeys", with: " alice@laptop"))
         #endif
     }
 }
 
 func decodedPem(_ pem: String) throws -> [UInt8] {
-    let body = pem.split(separator: "\n").filter { !$0.hasPrefix("-----") && !$0.hasPrefix("=") && !$0.isEmpty }.joined()
+    let body = pem.split(separator: "\n").filter { !$0.hasPrefix("-----") && !$0.hasPrefix("=") && !$0.isEmpty }
+        .joined()
     return [UInt8](try #require(Data(base64Encoded: body)))
 }
 
@@ -92,15 +94,19 @@ struct OpenPGPComparisonTests {
     @Test("everything but the framing, the key flags and the signature is identical", arguments: signingCases)
     func matchesFixtureByContent(vector: Vector) throws {
         let key = try SigningKey.derive(seed: vector.seed, recipe: vector.recipe)
-        let ours = try OpenPGPWalker(armored: OpenPGP.secretKeyBlock(key, userId: vector.pgpUserId ?? "", timestamp: vector.pgpTimestamp ?? 0))
+        let ours = try OpenPGPWalker(
+            armored: OpenPGP.secretKeyBlock(key, userId: vector.pgpUserId ?? "", timestamp: vector.pgpTimestamp ?? 0))
         let theirs = try OpenPGPWalker(armored: try #require(vector.openPgpPemFormatSecretKey))
         #expect(try ours.secretKey == theirs.secretKey)
         #expect(try ours.userId == theirs.userId)
         let (mine, reference) = (try ours.signature, try theirs.signature)
         #expect(mine.version == reference.version && mine.signatureType == reference.signatureType)
-        #expect(mine.publicKeyAlgorithm == reference.publicKeyAlgorithm && mine.hashAlgorithm == reference.hashAlgorithm)
+        #expect(
+            mine.publicKeyAlgorithm == reference.publicKeyAlgorithm && mine.hashAlgorithm == reference.hashAlgorithm)
         #expect(mine.unhashed == reference.unhashed)
-        let mineFlagsFixed = mine.hashed.map { $0.type == 0x1b ? OpenPGPWalker.Subpacket(type: 0x1b, body: [0x01]) : $0 }
+        let mineFlagsFixed = mine.hashed.map {
+            $0.type == 0x1b ? OpenPGPWalker.Subpacket(type: 0x1b, body: [0x01]) : $0
+        }
         #expect(mineFlagsFixed == reference.hashed)
         #expect(mine.hashed.first { $0.type == 0x1b }?.body == [0x03])
         #expect(ours.hadBlankLine && !theirs.hadBlankLine)

@@ -27,7 +27,10 @@ struct BLAKE2bTests {
     @Test("RFC 7693 appendix A: BLAKE2b-512 of \"abc\"")
     func rfcVector() {
         let digest = BLAKE2b.hash(Array("abc".utf8))
-        #expect(hex(digest) == "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923")
+        #expect(
+            hex(digest)
+                == "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923"
+        )
     }
 }
 
@@ -69,8 +72,11 @@ extension BLAKE2bTests {
     @Test("every official known answer", arguments: knownAnswers.indices)
     func knownAnswer(index: Int) {
         let vector = knownAnswers[index]
-        let digest = BLAKE2b.hash(bytes(hex: vector.in), key: bytes(hex: vector.key), digestLength: vector.out.count / 2)
-        #expect(hex(digest) == vector.out, "entry \(index): in \(vector.in.count / 2) bytes, key \(vector.key.count / 2) bytes")
+        let digest = BLAKE2b.hash(
+            bytes(hex: vector.in), key: bytes(hex: vector.key), digestLength: vector.out.count / 2)
+        #expect(
+            hex(digest) == vector.out,
+            "entry \(index): in \(vector.in.count / 2) bytes, key \(vector.key.count / 2) bytes")
     }
 
     @Test("streaming in any chunking equals one-shot")
@@ -79,7 +85,10 @@ extension BLAKE2bTests {
         let message = (0..<1000).map { _ in UInt8.random(in: .min ... .max, using: &generator) }
         let key = (0..<32).map { _ in UInt8.random(in: .min ... .max, using: &generator) }
         let expected = BLAKE2b.hash(message, key: key, digestLength: 32)
-        for splits in [[0], [1], [63], [64], [65], [127], [128], [129], [255], [256], [257], [500], [999], [1000], [64, 128], [1, 127, 128, 129], [128, 256, 384], [128, 128], [64, 64, 64], [0, 500, 500], [128, 128, 128]] {
+        for splits in [
+            [0], [1], [63], [64], [65], [127], [128], [129], [255], [256], [257], [500], [999], [1000], [64, 128],
+            [1, 127, 128, 129], [128, 256, 384], [128, 128], [64, 64, 64], [0, 500, 500], [128, 128, 128]
+        ] {
             var hasher = BLAKE2b(digestLength: 32, key: key)
             var start = 0
             for split in splits {

@@ -1,6 +1,6 @@
 //
 //  DiceKey.swift
-//  
+//
 //
 
 import DiceKeySpecification
@@ -54,24 +54,27 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     /// Creae a DiceKey from a low-quality random number generator for testing purposes
     /// (not for cryptographic-quality DiceKey production)
     static func createFromRandom() -> DiceKey {
-        return DiceKey( (1...25).map { _ -> Face in
-            return Face(
-                letter: FaceLetters[Int.random(in: 0..<(FaceLetters.count))],
-                digit: FaceDigits[Int.random(in: 0..<(FaceDigits.count))],
-                orientationAsLowercaseLetterTrbl: FaceOrientationLettersTrbl[Int.random(in: 0..<(FaceOrientationLettersTrbl.count))]
-            )
-        })
+        return DiceKey(
+            (1...25).map { _ -> Face in
+                return Face(
+                    letter: FaceLetters[Int.random(in: 0..<(FaceLetters.count))],
+                    digit: FaceDigits[Int.random(in: 0..<(FaceDigits.count))],
+                    orientationAsLowercaseLetterTrbl: FaceOrientationLettersTrbl[
+                        Int.random(in: 0..<(FaceOrientationLettersTrbl.count))]
+                )
+            })
     }
 
     /// A sample DiceKey for use in development, such as generating sample views
     static var Example: DiceKey {
-        DiceKey((0..<25).map { index in
-            Face(
-                letter: FaceLetters[index],
-                digit: FaceDigits[index % 6],
-                orientationAsLowercaseLetterTrbl: FaceOrientationLettersTrbl[index % 4]
-            )
-        })
+        DiceKey(
+            (0..<25).map { index in
+                Face(
+                    letter: FaceLetters[index],
+                    digit: FaceDigits[index % 6],
+                    orientationAsLowercaseLetterTrbl: FaceOrientationLettersTrbl[index % 4]
+                )
+            })
     }
 
     /// Re-construct a DiceKey from human-readable form.
@@ -80,24 +83,41 @@ final class DiceKey: Identifiable, Equatable, Sendable {
             throw IllegalCharacterError.wrongLength(humanReadableForm.count)
         }
         let bytesPerFace = humanReadableForm.count == 75 ? 3 : 2
-        return DiceKey( try (0...24).map { index -> Face in
-            let letterIndex = bytesPerFace * index
-            guard let letter = FaceLetter(rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: letterIndex)])) else {
-                throw IllegalCharacterError.inLetter(position: letterIndex)
-            }
-            guard let digit = FaceDigit(rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: letterIndex + 1)])) else {
-                throw IllegalCharacterError.inDigit(position: letterIndex + 1)
-            }
-            guard let orientationAsLowercaseLetterTrbl = bytesPerFace == 3 ? FaceOrientationLetterTrbl(rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: letterIndex + 2)])) :
-                FaceOrientationLetterTrbl.Top else {
-                throw IllegalCharacterError.inOrientation(position: letterIndex+2)
-            }
-            return Face(
-                letter: letter,
-                digit: digit,
-                orientationAsLowercaseLetterTrbl: orientationAsLowercaseLetterTrbl
-            )
-        })
+        return DiceKey(
+            try (0...24).map { index -> Face in
+                let letterIndex = bytesPerFace * index
+                guard
+                    let letter = FaceLetter(
+                        rawValue: String(
+                            humanReadableForm[
+                                humanReadableForm.index(humanReadableForm.startIndex, offsetBy: letterIndex)]))
+                else {
+                    throw IllegalCharacterError.inLetter(position: letterIndex)
+                }
+                guard
+                    let digit = FaceDigit(
+                        rawValue: String(
+                            humanReadableForm[
+                                humanReadableForm.index(humanReadableForm.startIndex, offsetBy: letterIndex + 1)]))
+                else {
+                    throw IllegalCharacterError.inDigit(position: letterIndex + 1)
+                }
+                guard
+                    let orientationAsLowercaseLetterTrbl = bytesPerFace == 3
+                        ? FaceOrientationLetterTrbl(
+                            rawValue: String(
+                                humanReadableForm[
+                                    humanReadableForm.index(humanReadableForm.startIndex, offsetBy: letterIndex + 2)]))
+                        : FaceOrientationLetterTrbl.Top
+                else {
+                    throw IllegalCharacterError.inOrientation(position: letterIndex + 2)
+                }
+                return Face(
+                    letter: letter,
+                    digit: digit,
+                    orientationAsLowercaseLetterTrbl: orientationAsLowercaseLetterTrbl
+                )
+            })
     }
 
     /// Returns a DiceKey rotated 90 degrees clockwise (non-mutating)
@@ -117,18 +137,17 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     /// letter, digit, orientation triples
     func toHumanReadableForm(includeOrientations: Bool = true) -> String {
         return faces.map { face -> String in
-            face.letter.rawValue +
-            face.digit.rawValue +
-                (includeOrientations ? face.orientationAsLowercaseLetterTrbl.rawValue : "")
+            face.letter.rawValue + face.digit.rawValue
+                + (includeOrientations ? face.orientationAsLowercaseLetterTrbl.rawValue : "")
         }.joined(separator: "") as String
     }
 
     /// A 3-element array containing the 3 possible alternate orientations
     /// of a DiceKey
     private var threeAlternateRotations: [DiceKey] {
-        var result: [DiceKey] = [ self.rotatedClockwise90Degrees() ]
+        var result: [DiceKey] = [self.rotatedClockwise90Degrees()]
         for _ in 1...2 {
-            result.append(result[result.count-1].rotatedClockwise90Degrees())
+            result.append(result[result.count - 1].rotatedClockwise90Degrees())
         }
         return result
     }
@@ -147,7 +166,7 @@ final class DiceKey: Identifiable, Equatable, Sendable {
 
     /// Get the difference between this DiceKey and another DiceKey, rotating the other DiceKey
     /// as necessary to get a minimal distance betweeen them.
-    func mostSimilarRotationWithDifference(_ other: DiceKey, maxDifferenceToRotateFor: Int = 12) -> ( DiceKey, Int ) {
+    func mostSimilarRotationWithDifference(_ other: DiceKey, maxDifferenceToRotateFor: Int = 12) -> (DiceKey, Int) {
         var rotationWithSmallestDifference = other
         var smallestDifference = differencesForFixedRotation(compareTo: other)
         if smallestDifference == 0 {
@@ -171,7 +190,8 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     /// Find the rotation of the other DiceKey that is most similar to the current one,
     /// which is useful when summarizing the minimal difference between two DiceKeys.
     func mostSimilarRotationOf(_ other: DiceKey, maxDifferenceToRotateFor: Int = 12) -> DiceKey {
-        let (rotationWithSmallestDifference, _) = mostSimilarRotationWithDifference(other, maxDifferenceToRotateFor: maxDifferenceToRotateFor)
+        let (rotationWithSmallestDifference, _) = mostSimilarRotationWithDifference(
+            other, maxDifferenceToRotateFor: maxDifferenceToRotateFor)
         return rotationWithSmallestDifference
     }
 
@@ -185,10 +205,11 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     /// Rotate to canonical orientation by finding the one of the four possible orientations
     /// that has the human-readable form with the earliest utf8 sort order.
     func rotatedToCanonicalForm(
-      includeOrientations: Bool = true
+        includeOrientations: Bool = true
     ) -> DiceKey {
         var diceKeyWithEarliestHumanReadableForm = self
-        var earliestHumanReadableForm = diceKeyWithEarliestHumanReadableForm.toHumanReadableForm(includeOrientations: includeOrientations)
+        var earliestHumanReadableForm = diceKeyWithEarliestHumanReadableForm.toHumanReadableForm(
+            includeOrientations: includeOrientations)
         for candidateDiceKey in threeAlternateRotations {
             let humanReadableForm = candidateDiceKey.toHumanReadableForm(includeOrientations: includeOrientations)
             if humanReadableForm < earliestHumanReadableForm {
@@ -208,7 +229,8 @@ final class DiceKey: Identifiable, Equatable, Sendable {
         return self
     }
 
-    private let recipeFor16ByteUniqueIdentifier = "{\"purpose\":\"a unique identifier for this DiceKey\",\"lengthInBytes\":16}"
+    private let recipeFor16ByteUniqueIdentifier =
+        "{\"purpose\":\"a unique identifier for this DiceKey\",\"lengthInBytes\":16}"
 
     /// Filled on first use: the id is read from view bodies and costs a derivation, and it
     /// cannot be computed in `init` because `toSeed()` builds rotated DiceKeys of its own.
@@ -229,10 +251,10 @@ final class DiceKey: Identifiable, Equatable, Sendable {
     /// A url-safe base64 encoded 16-byte unique identifier for this DiceKey derived via hashing
     var id: String {
         idBytes
-        .base64EncodedString()
-        .replacingOccurrences(of: "/", with: "_")
-        .replacingOccurrences(of: "+", with: "-")
-        .replacingOccurrences(of: "=", with: "")
+            .base64EncodedString()
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "=", with: "")
     }
 
     /// Turn the DiceKey into a cryptographic seed by rotating it to the canonical

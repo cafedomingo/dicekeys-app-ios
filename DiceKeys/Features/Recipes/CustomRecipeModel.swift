@@ -85,7 +85,9 @@ final class CustomRecipeModel: Identifiable {
 
         switch buildType {
         case .purpose:
-            recipe = getRecipeJson(purpose: purposeString.trim(), sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
+            recipe = getRecipeJson(
+                purpose: purposeString.trim(), sequenceNumber: sequenceNumber, lengthInChars: lengthInChars,
+                lengthInBytes: lengthInBytes)
         case .rawJson:
             do {
                 recipe = try rawJsonString.canonicalizedRecipe()

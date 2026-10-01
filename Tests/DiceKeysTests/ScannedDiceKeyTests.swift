@@ -16,8 +16,10 @@ struct ScannedDiceKeyTests {
             ScannedFace(letter: letter, digit: FaceDigit.allCases[i % 6], clockwiseTurns: i % 4)
         }
         let diceKey = DiceKey(scanned)
-        #expect(diceKey.faces.map(\.humanReadableForm).joined() == scanned.map { face in
-            "\(face.letter.rawValue)\(face.digit.rawValue)\(Array("trbl")[face.clockwiseTurns])"
-        }.joined())
+        #expect(
+            diceKey.faces.map(\.humanReadableForm).joined()
+                == scanned.map { face in
+                    "\(face.letter.rawValue)\(face.digit.rawValue)\(Array("trbl")[face.clockwiseTurns])"
+                }.joined())
     }
 }

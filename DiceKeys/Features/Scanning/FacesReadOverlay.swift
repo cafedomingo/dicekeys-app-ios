@@ -26,8 +26,10 @@ struct AngularCoordinateSystem {
     }
 }
 
-private let charWidthFractional: CGFloat = (FaceDimensionsFractional.textRegionWidth - FaceDimensionsFractional.spaceBetweenLetterAndDigit) / 2
-private let xDistToCharCenter: CGFloat = (FaceDimensionsFractional.spaceBetweenLetterAndDigit / 2) + (charWidthFractional / 2)
+private let charWidthFractional: CGFloat =
+    (FaceDimensionsFractional.textRegionWidth - FaceDimensionsFractional.spaceBetweenLetterAndDigit) / 2
+private let xDistToCharCenter: CGFloat =
+    (FaceDimensionsFractional.spaceBetweenLetterAndDigit / 2) + (charWidthFractional / 2)
 private let letterOffset = CGPoint(x: -xDistToCharCenter, y: 0)
 private let digitOffset = CGPoint(x: xDistToCharCenter, y: 0)
 
@@ -74,8 +76,12 @@ struct FacesReadOverlay: View {
                         scalingFactor: faceSize
                     )
                     let font = Font.custom("Inconsolata-Bold", size: faceSize * FaceDimensionsFractional.fontSize)
-                    draw(face.letter.rawValue, in: context, at: coordinateSystemFromCenterOfDie.pointAt(offset: letterOffset), angle: angle, font: font)
-                    draw(face.digit.rawValue, in: context, at: coordinateSystemFromCenterOfDie.pointAt(offset: digitOffset), angle: angle, font: font)
+                    draw(
+                        face.letter.rawValue, in: context,
+                        at: coordinateSystemFromCenterOfDie.pointAt(offset: letterOffset), angle: angle, font: font)
+                    draw(
+                        face.digit.rawValue, in: context,
+                        at: coordinateSystemFromCenterOfDie.pointAt(offset: digitOffset), angle: angle, font: font)
                 }
             }
             .frame(width: renderedSize.width, height: renderedSize.height)
@@ -105,6 +111,8 @@ struct FacesReadOverlay: View {
             face: ScannedFace(letter: face.letter, digit: face.digit, clockwiseTurns: turns)
         )
     }
-    FacesReadOverlay(renderedSize: CGSize(width: 600, height: 600), dice: dice, imageFrameSize: CGSize(width: 600, height: 600))
-        .background(Color.Camera.backdrop)
+    FacesReadOverlay(
+        renderedSize: CGSize(width: 600, height: 600), dice: dice, imageFrameSize: CGSize(width: 600, height: 600)
+    )
+    .background(Color.Camera.backdrop)
 }

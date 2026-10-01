@@ -20,15 +20,21 @@ struct ChooseBackupTargetView: View {
                 VStack {
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
-                        DiceKeyView(diceKey: diceKey, hideFaces: true, diceBoxColor: Color.Depiction.kitBlue, diePenColor: Color.Depiction.kitBlue,
-                                    aspectRatioMatchStickeys: true)
-                            .frame(minWidth: 0, maxWidth: .infinity)
+                        DiceKeyView(
+                            diceKey: diceKey, hideFaces: true, diceBoxColor: Color.Depiction.kitBlue,
+                            diePenColor: Color.Depiction.kitBlue,
+                            aspectRatioMatchStickeys: true
+                        )
+                        .frame(minWidth: 0, maxWidth: .infinity)
                         Image(systemName: "arrow.right.circle.fill")
                             .foregroundStyle(.tint)
                             .scaleEffect(2.0)
                             .padding(.horizontal, 20)
-                        StickerTargetSheet(diceKey: diceKey, showLettersBeforeIndex: 12, atDieIndex: 12, foregroundColor: Color.Depiction.kitBlue, orientation: .portrait)
-                            .frame(minWidth: 0, maxWidth: .infinity)
+                        StickerTargetSheet(
+                            diceKey: diceKey, showLettersBeforeIndex: 12, atDieIndex: 12,
+                            foregroundColor: Color.Depiction.kitBlue, orientation: .portrait
+                        )
+                        .frame(minWidth: 0, maxWidth: .infinity)
                         Spacer()
                     }
                     Text("Use a Stickeys Kit").font(.title).foregroundStyle(.tint)
@@ -44,15 +50,21 @@ struct ChooseBackupTargetView: View {
                 VStack {
                     HStack(alignment: .center, spacing: 0) {
                         Spacer()
-                        DiceKeyView(diceKey: diceKey, hideFaces: true, diceBoxColor: Color.Depiction.kitBlue, diePenColor: Color.Depiction.kitBlue,
-                                    aspectRatioMatchStickeys: true)
-                            .frame(minWidth: 0, maxWidth: .infinity)
+                        DiceKeyView(
+                            diceKey: diceKey, hideFaces: true, diceBoxColor: Color.Depiction.kitBlue,
+                            diePenColor: Color.Depiction.kitBlue,
+                            aspectRatioMatchStickeys: true
+                        )
+                        .frame(minWidth: 0, maxWidth: .infinity)
                         Image(systemName: "arrow.right.circle.fill")
                             .foregroundStyle(.tint)
                             .scaleEffect(2.0)
                             .padding(.horizontal, 20)
-                        DiceKeyCopyInProgress(diceKey: diceKey, atDieIndex: 12, diceBoxColor: Color.Depiction.kitBlue, diePenColor: Color.Depiction.kitBlue)
-                            .frame(minWidth: 0, maxWidth: .infinity)
+                        DiceKeyCopyInProgress(
+                            diceKey: diceKey, atDieIndex: 12, diceBoxColor: Color.Depiction.kitBlue,
+                            diePenColor: Color.Depiction.kitBlue
+                        )
+                        .frame(minWidth: 0, maxWidth: .infinity)
                         Spacer()
                     }
                     Text("Use a DiceKey Kit").font(.title).foregroundStyle(.tint)

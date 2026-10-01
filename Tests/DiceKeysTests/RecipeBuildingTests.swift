@@ -12,15 +12,20 @@ struct RecipeBuildingTests {
     @Test("a purpose recipe escapes the purpose and orders the optional fields")
     func purposeRecipe() {
         #expect(getRecipeJson(purpose: #"say "hi""#) == #"{"purpose":"say \"hi\""}"#)
-        #expect(getRecipeJson(purpose: "x", sequenceNumber: 2, lengthInChars: 20) == ##"{"purpose":"x","lengthInChars":20,"#":2}"##)
-        #expect(getRecipeJson(purpose: "x", sequenceNumber: 1, lengthInChars: 0, lengthInBytes: 64) == #"{"purpose":"x","lengthInBytes":64}"#)
+        #expect(
+            getRecipeJson(purpose: "x", sequenceNumber: 2, lengthInChars: 20)
+                == ##"{"purpose":"x","lengthInChars":20,"#":2}"##)
+        #expect(
+            getRecipeJson(purpose: "x", sequenceNumber: 1, lengthInChars: 0, lengthInBytes: 64)
+                == #"{"purpose":"x","lengthInBytes":64}"#)
     }
 
     @Test("rebuilding from a template keeps every other field, nested objects included")
     func templateRebuild() throws {
         let apple = try #require(derivationRecipeTemplates.first { $0.name == "Apple" })
         let rebuilt = DerivationRecipe(template: apple, sequenceNumber: 3, lengthInChars: 20)
-        #expect(rebuilt.recipe == ##"{"allow":[{"host":"*.apple.com"},{"host":"*.icloud.com"}],"lengthInChars":20,"#":3}"##)
+        #expect(
+            rebuilt.recipe == ##"{"allow":[{"host":"*.apple.com"},{"host":"*.icloud.com"}],"lengthInChars":20,"#":3}"##)
         #expect(rebuilt.name == "Apple Password (3)")
         let unchanged = DerivationRecipe(template: apple, sequenceNumber: 1, lengthInChars: apple.lengthInChars())
         #expect(unchanged.recipe == apple.recipe)
@@ -35,7 +40,8 @@ struct RecipeBuildingTests {
 
     @Test("accessors read the parsed recipe and return nil for anything but the expected type")
     func accessors() {
-        let recipe = DerivationRecipe(type: .password, name: "n", recipe: #"{"purpose":"café","lengthInChars":32,"lengthInBytes":32.5}"#)
+        let recipe = DerivationRecipe(
+            type: .password, name: "n", recipe: #"{"purpose":"café","lengthInChars":32,"lengthInBytes":32.5}"#)
         #expect(recipe.purpose() == "café")
         #expect(recipe.lengthInChars() == 32)
         #expect(recipe.lengthInBytes() == nil)
@@ -69,7 +75,8 @@ struct RecipeBuildingTests {
 
     @Test("stored recipes still decode with the package's type names")
     func storedRecipeDecodes() throws {
-        let stored = #"[{"type":"Password","name":"n","recipe":"{\"purpose\":\"x\"}"},{"type":"SigningKey","name":"k","recipe":""}]"#
+        let stored =
+            #"[{"type":"Password","name":"n","recipe":"{\"purpose\":\"x\"}"},{"type":"SigningKey","name":"k","recipe":""}]"#
         let recipes = try #require(try DerivationRecipe.listFromJson(stored))
         #expect(recipes.map(\.type) == [.password, .signingKey])
         #expect(try DerivationRecipe.listToJson(recipes).contains(#""type":"Password""#))

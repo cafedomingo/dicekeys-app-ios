@@ -13,7 +13,8 @@ struct CustomRecipeForm: View {
 
     private var explanation: String {
         switch model.buildType {
-        case .rawJson: return "Even the smallest change to any field changes the entire " + model.type.descriptionForRecipeBuilder
+        case .rawJson:
+            return "Even the smallest change to any field changes the entire " + model.type.descriptionForRecipeBuilder
         case .purpose: return "Enter a purpose for the " + model.type.descriptionForRecipeBuilder
         }
     }
@@ -51,14 +52,20 @@ struct CustomRecipeForm: View {
 
             if model.buildType != .rawJson {
                 if model.type == .password {
-                    Section("Maximum Length, in Characters (\(CustomRecipeModel.lengthInCharsEntryRange.lowerBound) - \(CustomRecipeModel.lengthInCharsEntryRange.upperBound))") {
+                    Section(
+                        "Maximum Length, in Characters (\(CustomRecipeModel.lengthInCharsEntryRange.lowerBound) - \(CustomRecipeModel.lengthInCharsEntryRange.upperBound))"
+                    ) {
                         TextField("no length limit", value: $model.lengthInCharsEntry, format: .number)
                             .keyboardType(.numberPad)
                     }
                 } else if model.type == .secret {
-                    Section("Length, in Bytes (\(CustomRecipeModel.lengthInBytesEntryRange.lowerBound) - \(CustomRecipeModel.lengthInBytesEntryRange.upperBound))") {
-                        TextField(String(Recipe.defaultLengthInBytes), value: $model.lengthInBytesEntry, format: .number)
-                            .keyboardType(.numberPad)
+                    Section(
+                        "Length, in Bytes (\(CustomRecipeModel.lengthInBytesEntryRange.lowerBound) - \(CustomRecipeModel.lengthInBytesEntryRange.upperBound))"
+                    ) {
+                        TextField(
+                            String(Recipe.defaultLengthInBytes), value: $model.lengthInBytesEntry, format: .number
+                        )
+                        .keyboardType(.numberPad)
                     }
                 }
                 Section("Sequence Number") {
@@ -76,7 +83,9 @@ struct CustomRecipeForm: View {
                 model.buildType = .purpose
             }
         } message: {
-            Text("Entering a recipe in raw JSON format can be dangerous.\n\nIf you enter a recipe provided by someone else, it could be a trick to get you to re-create a secret you use for another application or purpose.\n\nIf you generate the recipe yourself and forget even a single character, you will be unable to re-generate the same secret again. (Saving the recipe won't help you if you lose the device(s) it's saved on.)")
+            Text(
+                "Entering a recipe in raw JSON format can be dangerous.\n\nIf you enter a recipe provided by someone else, it could be a trick to get you to re-create a secret you use for another application or purpose.\n\nIf you generate the recipe yourself and forget even a single character, you will be unable to re-generate the same secret again. (Saving the recipe won't help you if you lose the device(s) it's saved on.)"
+            )
         }
     }
 }

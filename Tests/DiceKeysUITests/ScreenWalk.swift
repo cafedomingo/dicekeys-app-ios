@@ -85,7 +85,11 @@ final class ScreenWalk: XCTestCase {
         if springboard.alerts.firstMatch.waitForExistence(timeout: 2) {
             snap("scan-camera-permission-alert")
             let alert = springboard.alerts.firstMatch
-            if alert.buttons["Allow"].exists { alert.buttons["Allow"].tap() } else { alert.buttons.element(boundBy: 0).tap() }
+            if alert.buttons["Allow"].exists {
+                alert.buttons["Allow"].tap()
+            } else {
+                alert.buttons.element(boundBy: 0).tap()
+            }
             Thread.sleep(forTimeInterval: 1.5)
         }
         snap("scan")
@@ -140,7 +144,8 @@ final class ScreenWalk: XCTestCase {
         // Derived value: password template
         tap(button("1Password"), "1Password")
         snap("derived-password", settle: 1.5)
-        let picker = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Password' OR label CONTAINS 'JSON'")).allElementsBoundByIndex
+        let picker = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Password' OR label CONTAINS 'JSON'"))
+            .allElementsBoundByIndex
             .first { $0.frame.minY > 300 && $0.label != "Copy Password" }
         if let picker {
             picker.tap()
@@ -224,7 +229,12 @@ final class ScreenWalk: XCTestCase {
         Thread.sleep(forTimeInterval: 0.6)
         back()
         snap("home-with-dicekey", settle: 1)
-        let menu = app.buttons.matching(NSPredicate(format: "label CONTAINS 'ellipsis' OR label CONTAINS 'More' OR label CONTAINS 'in memory' OR label CONTAINS 'ing in' OR label CONTAINS 'until'")).firstMatch
+        let menu = app.buttons.matching(
+            NSPredicate(
+                format:
+                    "label CONTAINS 'ellipsis' OR label CONTAINS 'More' OR label CONTAINS 'in memory' OR label CONTAINS 'ing in' OR label CONTAINS 'until'"
+            )
+        ).firstMatch
         if menu.waitForExistence(timeout: 2) {
             menu.tap()
             snap("home-dicekey-menu", settle: 1)

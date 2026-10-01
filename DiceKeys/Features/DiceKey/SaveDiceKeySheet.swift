@@ -21,8 +21,11 @@ struct SaveDiceKeySheet: View {
                         .resizable().scaledToFit()
                         .foregroundStyle(.tint)
                         .background(
-                            DiceKeyView(diceKey: diceKeyState.diceKey, diceBoxColor: Color.Depiction.kitBlue, diePenColor: Color.Depiction.kitBlue)
-                                .scaleEffect(0.8)
+                            DiceKeyView(
+                                diceKey: diceKeyState.diceKey, diceBoxColor: Color.Depiction.kitBlue,
+                                diePenColor: Color.Depiction.kitBlue
+                            )
+                            .scaleEffect(0.8)
                         )
                         .frame(maxHeight: 220)
                     Toggle(isOn: $diceKeyState.isDiceKeyStored) {

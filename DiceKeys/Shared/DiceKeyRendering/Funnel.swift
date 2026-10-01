@@ -34,13 +34,13 @@ func funnel(
     let bottom: CGFloat = top + height
     let paddingBottomY: CGFloat = bottom + paddingBottom
 
-    let  bottleneckY = top + height * bottleneckFractionFromTop
+    let bottleneckY = top + height * bottleneckFractionFromTop
 
     path.move(to: CGPoint(x: topLeft, y: paddingTopY))
     path.addLine(to: CGPoint(x: topLeft, y: top))
     path.addCurve(
         to: CGPoint(x: bottleneckLeft, y: bottleneckY),
-        control1: CGPoint(x: topLeft, y: top + (bottleneckY - top) * invCurvature ),
+        control1: CGPoint(x: topLeft, y: top + (bottleneckY - top) * invCurvature),
         control2: CGPoint(x: bottleneckLeft, y: top + (bottleneckY - top) * curvature)
     )
     path.addCurve(
@@ -59,7 +59,7 @@ func funnel(
     path.addCurve(
         to: CGPoint(x: topRight, y: top),
         control1: CGPoint(x: bottleneckRight, y: top + (bottleneckY - top) * curvature),
-        control2: CGPoint(x: topRight, y: top + (bottleneckY - top) * invCurvature )
+        control2: CGPoint(x: topRight, y: top + (bottleneckY - top) * invCurvature)
     )
     path.addLine(to: CGPoint(x: topRight, y: paddingTopY))
     path.addLine(to: CGPoint(x: topLeft, y: paddingTopY))

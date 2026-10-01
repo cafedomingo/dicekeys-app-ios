@@ -45,6 +45,8 @@ enum Armor {
                 if crc & crc24Overflow != 0 { crc ^= crc24Polynomial }
             }
         }
-        return [UInt8(truncatingIfNeeded: crc >> 16), UInt8(truncatingIfNeeded: crc >> 8), UInt8(truncatingIfNeeded: crc)]
+        return [
+            UInt8(truncatingIfNeeded: crc >> 16), UInt8(truncatingIfNeeded: crc >> 8), UInt8(truncatingIfNeeded: crc)
+        ]
     }
 }

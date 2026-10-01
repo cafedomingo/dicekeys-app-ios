@@ -22,7 +22,10 @@ import Testing
 struct ScannerBenchmarkTests {
     @Test("time and memory per 1080x1080 frame")
     func timeAndMemoryPerFrame() throws {
-        let url = try #require(CorpusImage.all.first { $0.url.lastPathComponent.hasPrefix("K13Y63A23") && !$0.url.lastPathComponent.contains("glare") }?.url)
+        let url = try #require(
+            CorpusImage.all.first {
+                $0.url.lastPathComponent.hasPrefix("K13Y63A23") && !$0.url.lastPathComponent.contains("glare")
+            }?.url)
         let frame = try Corpus.gray(from: url, square: 1080)
         let peakBefore = peakFootprint()
         var samples: [Duration] = []
@@ -34,8 +37,12 @@ struct ScannerBenchmarkTests {
         let peakAfter = peakFootprint()
         let sorted = samples.dropFirst().sorted()
         let ms = { (d: Duration) in Double(d.components.seconds) * 1000 + Double(d.components.attoseconds) / 1e15 }
-        print(String(format: "scanner benchmark: 1080x1080 frame, median %.1f ms, min %.1f ms, max %.1f ms; scanning raised peak memory by %.1f MB",
-                     ms(sorted[sorted.count / 2]), ms(sorted.first!), ms(sorted.last!), Double(peakAfter - peakBefore) / 1e6))
+        print(
+            String(
+                format:
+                    "scanner benchmark: 1080x1080 frame, median %.1f ms, min %.1f ms, max %.1f ms; scanning raised peak memory by %.1f MB",
+                ms(sorted[sorted.count / 2]), ms(sorted.first!), ms(sorted.last!), Double(peakAfter - peakBefore) / 1e6)
+        )
         #expect(sorted[sorted.count / 2] < .seconds(2))
     }
 
@@ -44,7 +51,9 @@ struct ScannerBenchmarkTests {
         var info = task_vm_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size)
         let result = withUnsafeMutablePointer(to: &info) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count) }
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
+            }
         }
         return result == KERN_SUCCESS ? UInt64(info.ledger_phys_footprint_peak) : 0
     }

@@ -15,12 +15,18 @@ struct DerivedFromDiceKey<Content: View>: View {
     var bottomWidth: CGFloat { max(bounds.width, contentSize.width) }
     var contentHeight: CGFloat { contentSize.height }
 
-    var verticalOverlapAsFractionOfDiceKeySize: CGFloat = 1/40
+    var verticalOverlapAsFractionOfDiceKeySize: CGFloat = 1 / 40
     var funnelHeightAsFractionOfDiceKeySize: CGFloat = 0.3
-    var maxDiceKeySizeAsFractionOfVerticalSpaceAboveContent: CGFloat { 1.0 / (1 + funnelHeightAsFractionOfDiceKeySize -  verticalOverlapAsFractionOfDiceKeySize) }
-    var diceKeySize: CGFloat { max(0, min(
-        bounds.width * 0.75,
-        maxDiceKeySizeAsFractionOfVerticalSpaceAboveContent * (bounds.height - contentHeight - funnelBottomPadding) ) )
+    var maxDiceKeySizeAsFractionOfVerticalSpaceAboveContent: CGFloat {
+        1.0 / (1 + funnelHeightAsFractionOfDiceKeySize - verticalOverlapAsFractionOfDiceKeySize)
+    }
+    var diceKeySize: CGFloat {
+        max(
+            0,
+            min(
+                bounds.width * 0.75,
+                maxDiceKeySizeAsFractionOfVerticalSpaceAboveContent
+                    * (bounds.height - contentHeight - funnelBottomPadding)))
     }
     var funnelBottomPadding: CGFloat { 5 }
 
@@ -47,14 +53,16 @@ struct DerivedFromDiceKey<Content: View>: View {
         max(topWidth, bottomWidth)
     }
 
-    var aspectRatio: CGFloat? { bounds == .zero || totalHeight == 0 ? nil :  width / frameHeight }
+    var aspectRatio: CGFloat? { bounds == .zero || totalHeight == 0 ? nil : width / frameHeight }
 
     var bottleneckWidth: CGFloat { diceKeySize / 4 }
 
-    var arrowSize: CGFloat { min( funnelHeight, bottleneckWidth * 0.8 ) }
+    var arrowSize: CGFloat { min(funnelHeight, bottleneckWidth * 0.8) }
 
     private var funnel: Funnel {
-        Funnel(topWidth: diceKeySize, bottomWidth: bottomWidth, bottleneckWidth: bottleneckWidth, paddingBottom: contentHeight, bottleneckFractionFromTop: bottleneckFractionFromTop)
+        Funnel(
+            topWidth: diceKeySize, bottomWidth: bottomWidth, bottleneckWidth: bottleneckWidth,
+            paddingBottom: contentHeight, bottleneckFractionFromTop: bottleneckFractionFromTop)
     }
 
     var body: some View {
@@ -71,20 +79,25 @@ struct DerivedFromDiceKey<Content: View>: View {
                 .frame(height: diceKeySize - verticalOverlap, alignment: .top).clipped()
                 ZStack(alignment: Alignment(horizontal: .center, vertical: .bottom)) {
                     funnel
-                        .fill(LinearGradient(gradient: Gradient(colors: [Color.Depiction.diceBox, Color.Depiction.funnelBottom]), startPoint: .top, endPoint: .bottom))
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.Depiction.diceBox, Color.Depiction.funnelBottom]),
+                                startPoint: .top, endPoint: .bottom)
+                        )
                         .overlay(funnel.stroke(Color.Interface.objectEdge, lineWidth: 1))
                         .frame(width: width, height: totalFunnelHeight, alignment: .center)
-                    Image(systemName: "arrow.down").resizable().frame(width: arrowSize, height: arrowSize).foregroundStyle(Color.Depiction.funnelArrow)
+                    Image(systemName: "arrow.down").resizable().frame(width: arrowSize, height: arrowSize)
+                        .foregroundStyle(Color.Depiction.funnelArrow)
                         .offset(
                             x: 0,
                             y: -contentHeight - funnelBottomPadding + (arrowSize - funnelHeight) / 2
                         )
                     ChildSizeReader<Content>(size: $contentSize, content: content)
                         .frame(maxWidth: bounds.width > 0 ? bounds.width : CGFloat.infinity)
-                        .offset(x: 0, y: -funnelBottomPadding )
+                        .offset(x: 0, y: -funnelBottomPadding)
                 }.if(aspectRatio != nil) { $0.frame(height: funnelHeight + contentHeight) }
             }
-    }.if(aspectRatio != nil) { $0.aspectRatio(aspectRatio, contentMode: .fit) }
+        }.if(aspectRatio != nil) { $0.aspectRatio(aspectRatio, contentMode: .fit) }
     }
 }
 
@@ -96,7 +109,8 @@ struct DerivedFromDiceKey<Content: View>: View {
         }
         Spacer()
         DerivedFromDiceKey(diceKey: DiceKey.createFromRandom()) {
-            Text("some random words constitute your password and some more random words to be copied").multilineTextAlignment(.center).padding(.horizontal, 5)
+            Text("some random words constitute your password and some more random words to be copied")
+                .multilineTextAlignment(.center).padding(.horizontal, 5)
         }
         Spacer()
     }

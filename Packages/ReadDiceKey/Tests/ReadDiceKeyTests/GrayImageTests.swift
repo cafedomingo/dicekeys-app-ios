@@ -10,7 +10,9 @@ import Testing
 @Suite("GrayImage from a camera frame")
 struct GrayImageTests {
     /// A bi-planar Y'CbCr frame whose luma at (x, y) is x + 10 * y.
-    private func frame(width: Int, height: Int, format: OSType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) throws -> CVPixelBuffer {
+    private func frame(width: Int, height: Int, format: OSType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) throws
+        -> CVPixelBuffer
+    {
         var buffer: CVPixelBuffer?
         CVPixelBufferCreate(kCFAllocatorDefault, width, height, format, nil, &buffer)
         let frame = try #require(buffer)
@@ -46,7 +48,10 @@ struct GrayImageTests {
 
     @Test("video-range frames are read as well")
     func videoRange() throws {
-        let image = try #require(GrayImage(centeredSquareOf: try frame(width: 4, height: 4, format: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)))
+        let image = try #require(
+            GrayImage(
+                centeredSquareOf: try frame(
+                    width: 4, height: 4, format: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)))
         #expect(image.pixels[5] == 11)
     }
 

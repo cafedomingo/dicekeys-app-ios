@@ -33,11 +33,13 @@ struct RecipeJsonTests {
     @Test("nested objects and arrays use the same rule at every level")
     func nestedOrder() {
         let object = RecipeJsonValue.object([
-            RecipeJsonField(name: "x", value: .object([
-                RecipeJsonField(name: "z", value: .int(1)),
-                RecipeJsonField(name: "purpose", value: .text("p")),
-                RecipeJsonField(name: "#", value: .int(2))
-            ])),
+            RecipeJsonField(
+                name: "x",
+                value: .object([
+                    RecipeJsonField(name: "z", value: .int(1)),
+                    RecipeJsonField(name: "purpose", value: .text("p")),
+                    RecipeJsonField(name: "#", value: .int(2))
+                ])),
             RecipeJsonField(name: "list", value: .array([.bool(true), .null, .number(text: "1.50")]))
         ])
         #expect(object.canonicalText == ##"{"list":[true,null,1.50],"x":{"purpose":"p","z":1,"#":2}}"##)
@@ -63,16 +65,28 @@ struct RecipeJsonTests {
     // From the reference's recipe-canonicalization.test.ts, plus the Android cases.
     static let referenceVectors: [(input: String, expected: String)] = [
         (##"{"#":3,"allow":[{"host":"*.example.com"}]}"##, ##"{"allow":[{"host":"*.example.com"}],"#":3}"##),
-        (##"{"#":3,"allow":[{"host":"*.example.com"}],"purpose":"Life? Don't talk to me about life!" }"##,
-         ##"{"purpose":"Life? Don't talk to me about life!","allow":[{"host":"*.example.com"}],"#":3}"##),
-        (#"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}]}"#, #"{"allow":[{"host":"*.example.com","paths":["lo","yo"]}]}"#),
+        (
+            ##"{"#":3,"allow":[{"host":"*.example.com"}],"purpose":"Life? Don't talk to me about life!" }"##,
+            ##"{"purpose":"Life? Don't talk to me about life!","allow":[{"host":"*.example.com"}],"#":3}"##
+        ),
+        (
+            #"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}]}"#,
+            #"{"allow":[{"host":"*.example.com","paths":["lo","yo"]}]}"#
+        ),
         (" {  \"allow\" : [  {\"host\"\n:\"*.example.com\"}\t ]    }\n\n", #"{"allow":[{"host":"*.example.com"}]}"#),
-        (##"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}],"#":3, "purpose":"Don't know", "lengthInChars":3, "lengthInBytes": 15, "UNANTICIPATED_CAPITALIZED_FIELD":{}}"##,
-         ##"{"purpose":"Don't know","UNANTICIPATED_CAPITALIZED_FIELD":{},"allow":[{"host":"*.example.com","paths":["lo","yo"]}],"lengthInBytes":15,"lengthInChars":3,"#":3}"##),
-        (##"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}],"#":3, "purpose":"Don't know", "lengthInChars":3, "lengthInBytes": 15, "UNANTICIPATED_CAPITALIZED_FIELD":[ ] }"##,
-         ##"{"purpose":"Don't know","UNANTICIPATED_CAPITALIZED_FIELD":[],"allow":[{"host":"*.example.com","paths":["lo","yo"]}],"lengthInBytes":15,"lengthInChars":3,"#":3}"##),
+        (
+            ##"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}],"#":3, "purpose":"Don't know", "lengthInChars":3, "lengthInBytes": 15, "UNANTICIPATED_CAPITALIZED_FIELD":{}}"##,
+            ##"{"purpose":"Don't know","UNANTICIPATED_CAPITALIZED_FIELD":{},"allow":[{"host":"*.example.com","paths":["lo","yo"]}],"lengthInBytes":15,"lengthInChars":3,"#":3}"##
+        ),
+        (
+            ##"{"allow":[{"paths":["lo", "yo"],"host":"*.example.com"}],"#":3, "purpose":"Don't know", "lengthInChars":3, "lengthInBytes": 15, "UNANTICIPATED_CAPITALIZED_FIELD":[ ] }"##,
+            ##"{"purpose":"Don't know","UNANTICIPATED_CAPITALIZED_FIELD":[],"allow":[{"host":"*.example.com","paths":["lo","yo"]}],"lengthInBytes":15,"lengthInChars":3,"#":3}"##
+        ),
         (#"{ "silly":[{"pointless":[ "spacing in", "out"]}]}"#, #"{"silly":[{"pointless":["spacing in","out"]}]}"#),
-        (#"{ "silly":[{"pointless":[ "spacing in", "out"]}],   "crazy":3}"#, #"{"crazy":3,"silly":[{"pointless":["spacing in","out"]}]}"#)
+        (
+            #"{ "silly":[{"pointless":[ "spacing in", "out"]}],   "crazy":3}"#,
+            #"{"crazy":3,"silly":[{"pointless":["spacing in","out"]}]}"#
+        )
     ]
 
     @Test("the reference test cases", arguments: referenceVectors)
@@ -98,7 +112,9 @@ struct RecipeJsonTests {
         #expect(try json.canonicalizedRecipe() == json)
     }
 
-    static let duplicateKeys: [String] = [#"{"a":1,"a":2}"#, #"{"x":{"purpose":"a","purpose":"b"}}"#, #"{"a":1,"\u0061":2}"#]
+    static let duplicateKeys: [String] = [
+        #"{"a":1,"a":2}"#, #"{"x":{"purpose":"a","purpose":"b"}}"#, #"{"a":1,"\u0061":2}"#
+    ]
 
     @Test("duplicate keys are rejected, at every level", arguments: duplicateKeys)
     func rejectsDuplicateKeys(json: String) {
@@ -115,7 +131,9 @@ struct RecipeJsonTests {
         #expect(try #"{"～":1,"😀":2}"#.canonicalizedRecipe() == #"{"😀":2,"～":1}"#)
         #expect(try #"{"～":1,"\ud83d\ude00":2}"#.canonicalizedRecipe() == #"{"😀":2,"～":1}"#)
         #expect(try #"{"b":1,"B":2}"#.canonicalizedRecipe() == #"{"B":2,"b":1}"#)
-        #expect(try ##"{"x":{"z":1,"purpose":"p","#":2}}"##.canonicalizedRecipe() == ##"{"x":{"purpose":"p","z":1,"#":2}}"##)
+        #expect(
+            try ##"{"x":{"z":1,"purpose":"p","#":2}}"##.canonicalizedRecipe() == ##"{"x":{"purpose":"p","z":1,"#":2}}"##
+        )
     }
 
     @Test("keys are written decoded, as the reference does")
@@ -184,15 +202,20 @@ struct RecipeJsonTests {
 
     @Test("decoding a quoted string handles every escape and surrogate pairs")
     func decodeString() throws {
-        #expect(try RecipeJsonParser.decodeString(quoted: #""a\"b\\c\/d\b\f\n\r\t\u00e9\ud83d\ude00""#) == "a\"b\\c/d\u{08}\u{0C}\n\r\té😀")
+        #expect(
+            try RecipeJsonParser.decodeString(quoted: #""a\"b\\c\/d\b\f\n\r\t\u00e9\ud83d\ude00""#)
+                == "a\"b\\c/d\u{08}\u{0C}\n\r\té😀")
         #expect(throws: RecipeJsonError.self) { try RecipeJsonParser.decodeString(quoted: #""\ud83d""#) }
     }
 
     @Test("errors have a message a person can act on")
     func errorMessages() {
         #expect(RecipeJsonError.duplicateKey(name: "a", offset: 1).message == "Each field name may appear only once")
-        #expect(RecipeJsonError.unrepresentableKey(offset: 1).message == "A field name cannot contain quotes, backslashes or control characters")
-        #expect(RecipeJsonError.notAnObject.message == "A recipe must be a JSON object, such as {\"purpose\":\"example\"}")
+        #expect(
+            RecipeJsonError.unrepresentableKey(offset: 1).message
+                == "A field name cannot contain quotes, backslashes or control characters")
+        #expect(
+            RecipeJsonError.notAnObject.message == "A recipe must be a JSON object, such as {\"purpose\":\"example\"}")
         #expect(RecipeJsonError.invalid(offset: 7).message == "Not valid JSON near position 7")
     }
 }

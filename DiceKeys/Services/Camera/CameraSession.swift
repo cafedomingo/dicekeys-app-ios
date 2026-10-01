@@ -186,7 +186,9 @@ final class CameraSession {
     /// 17 mm apart (1.35 to 1.5 die widths, measured in the corpus photos). No margin is added: on the owner's phone, a key
     /// held a little closer than this still read within a second, and more zoom only made the
     /// preview feel cramped.
-    nonisolated static func zoomForScanning(minimumFocusDistance: Double, fieldOfView: Double, frameSize: CGSize) -> Double {
+    nonisolated static func zoomForScanning(minimumFocusDistance: Double, fieldOfView: Double, frameSize: CGSize)
+        -> Double
+    {
         let longSide = max(frameSize.width, frameSize.height), shortSide = min(frameSize.width, frameSize.height)
         let halfAngleOfSquare = atan(tan(fieldOfView * .pi / 360) * shortSide / longSide)
         let pitchesAcrossSquare = 6 / Double(ScanningTarget.windowFraction)
@@ -214,7 +216,8 @@ final class CameraSession {
         // get the same one: the overlay is drawn in frame coordinates over the preview, so
         // they have to agree.
         rotationObservations = [
-            coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]) { [weak self] coordinator, _ in
+            coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.initial, .new]) {
+                [weak self] coordinator, _ in
                 let angle = coordinator.videoRotationAngleForHorizonLevelPreview
                 Task { @MainActor [weak self] in
                     self?.applyPreviewRotation(angle)
@@ -234,7 +237,8 @@ final class CameraSession {
     /// coordinates the user is looking at, whatever AVFoundation's angle convention is.
     private func applyCaptureRotation(_ angle: CGFloat) {
         guard let connection = videoOutput?.connection(with: .video),
-              connection.isVideoRotationAngleSupported(angle) else { return }
+            connection.isVideoRotationAngleSupported(angle)
+        else { return }
         connection.videoRotationAngle = angle
     }
 }

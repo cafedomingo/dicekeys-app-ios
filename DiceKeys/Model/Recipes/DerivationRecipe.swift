@@ -6,10 +6,12 @@
 import Foundation
 import Derivation
 
-func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String {
+func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String
+{
     RecipeJsonValue.object(
         [RecipeJsonField(name: Recipe.purposeField, value: .text(purpose))]
-        + optionalRecipeFields(sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
+            + optionalRecipeFields(
+                sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
     ).canonicalText
 }
 
@@ -30,7 +32,9 @@ private func optionalRecipeFields(sequenceNumber: Int, lengthInChars: Int?, leng
 }
 
 struct DerivationRecipe: Identifiable, Codable, Equatable {
-    static let rebuildSkipJsonProperties = [Recipe.sequenceNumberField, Recipe.lengthInCharsField, Recipe.lengthInBytesField]
+    static let rebuildSkipJsonProperties = [
+        Recipe.sequenceNumberField, Recipe.lengthInCharsField, Recipe.lengthInBytesField
+    ]
     /// A wallet seed phrase is offered only for 32-byte secrets, the 24 words wallets expect.
     private static let bip39SecretLength = 32
 
@@ -48,12 +52,13 @@ struct DerivationRecipe: Identifiable, Codable, Equatable {
 
     init(template: DerivationRecipe, sequenceNumber: Int, lengthInChars: Int? = nil, lengthInBytes: Int? = nil) {
         self.type = template.type
-        let typeSuffix = switch template.type {
-        case .password: " Password"
-        case .symmetricKey: " Key"
-        case .unsealingKey: " Key Pair"
-        case .secret, .signingKey: ""
-        }
+        let typeSuffix =
+            switch template.type {
+            case .password: " Password"
+            case .symmetricKey: " Key"
+            case .unsealingKey: " Key Pair"
+            case .secret, .signingKey: ""
+            }
         let sequenceSuffix = sequenceNumber == 1 ? "" : " (\(String(sequenceNumber)))"
         self.name = template.name + typeSuffix + sequenceSuffix
 
@@ -67,10 +72,12 @@ struct DerivationRecipe: Identifiable, Codable, Equatable {
     }
 
     static func listFromJson(_ json: String) throws -> [DerivationRecipe]? {
-        return try JSONDecoder().decode([DerivationRecipe].self, from: json.data(using: .utf8)! )
+        return try JSONDecoder().decode([DerivationRecipe].self, from: json.data(using: .utf8)!)
     }
 
-    static func listToJson(_ derivables: [DerivationRecipe]) throws -> String { String(decoding: try JSONEncoder().encode(derivables), as: UTF8.self) }
+    static func listToJson(_ derivables: [DerivationRecipe]) throws -> String {
+        String(decoding: try JSONEncoder().encode(derivables), as: UTF8.self)
+    }
 }
 
 extension DerivationRecipe {
@@ -82,7 +89,9 @@ extension DerivationRecipe {
             return DerivedValuePassword(password: try Password.derive(seed: seed, recipe: recipe))
         case .secret:
             let lengthInBytes = lengthInBytes()
-            return DerivedValueSecret(secret: try Secret.derive(seed: seed, recipe: recipe), showBIP39: (lengthInBytes ?? Recipe.defaultLengthInBytes) == Self.bip39SecretLength)
+            return DerivedValueSecret(
+                secret: try Secret.derive(seed: seed, recipe: recipe),
+                showBIP39: (lengthInBytes ?? Recipe.defaultLengthInBytes) == Self.bip39SecretLength)
         case .signingKey:
             return DerivedValueSigningKey(signingKey: try SigningKey.derive(seed: seed, recipe: recipe))
         case .symmetricKey:
@@ -110,7 +119,9 @@ extension DerivationRecipe {
     }
 
     func purpose() -> String? {
-        guard case .string(let quoted) = fields.first(where: { $0.name == Recipe.purposeField })?.value else { return nil }
+        guard case .string(let quoted) = fields.first(where: { $0.name == Recipe.purposeField })?.value else {
+            return nil
+        }
         return try? RecipeJsonParser.decodeString(quoted: quoted)
     }
 

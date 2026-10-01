@@ -101,7 +101,9 @@ public struct BLAKE2b: Sendable {
         return Array(digest.prefix(digestLength))
     }
 
-    public static func hash(_ message: some Sequence<UInt8>, key: [UInt8] = [], digestLength: Int = Self.maximumDigestLength) -> [UInt8] {
+    public static func hash(
+        _ message: some Sequence<UInt8>, key: [UInt8] = [], digestLength: Int = Self.maximumDigestLength
+    ) -> [UInt8] {
         var hasher = BLAKE2b(digestLength: digestLength, key: key)
         hasher.update(message)
         return hasher.finalize()
@@ -151,7 +153,9 @@ public struct BLAKE2b: Sendable {
         state[7] ^= v7 ^ v15
     }
 
-    private static func mix(_ a: inout UInt64, _ b: inout UInt64, _ c: inout UInt64, _ d: inout UInt64, _ x: UInt64, _ y: UInt64) {
+    private static func mix(
+        _ a: inout UInt64, _ b: inout UInt64, _ c: inout UInt64, _ d: inout UInt64, _ x: UInt64, _ y: UInt64
+    ) {
         a = a &+ b &+ x
         d = rotateRight(d ^ a, by: 32)
         c = c &+ d

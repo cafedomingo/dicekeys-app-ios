@@ -67,7 +67,9 @@ struct UndoverlineBits {
 
     /// The face this line names, if any.
     var face: FaceWithUnderlineAndOverlineCode? {
-        isOverline ? overlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)] : underlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)]
+        isOverline
+            ? overlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)]
+            : underlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)]
     }
 }
 
@@ -98,11 +100,13 @@ func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
     let acrossIsVertical = abs(delta.x) > abs(delta.y)
     let (outerStart, outerEnd) = (start, end)
     while image.sample(at: start, pixels: 3, acrossIsVertical: acrossIsVertical) > darkBelow,
-          isPoint(start + step, between: outerStart, and: outerEnd) {
+        isPoint(start + step, between: outerStart, and: outerEnd)
+    {
         start += step
     }
     while image.sample(at: end, pixels: 3, acrossIsVertical: acrossIsVertical) > darkBelow,
-          isPoint(end - step, between: start, and: outerEnd) {
+        isPoint(end - step, between: start, and: outerEnd)
+    {
         end -= step
     }
 

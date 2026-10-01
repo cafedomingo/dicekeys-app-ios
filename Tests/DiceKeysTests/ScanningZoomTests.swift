@@ -29,7 +29,8 @@ struct ScanningZoomTests {
     @Test("does not depend on which way the frame is turned")
     func ignoresFrameOrientation() {
         let landscape = CameraSession.zoomForScanning(minimumFocusDistance: 200, fieldOfView: 70, frameSize: frame)
-        let portrait = CameraSession.zoomForScanning(minimumFocusDistance: 200, fieldOfView: 70, frameSize: CGSize(width: 1080, height: 1920))
+        let portrait = CameraSession.zoomForScanning(
+            minimumFocusDistance: 200, fieldOfView: 70, frameSize: CGSize(width: 1080, height: 1920))
         #expect(landscape == portrait)
     }
 }

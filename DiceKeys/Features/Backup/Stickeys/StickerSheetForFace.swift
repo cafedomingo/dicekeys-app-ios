@@ -13,10 +13,10 @@ struct StickerSheetForFace {
         Int(((faceLetterIndexes[face.letter] ?? 0) / 5) * 5)
     }
     var firstLetter: FaceLetter {
-        FaceLetters[ letterIndexOfFirstColumn ]
+        FaceLetters[letterIndexOfFirstColumn]
     }
     var lastLetter: FaceLetter {
-        FaceLetters[ letterIndexOfFirstColumn + 4 ]
+        FaceLetters[letterIndexOfFirstColumn + 4]
     }
 
     var column: CGFloat {

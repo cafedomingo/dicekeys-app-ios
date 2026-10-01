@@ -48,27 +48,34 @@ struct DiceKeyCopyInProgress: View {
     }
 
     var body: some View {
-        CalculateBounds(bounds: $bounds) { ZStack(alignment: .center) {
-            DiceKeyView(diceKey: diceKey, diceBoxColor: diceBoxColor, diePenColor: diePenColor, showDiceAtIndexes: indexestoShow)
-            if let atDieIndex = self.atDieIndex, atDieIndex < 25 && atDieIndex >= 0 {
-                // Highlight-colored box
-                RoundedRectangle(cornerRadius: faceSize / 8)
-                    .size(width: faceSize * 1.1, height: faceSize * 1.1)
-                    .fill(Color.Depiction.highlighter)
+        CalculateBounds(bounds: $bounds) {
+            ZStack(alignment: .center) {
+                DiceKeyView(
+                    diceKey: diceKey, diceBoxColor: diceBoxColor, diePenColor: diePenColor,
+                    showDiceAtIndexes: indexestoShow)
+                if let atDieIndex = self.atDieIndex, atDieIndex < 25 && atDieIndex >= 0 {
+                    // Highlight-colored box
+                    RoundedRectangle(cornerRadius: faceSize / 8)
+                        .size(width: faceSize * 1.1, height: faceSize * 1.1)
+                        .fill(Color.Depiction.highlighter)
+                        .offset(self.offset(forFaceIndex: atDieIndex))
+                        .frame(width: faceSize * 1.1, height: faceSize * 1.1)
+                    // Hand image
+                    Image("Hand with Sticker")
+                        .resizable()
+                        .frame(width: handImageWidth, height: handImageHeight).scaledToFit()
+                        .frame(width: faceSizeModel.width, height: faceSizeModel.height)
+                        .offset(handImageOffsetToCenterOfDie)
+                        .offset(self.offset(forFaceIndex: atDieIndex))
+                    // Face being placed
+                    DieView(
+                        face: diceKey.faces[atDieIndex], dieSize: faceSize, penColor: diePenColor,
+                        faceSurfaceColor: Color.clear
+                    )
                     .offset(self.offset(forFaceIndex: atDieIndex))
-                    .frame(width: faceSize * 1.1, height: faceSize * 1.1)
-                // Hand image
-                Image("Hand with Sticker")
-                    .resizable()
-                    .frame(width: handImageWidth, height: handImageHeight).scaledToFit()
-                    .frame(width: faceSizeModel.width, height: faceSizeModel.height)
-                    .offset(handImageOffsetToCenterOfDie)
-                    .offset(self.offset(forFaceIndex: atDieIndex))
-                // Face being placed
-                DieView(face: diceKey.faces[atDieIndex], dieSize: faceSize, penColor: diePenColor, faceSurfaceColor: Color.clear)
-                    .offset(self.offset(forFaceIndex: atDieIndex))
+                }
             }
-        }}.scaledToFit()
+        }.scaledToFit()
     }
 }
 

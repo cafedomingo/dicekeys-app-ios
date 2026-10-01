@@ -73,7 +73,8 @@ final class DiceKeyMemoryStore {
     private func tick() {
         currentTime = Date()
         if case let .countdownInProgress(whenExpiring) = memoryStoreExpirationState,
-           currentTime > whenExpiring, !keyCache.isEmpty {
+            currentTime > whenExpiring, !keyCache.isEmpty
+        {
             expireAllKeys()
         }
     }

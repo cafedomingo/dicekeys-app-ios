@@ -64,7 +64,10 @@ struct RecipeCardView: View {
 }
 
 #Preview {
-    RecipeCardView(source: .template(derivationRecipeTemplates[0]), builderState: RecipeBuilderState(), recipe: derivationRecipeTemplates[0])
-        .padding()
-        .appEnvironment(AppModel.preview())
+    RecipeCardView(
+        source: .template(derivationRecipeTemplates[0]), builderState: RecipeBuilderState(),
+        recipe: derivationRecipeTemplates[0]
+    )
+    .padding()
+    .appEnvironment(AppModel.preview())
 }

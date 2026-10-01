@@ -54,7 +54,8 @@ final class UnlockedDiceKeyState: Identifiable {
             }
             lastError = nil
         } catch {
-            lastError = PresentableError(title: stored ? "Couldn't Save DiceKey" : "Couldn't Remove DiceKey", error: error)
+            lastError = PresentableError(
+                title: stored ? "Couldn't Save DiceKey" : "Couldn't Remove DiceKey", error: error)
         }
         isDiceKeyStoredCache = keychain.hasDiceKey(forKeyId: keyId)
     }
