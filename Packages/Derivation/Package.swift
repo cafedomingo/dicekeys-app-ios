@@ -4,6 +4,7 @@
 //
 //   Derivation   recipe parsing and validation, the derived value types, and the engine
 //                that does the hashing (the vendored C++ in SeededCrypto for now)
+//   BLAKE2       the hash the derivation is built on, implemented here
 //   KeyFormats   OpenSSH, OpenPGP and BIP39 encodings of derived values
 
 import PackageDescription
@@ -22,6 +23,7 @@ let package = Package(
         .package(path: "../SeededCrypto"),
     ],
     targets: [
+        .target(name: "BLAKE2"),
         .target(
             name: "Derivation",
             dependencies: [.product(name: "SeededCrypto", package: "SeededCrypto")]
@@ -33,6 +35,11 @@ let package = Package(
         .testTarget(
             name: "DerivationTests",
             dependencies: ["Derivation", "KeyFormats"],
+            resources: [.copy("Fixtures")]
+        ),
+        .testTarget(
+            name: "BLAKE2Tests",
+            dependencies: ["BLAKE2", .product(name: "CSodium", package: "SeededCrypto")],
             resources: [.copy("Fixtures")]
         ),
     ]
