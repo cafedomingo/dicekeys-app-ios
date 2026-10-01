@@ -45,25 +45,20 @@ jobs:
       - name: actionlint
         run: actionlint
 
-  # The Derivation package's suites, with plain SwiftPM on the macOS host: the recorded
-  # vectors (the tripwire for any change to derived secrets) and BLAKE2b's known answers.
-  crypto:
+  # Both local packages with plain SwiftPM on the macOS host, in one job because each
+  # takes about a minute and a macOS runner costs half that just to start. Derivation: the
+  # recorded vectors (the tripwire for any change to derived secrets) and BLAKE2b's known
+  # answers. ReadDiceKey: the scanner over its photo corpus, built optimized because the
+  # full-size photos take minutes at -Onone and seconds at -O.
+  packages:
     runs-on: macos-26
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
-      - name: Build and test
+      - name: Derivation
         working-directory: Packages/Derivation
         run: swift test -c release -Xswiftc -enable-testing --parallel
-
-  # The scanner and its photo corpus, with plain SwiftPM on the macOS host. Release build:
-  # the corpus is full-size photos, which take minutes at -Onone and seconds optimized.
-  scanner:
-    runs-on: macos-26
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7
-      - name: Build and test
+      - name: ReadDiceKey
         working-directory: Packages/ReadDiceKey
         run: swift test -c release -Xswiftc -enable-testing --parallel
 
@@ -125,9 +120,6 @@ jobs:
           print(best[1] if best else "")')
           echo "Simulator: $UDID"
           test -n "$UDID"
-          # Booting takes minutes on a fresh runner; started now, it overlaps the build instead
-          # of following it, and `xcodebuild test` waits for the device to be ready.
-          xcrun simctl boot "$UDID"
           # Ad-hoc signing: with no entitlements the app has no keychain access at all and
           # every SecItem call fails with errSecMissingEntitlement (-34018).
           xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
@@ -140,5 +132,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: app-tests-logs
-          path: "*.log"
+          path: |
+            *.log
+            ~/Library/Logs/CoreSimulator/CoreSimulator.log
           retention-days: 7
