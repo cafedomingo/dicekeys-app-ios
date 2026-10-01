@@ -44,5 +44,5 @@ struct TransferDieInstructions: View {
 }
 
 #Preview {
-    TransferDie(diceKey: DiceKey.Example, faceIndex: 12)
+    TransferDie(diceKey: DiceKey.example, faceIndex: 12)
 }

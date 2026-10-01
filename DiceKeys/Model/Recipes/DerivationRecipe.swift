@@ -106,10 +106,10 @@ extension DerivationRecipe {
     /// (the password itself, for passwords).
     func defaultOutputFormat(for derivedValue: any DerivedValue) -> DerivedValueView {
         switch (purpose(), type) {
-        case ("pgp", .signingKey): return .OpenPGPPrivateKey
-        case ("ssh", .signingKey): return .OpenSSHPrivateKey
-        case ("wallet", .secret) where derivedValue.views.contains(.BIP39): return .BIP39
-        default: return derivedValue.views.first ?? .JSON
+        case ("pgp", .signingKey): return .openPGPPrivateKey
+        case ("ssh", .signingKey): return .openSSHPrivateKey
+        case ("wallet", .secret) where derivedValue.views.contains(.bip39): return .bip39
+        default: return derivedValue.views.first ?? .json
         }
     }
 

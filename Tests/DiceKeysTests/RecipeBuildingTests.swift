@@ -87,7 +87,7 @@ struct RecipeBuildingTests {
     func rejectedRecipeReports() {
         let recipe = DerivationRecipe(type: .secret, name: "old", recipe: #"{"lengthInBytes":16.9}"#)
         #expect(throws: DerivationError.wrongType(field: "lengthInBytes", expected: "an integer")) {
-            try recipe.derivedValue(diceKey: DiceKey.Example)
+            try recipe.derivedValue(diceKey: DiceKey.example)
         }
     }
 

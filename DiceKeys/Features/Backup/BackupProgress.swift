@@ -6,8 +6,8 @@
 import Observation
 
 enum BackupTarget: String, Sendable {
-    case DiceKey
-    case Stickeys
+    case diceKey
+    case stickeys
 }
 
 /// Where the user is in the backup flow. Owned by the screen that hosts

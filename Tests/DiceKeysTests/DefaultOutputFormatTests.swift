@@ -18,22 +18,22 @@ struct DefaultOutputFormatTests {
     }
 
     private func defaultFormat(_ recipe: DerivationRecipe) throws -> DerivedValueView {
-        recipe.defaultOutputFormat(for: try recipe.derivedValue(diceKey: DiceKey.Example))
+        recipe.defaultOutputFormat(for: try recipe.derivedValue(diceKey: DiceKey.example))
     }
 
     @Test func passwordRecipesOpenOnThePassword() throws {
-        #expect(try defaultFormat(template("1Password")) == .Password)
+        #expect(try defaultFormat(template("1Password")) == .password)
     }
 
     @Test func sshOpensOnOpenSSH() throws {
-        #expect(try defaultFormat(template("SSH")) == .OpenSSHPrivateKey)
+        #expect(try defaultFormat(template("SSH")) == .openSSHPrivateKey)
     }
 
     @Test func pgpOpensOnOpenPGP() throws {
-        #expect(try defaultFormat(template("PGP")) == .OpenPGPPrivateKey)
+        #expect(try defaultFormat(template("PGP")) == .openPGPPrivateKey)
     }
 
     @Test func walletSeedOpensOnBIP39() throws {
-        #expect(try defaultFormat(template("Cryptocurrency wallet seed")) == .BIP39)
+        #expect(try defaultFormat(template("Cryptocurrency wallet seed")) == .bip39)
     }
 }

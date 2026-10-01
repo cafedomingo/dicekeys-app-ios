@@ -105,7 +105,7 @@ struct DiceKeyView: View {
             return partialFaces
         } else {
             // If no diceKey was specified, we'll render the example diceKey
-            let diceKey = DiceKey.Example
+            let diceKey = DiceKey.example
             return (0..<25).map { index in PartialFace(diceKey.faces[index], index: index) }
         }
     }

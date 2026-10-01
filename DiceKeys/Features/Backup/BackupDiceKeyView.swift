@@ -84,15 +84,15 @@ private struct BackupStepsView: View {
     var body: some View {
         if step == 1 {
             switch target {
-            case .Stickeys: BackupToStickeysIntroduction(diceKey: diceKey)
-            case .DiceKey: BackupToDiceKeysKitIntroduction(diceKey: diceKey)
+            case .stickeys: BackupToStickeysIntroduction(diceKey: diceKey)
+            case .diceKey: BackupToDiceKeysKitIntroduction(diceKey: diceKey)
             }
         } else if step >= 2 && step <= 26 {
             Instruction("Construct your Backup", lineLimit: 1)
             Spacer()
             switch target {
-            case .Stickeys: TransferSticker(diceKey: diceKey, faceIndex: faceIndex)
-            case .DiceKey: TransferDie(diceKey: diceKey, faceIndex: faceIndex)
+            case .stickeys: TransferSticker(diceKey: diceKey, faceIndex: faceIndex)
+            case .diceKey: TransferDie(diceKey: diceKey, faceIndex: faceIndex)
             }
 
             ZStack(alignment: Alignment(horizontal: .leading, vertical: .top)) {
@@ -101,9 +101,9 @@ private struct BackupStepsView: View {
                 // shown right now
                 ForEach(0..<25, id: \.self) { index in
                     switch target {
-                    case .Stickeys:
+                    case .stickeys:
                         TransferStickerInstructions(diceKey: diceKey, faceIndex: index).hideIf(index != faceIndex)
-                    case .DiceKey:
+                    case .diceKey:
                         TransferDieInstructions(diceKey: diceKey, faceIndex: index).hideIf(index != faceIndex)
                     }
                 }

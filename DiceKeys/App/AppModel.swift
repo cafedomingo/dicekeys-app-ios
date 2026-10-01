@@ -27,7 +27,7 @@ final class AppModel {
     }
 
     /// A model for previews, with a DiceKey already unlocked in memory.
-    static func preview(diceKey: DiceKey? = DiceKey.Example) -> AppModel {
+    static func preview(diceKey: DiceKey? = DiceKey.example) -> AppModel {
         let model = AppModel(defaults: UserDefaults(suiteName: "preview") ?? .standard)
         if let diceKey {
             model.diceKeyMemoryStore.setDiceKey(diceKey: diceKey)

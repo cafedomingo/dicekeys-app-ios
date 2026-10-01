@@ -49,15 +49,15 @@ struct DiceKeySeedTests {
         #expect(diceKey.toSeed(includeOrientations: false) == key.seedWithoutOrientations)
     }
 
-    @Test("DiceKey.Example produces the reference seed")
+    @Test("DiceKey.example produces the reference seed")
     func exampleSeed() {
-        #expect(DiceKey.Example.toSeed() == Self.exampleSeed)
-        #expect(DiceKey.Example.toSeed(includeOrientations: false) == Self.exampleSeedWithoutOrientations)
+        #expect(DiceKey.example.toSeed() == Self.exampleSeed)
+        #expect(DiceKey.example.toSeed(includeOrientations: false) == Self.exampleSeedWithoutOrientations)
     }
 
     @Test("every rotation of a DiceKey produces the same seed")
     func rotationInvariance() {
-        let key = DiceKey.Example
+        let key = DiceKey.example
         var rotated = key
         for _ in 0..<3 {
             rotated = rotated.rotatedClockwise90Degrees()
@@ -70,12 +70,12 @@ struct DiceKeySeedTests {
         // Derived by the reference C++ for the example seed with
         // {"purpose":"a unique identifier for this DiceKey","lengthInBytes":16}.
         #expect(
-            DiceKey.Example.idBytes.map { String(format: "%02x", $0) }.joined() == "31f6979a628e4800780118a5dc466129")
+            DiceKey.example.idBytes.map { String(format: "%02x", $0) }.joined() == "31f6979a628e4800780118a5dc466129")
     }
 
     @Test("human-readable form round-trips")
     func humanReadableRoundTrip() throws {
-        let key = DiceKey.Example
+        let key = DiceKey.example
         let restored = try DiceKey.createFrom(humanReadableForm: key.toHumanReadableForm())
         #expect(restored == key)
     }
