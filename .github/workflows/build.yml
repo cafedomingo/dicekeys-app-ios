@@ -79,7 +79,7 @@ jobs:
           set -o pipefail
           xcodebuild build -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep --line-buffered -E 'error:|warning: unre|BUILD|\*\*' || true
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep --line-buffered -E 'error:|warning: unre|^Ld |BUILD|\*\*' || true
           grep -q 'BUILD SUCCEEDED' build-ios.log
       # .swiftlint-analyze.yml limits it to the app target.
       - name: Unused code (swiftlint analyze)
@@ -128,7 +128,7 @@ jobs:
           # every SecItem call fails with errSecMissingEntitlement (-34018).
           xcodebuild test -project DiceKeys.xcodeproj -scheme DiceKeys \
             -destination "platform=iOS Simulator,id=$UDID" \
-            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep --line-buffered -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
+            CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep --line-buffered -E 'error:|^Ld |^Testing started|Test Case|Test Suite|passed|failed|\*\*' || true
           grep -q 'TEST SUCCEEDED' test-ios.log
       - name: Upload logs
         if: always()
