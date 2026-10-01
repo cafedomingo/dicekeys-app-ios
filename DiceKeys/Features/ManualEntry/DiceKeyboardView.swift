@@ -88,12 +88,21 @@ struct DiceKeyboardView: View {
     var body: some View {
         CalculateBounds(bounds: $bounds) {
             ZStack(alignment: .center) {
-                ImageKey(size: buttonSize, action: { editableDiceKeyState.rotateLeft() }, image: Image(systemName: "rotate.left"))
-                    .offset(buttonOffset(x: 0, y: 0))
-                ImageKey(size: buttonSize, action: { editableDiceKeyState.rotateRight() }, image: Image(systemName: "rotate.right"))
-                    .offset(buttonOffset(x: 1, y: 0))
-                ImageKey(size: buttonSize, action: { editableDiceKeyState.backspace() }, image: Image(systemName: "delete.left.fill"))
-                    .offset(buttonOffset(x: columns - 1, y: 0))
+                ImageKey(
+                    size: buttonSize, action: { editableDiceKeyState.rotateLeft() },
+                    image: Image(systemName: "rotate.left")
+                )
+                .offset(buttonOffset(x: 0, y: 0))
+                ImageKey(
+                    size: buttonSize, action: { editableDiceKeyState.rotateRight() },
+                    image: Image(systemName: "rotate.right")
+                )
+                .offset(buttonOffset(x: 1, y: 0))
+                ImageKey(
+                    size: buttonSize, action: { editableDiceKeyState.backspace() },
+                    image: Image(systemName: "delete.left.fill")
+                )
+                .offset(buttonOffset(x: columns - 1, y: 0))
                 ForEach(Array(FaceLetters.enumerated()), id: \.offset) { faceLetterIndex, faceLetter in
                     if let char = faceLetter.rawValue.first {
                         CharacterKey(size: buttonSize, editableDiceKeyState: editableDiceKeyState, char: char)

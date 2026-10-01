@@ -14,16 +14,18 @@ struct DiceKeyCenterFaceOnlyView: View {
     var fractionalDistanceFromCenterToCornerEdge: CGFloat {
         let radius: CGFloat = 1.0 / 8.0
         let distBeforeCurve: CGFloat = 0.5 - radius
-        let distanceToCurveEdge = radius * CGFloat(sin(CGFloat.pi/4))
+        let distanceToCurveEdge = radius * CGFloat(sin(CGFloat.pi / 4))
         return distBeforeCurve + distanceToCurveEdge
     }
 
     var faceMagnificationFactor: CGFloat { 4 }
 
-    var magnifiedFaceFractionalOffset: CGPoint { CGPoint(
-        x: 0,
-        y: -0.7
-    ) }
+    var magnifiedFaceFractionalOffset: CGPoint {
+        CGPoint(
+            x: 0,
+            y: -0.7
+        )
+    }
 
     // Use a unit model (fitting the DicKey box into 1x1 square bounds) to calculate the
     // extra space (overflow) required to inlucde any part of the magnified face that exceeds
@@ -31,18 +33,32 @@ struct DiceKeyCenterFaceOnlyView: View {
     let unitModel = DiceKeySizeModel(1, hasTab: true)
     var unitModelMagnifiedFaceSize: CGFloat { unitModel.faceSize * faceMagnificationFactor }
 
-    var unitOverflowTop: CGFloat { max(0,
-        -(unitModel.boxCenterY + (-0.5 + magnifiedFaceFractionalOffset.y) * unitModelMagnifiedFaceSize)
-    ) }
-    var unitOverflowBottom: CGFloat { max(0,
-        (unitModel.boxCenterY + (0.5 + magnifiedFaceFractionalOffset.y) * unitModelMagnifiedFaceSize) - 1
-    ) }
-    var unitOverflowLeft: CGFloat { max(0,
-                                        ( 0 - (unitModel.centerX + (-0.5 + magnifiedFaceFractionalOffset.x) * unitModelMagnifiedFaceSize) ) / unitModel.width
-    ) }
-    var unitOverflowRight: CGFloat { max(0,
-                                         ( (unitModel.centerX + (0.5 + magnifiedFaceFractionalOffset.x) * unitModelMagnifiedFaceSize) - unitModel.width ) / unitModel.width
-    ) }
+    var unitOverflowTop: CGFloat {
+        max(
+            0,
+            -(unitModel.boxCenterY + (-0.5 + magnifiedFaceFractionalOffset.y) * unitModelMagnifiedFaceSize)
+        )
+    }
+    var unitOverflowBottom: CGFloat {
+        max(
+            0,
+            (unitModel.boxCenterY + (0.5 + magnifiedFaceFractionalOffset.y) * unitModelMagnifiedFaceSize) - 1
+        )
+    }
+    var unitOverflowLeft: CGFloat {
+        max(
+            0,
+            (0 - (unitModel.centerX + (-0.5 + magnifiedFaceFractionalOffset.x) * unitModelMagnifiedFaceSize))
+                / unitModel.width
+        )
+    }
+    var unitOverflowRight: CGFloat {
+        max(
+            0,
+            ((unitModel.centerX + (0.5 + magnifiedFaceFractionalOffset.x) * unitModelMagnifiedFaceSize)
+                - unitModel.width) / unitModel.width
+        )
+    }
 
     var unitOverflowHorizontal: CGFloat { unitOverflowLeft + unitOverflowRight }
     var unitOverflowVertical: CGFloat { unitOverflowTop + unitOverflowBottom }
@@ -68,10 +84,10 @@ struct DiceKeyCenterFaceOnlyView: View {
     }
 
     var aspectRatio: CGFloat {
-        (unitModel.width + unitOverflowHorizontal*unitModel.width) / (unitModel.height + unitOverflowVertical)
+        (unitModel.width + unitOverflowHorizontal * unitModel.width) / (unitModel.height + unitOverflowVertical)
     }
-    var totalWidth: CGFloat { min(size.width, diceKeySizeModel.width * (1 + unitOverflowHorizontal) ) }
-    var totalHeight: CGFloat { min(size.height, diceKeySizeModel.height * (1 + unitOverflowVertical) ) }
+    var totalWidth: CGFloat { min(size.width, diceKeySizeModel.width * (1 + unitOverflowHorizontal)) }
+    var totalHeight: CGFloat { min(size.height, diceKeySizeModel.height * (1 + unitOverflowVertical)) }
     var offsetTop: CGFloat { diceKeySizeModel.height * unitOverflowTop }
     var offsetLeft: CGFloat { diceKeySizeModel.width * unitOverflowLeft }
     var offsetBottom: CGFloat { diceKeySizeModel.height * unitOverflowBottom }
@@ -91,10 +107,12 @@ struct DiceKeyCenterFaceOnlyView: View {
     var originalFaceCornerBottomLeft: CGPoint { CGPoint(x: originalFaceCornerLeft, y: originalFaceCornerBottom) }
     var originalFaceCornerBottomRight: CGPoint { CGPoint(x: originalFaceCornerRight, y: originalFaceCornerBottom) }
 
-    var magnifiedFaceCenter: CGPoint { CGPoint(
-        x: diceKeyBoxCenterX + magnifiedFaceFractionalOffset.x * magnifiedFaceSize,
-        y: diceKeyBoxCenterY + magnifiedFaceFractionalOffset.y * magnifiedFaceSize
-    ) }
+    var magnifiedFaceCenter: CGPoint {
+        CGPoint(
+            x: diceKeyBoxCenterX + magnifiedFaceFractionalOffset.x * magnifiedFaceSize,
+            y: diceKeyBoxCenterY + magnifiedFaceFractionalOffset.y * magnifiedFaceSize
+        )
+    }
     var magnifiedFaceCornerLeft: CGFloat { magnifiedFaceCenter.x - magnifiedFaceDistanceFromCenterToCornerEdge }
     var magnifiedFaceCornerRight: CGFloat { magnifiedFaceCenter.x + magnifiedFaceDistanceFromCenterToCornerEdge }
     var magnifiedFaceCornerTop: CGFloat { magnifiedFaceCenter.y - magnifiedFaceDistanceFromCenterToCornerEdge }
@@ -108,7 +126,7 @@ struct DiceKeyCenterFaceOnlyView: View {
         CalculateBounds(bounds: $size) {
             ZStack(alignment: .center) {
                 // .overlay(
-                    // The lines
+                // The lines
                 Path { path in
                     path.move(to: originalFaceCornerTopLeft)
                     path.addLine(to: magnifiedFaceCornerTopLeft)
@@ -120,23 +138,26 @@ struct DiceKeyCenterFaceOnlyView: View {
                     path.addLine(to: magnifiedFaceCornerBottomRight)
                 }.stroke(Color.Depiction.magnifierLine, lineWidth: max(diceKeySizeModel.linearSizeOfBox / 75, 2))
                     .frame(width: totalWidth, height: totalHeight)
-                .background(
-                    // The DiceKey box
-                    DiceKeyView(centerFace: centerFace, showLidTab: true, diceBoxColor: Color.Depiction.kitBlue, diceBoxDieSlotColor: Color.Depiction.kitBlue,
-                                diePenColor: Color.Depiction.kitPenFaded,
-                                faceSurfaceColor: Color.Depiction.kitBlueLighter
-                    )
-                    .frame(width: diceKeySizeModel.width, height: diceKeySizeModel.height)
-                    .offset(x: offsetLeftForCenteredObjects, y: offsetTopForCenteredObjects )
-                ).overlay(
-                    // )
-                    // The magnfified die
-                    DieView(face: centerFace, dieSize: magnifiedFaceSize, faceBorderColor: Color.Depiction.diePen)
-                        .offset(
-                            x: offsetLeftForCenteredObjects + magnifiedFaceFractionalOffset.x * magnifiedFaceSize,
-                            y: offsetTopForCenteredObjects + diceKeySizeModel.offsetToBoxCenterY + magnifiedFaceFractionalOffset.y * magnifiedFaceSize )
+                    .background(
+                        // The DiceKey box
+                        DiceKeyView(
+                            centerFace: centerFace, showLidTab: true, diceBoxColor: Color.Depiction.kitBlue,
+                            diceBoxDieSlotColor: Color.Depiction.kitBlue,
+                            diePenColor: Color.Depiction.kitPenFaded,
+                            faceSurfaceColor: Color.Depiction.kitBlueLighter
+                        )
+                        .frame(width: diceKeySizeModel.width, height: diceKeySizeModel.height)
+                        .offset(x: offsetLeftForCenteredObjects, y: offsetTopForCenteredObjects)
+                    ).overlay(
+                        // )
+                        // The magnfified die
+                        DieView(face: centerFace, dieSize: magnifiedFaceSize, faceBorderColor: Color.Depiction.diePen)
+                            .offset(
+                                x: offsetLeftForCenteredObjects + magnifiedFaceFractionalOffset.x * magnifiedFaceSize,
+                                y: offsetTopForCenteredObjects + diceKeySizeModel.offsetToBoxCenterY
+                                    + magnifiedFaceFractionalOffset.y * magnifiedFaceSize)
                         // .hidden()
-                )
+                    )
             }
         }.aspectRatio(self.aspectRatio, contentMode: .fit)
     }

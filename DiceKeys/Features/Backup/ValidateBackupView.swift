@@ -86,9 +86,12 @@ struct ValidateBackupView: View {
                     .lineLimit(1)
                     .foregroundStyle(Color.Interface.successText)
             } else if totalMismatch {
-                Text("That key doesn't look at all like the key you scanned before.").font(.title).foregroundStyle(Color.Interface.errorText)
+                Text("That key doesn't look at all like the key you scanned before.").font(.title).foregroundStyle(
+                    Color.Interface.errorText)
             } else {
-                Text("You incorrectly copied the highlighted \(invalidIndexes.count == 1 ? "die" : "dice"). You can fix the copy to match the original, or change the original to match the copy.").font(.title).foregroundStyle(Color.Interface.errorText)
+                Text(
+                    "You incorrectly copied the highlighted \(invalidIndexes.count == 1 ? "die" : "dice"). You can fix the copy to match the original, or change the original to match the copy."
+                ).font(.title).foregroundStyle(Color.Interface.errorText)
             }
             Spacer()
         } else {
@@ -112,6 +115,8 @@ struct ValidateBackupView: View {
 #Preview {
     @Previewable @State var backupScanned: DiceKey?
     VStack {
-        ValidateBackupView(target: .Stickeys, originalDiceKey: DiceKey.createFromRandom(), onOriginalRescanned: { _ in }, backupScanned: $backupScanned)
+        ValidateBackupView(
+            target: .Stickeys, originalDiceKey: DiceKey.createFromRandom(), onOriginalRescanned: { _ in },
+            backupScanned: $backupScanned)
     }
 }

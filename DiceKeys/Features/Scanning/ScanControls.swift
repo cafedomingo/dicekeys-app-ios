@@ -5,8 +5,8 @@
 //  The floating controls over the camera preview: camera picker, torch, cancel.
 //
 
-import SwiftUI
 import AVFoundation
+import SwiftUI
 
 struct ScanControls: View {
     let cameras: [AVCaptureDevice]
@@ -43,7 +43,10 @@ struct ScanControls: View {
                             .frame(width: 44, height: 44)
                     }
                     .accessibilityLabel("Choose camera")
-                    .modifier(GlassControl(id: "camera", namespace: glassNamespace, reduceTransparency: reduceTransparency, reduceMotion: reduceMotion))
+                    .modifier(
+                        GlassControl(
+                            id: "camera", namespace: glassNamespace, reduceTransparency: reduceTransparency,
+                            reduceMotion: reduceMotion))
                 }
                 if hasTorch {
                     Button {
@@ -54,14 +57,20 @@ struct ScanControls: View {
                             .frame(width: 44, height: 44)
                     }
                     .accessibilityLabel(torchOn ? "Turn torch off" : "Turn torch on")
-                    .modifier(GlassControl(id: "torch", namespace: glassNamespace, reduceTransparency: reduceTransparency, reduceMotion: reduceMotion))
+                    .modifier(
+                        GlassControl(
+                            id: "torch", namespace: glassNamespace, reduceTransparency: reduceTransparency,
+                            reduceMotion: reduceMotion))
                 }
                 if let onCancel {
                     Button("Cancel", role: .cancel, action: onCancel)
                         .font(.body.weight(.medium))
                         .padding(.horizontal, 16)
                         .frame(height: 44)
-                        .modifier(GlassControl(id: "cancel", namespace: glassNamespace, reduceTransparency: reduceTransparency, reduceMotion: reduceMotion))
+                        .modifier(
+                            GlassControl(
+                                id: "cancel", namespace: glassNamespace, reduceTransparency: reduceTransparency,
+                                reduceMotion: reduceMotion))
                 }
             }
             .buttonStyle(.plain)

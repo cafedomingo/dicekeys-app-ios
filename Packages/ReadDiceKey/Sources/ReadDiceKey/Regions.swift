@@ -99,7 +99,8 @@ private struct Parents {
     }
 
     mutating func join(_ a: Int32, _ b: Int32) {
-        let rootA = root(a), rootB = root(b)
+        let rootA = root(a)
+        let rootB = root(b)
         if rootA != rootB {
             parent[Int(max(rootA, rootB))] = min(rootA, rootB)
         }
@@ -154,10 +155,13 @@ func smallestRectangle(around points: [PixelPoint]) -> Bar? {
         guard edge != .zero else { continue }
         let along = simd_normalize(edge)
         let across = along.turnedClockwise
-        var minU = Float.greatestFiniteMagnitude, maxU = -Float.greatestFiniteMagnitude
-        var minN = Float.greatestFiniteMagnitude, maxN = -Float.greatestFiniteMagnitude
+        var minU = Float.greatestFiniteMagnitude
+        var maxU = -Float.greatestFiniteMagnitude
+        var minN = Float.greatestFiniteMagnitude
+        var maxN = -Float.greatestFiniteMagnitude
         for q in hull {
-            let u = simd_dot(q, along), n = simd_dot(q, across)
+            let u = simd_dot(q, along)
+            let n = simd_dot(q, across)
             minU = min(minU, u)
             maxU = max(maxU, u)
             minN = min(minN, n)
@@ -171,7 +175,8 @@ func smallestRectangle(around points: [PixelPoint]) -> Bar? {
     guard let best else { return nil }
     let across = best.along.turnedClockwise
     let center = best.along * (best.minU + best.maxU) / 2 + across * (best.minN + best.maxN) / 2
-    let extentAlong = best.maxU - best.minU, extentAcross = best.maxN - best.minN
+    let extentAlong = best.maxU - best.minU
+    let extentAcross = best.maxN - best.minN
     return extentAlong >= extentAcross
         ? Bar(center: center, axis: best.along, length: extentAlong, width: extentAcross)
         : Bar(center: center, axis: across, length: extentAcross, width: extentAlong)

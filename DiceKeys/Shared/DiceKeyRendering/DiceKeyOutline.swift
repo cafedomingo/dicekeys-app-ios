@@ -14,8 +14,9 @@ enum DiceKeyOutline {
         let outline = Path(roundedRect: box, cornerRadius: cornerRadius)
         guard let tabRadius else { return outline }
         var tab = Path()
-        tab.addArc(center: CGPoint(x: box.midX, y: box.maxY), radius: tabRadius,
-                   startAngle: .degrees(0), endAngle: .degrees(180), clockwise: false)
+        tab.addArc(
+            center: CGPoint(x: box.midX, y: box.maxY), radius: tabRadius,
+            startAngle: .degrees(0), endAngle: .degrees(180), clockwise: false)
         tab.closeSubpath()
         return outline.union(tab)
     }

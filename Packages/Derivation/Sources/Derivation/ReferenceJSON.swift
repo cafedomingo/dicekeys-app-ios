@@ -10,7 +10,8 @@ enum ReferenceJSON {
 
     static func object(_ fields: [(key: String, value: String)]) -> String {
         let sorted = fields.sorted { $0.key.utf8.lexicographicallyPrecedes($1.key.utf8) }
-        return "{" + sorted.map { "\(quotedJsonString($0.key)):\(quotedJsonString($0.value))" }.joined(separator: ",") + "}"
+        return "{" + sorted.map { "\(quotedJsonString($0.key)):\(quotedJsonString($0.value))" }.joined(separator: ",")
+            + "}"
     }
 
     /// Password, Secret and SymmetricKey omit an empty recipe; the key pairs always write it.

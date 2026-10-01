@@ -18,12 +18,13 @@ struct TemplateRecipeBuilder: View {
         // the DiceKeys app on another device
         SequenceNumberField(sequenceNumber: $sequenceNumber)
             .onChange(of: sequenceNumber, initial: true) { _, sequenceNumber in
-                builderState.progress = .ready(DerivationRecipe(
-                    template: template,
-                    sequenceNumber: sequenceNumber,
-                    lengthInChars: template.lengthInChars(),
-                    lengthInBytes: template.lengthInBytes()
-                ))
+                builderState.progress = .ready(
+                    DerivationRecipe(
+                        template: template,
+                        sequenceNumber: sequenceNumber,
+                        lengthInChars: template.lengthInChars(),
+                        lengthInBytes: template.lengthInBytes()
+                    ))
             }
     }
 }

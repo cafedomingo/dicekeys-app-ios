@@ -31,12 +31,14 @@ private enum KeyChain {
     /// `SecAccessControlCreateWithFlags` takes the protection class, so an item carrying an
     /// access control does not set `kSecAttrAccessible` separately.
     private static func userPresenceAccessControl() throws -> SecAccessControl {
-        guard let accessControl = SecAccessControlCreateWithFlags(
-            nil,
-            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-            .userPresence,
-            nil
-        ) else {
+        guard
+            let accessControl = SecAccessControlCreateWithFlags(
+                nil,
+                kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
+                .userPresence,
+                nil
+            )
+        else {
             throw KeyChainError.couldNotCreateAccessControl
         }
         return accessControl
@@ -136,7 +138,8 @@ struct DiceKeyKeychain: Sendable {
         guard laContext.canEvaluatePolicy(.deviceOwnerAuthentication, error: &policyError) else {
             throw policyError ?? LAError(.passcodeNotSet)
         }
-        let success = try await laContext.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason ?? defaultReason)
+        let success = try await laContext.evaluatePolicy(
+            .deviceOwnerAuthentication, localizedReason: reason ?? defaultReason)
         guard success else {
             throw LAError(.authenticationFailed)
         }

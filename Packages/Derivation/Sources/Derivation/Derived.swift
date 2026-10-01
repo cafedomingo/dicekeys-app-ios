@@ -12,7 +12,8 @@ public struct Password: Sendable, Equatable {
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> Password {
         let parsed = try Recipe(json: recipe, type: .password)
         let secret = Engine.secret(seed: seed, type: .password, recipe: parsed)
-        let password = PasswordFormatter.password(from: secret, wordList: parsed.wordList, lengthInChars: parsed.lengthInChars)
+        let password = PasswordFormatter.password(
+            from: secret, wordList: parsed.wordList, lengthInChars: parsed.lengthInChars)
         return Password(password: password, recipe: parsed)
     }
 
@@ -31,7 +32,8 @@ public struct Secret: Sendable, Equatable {
     }
 
     public func toJson() -> String {
-        ReferenceJSON.object([(key: "secretBytes", value: ReferenceJSON.hex(bytes))] + ReferenceJSON.recipeIfPresent(recipe))
+        ReferenceJSON.object(
+            [(key: "secretBytes", value: ReferenceJSON.hex(bytes))] + ReferenceJSON.recipeIfPresent(recipe))
     }
 }
 
@@ -41,11 +43,13 @@ public struct SymmetricKey: Sendable, Equatable {
 
     public static func derive(seed: String, recipe: String) throws(DerivationError) -> SymmetricKey {
         let parsed = try Recipe(json: recipe, type: .symmetricKey)
-        return SymmetricKey(keyBytes: Data(Engine.secret(seed: seed, type: .symmetricKey, recipe: parsed)), recipe: parsed)
+        return SymmetricKey(
+            keyBytes: Data(Engine.secret(seed: seed, type: .symmetricKey, recipe: parsed)), recipe: parsed)
     }
 
     public func toJson() -> String {
-        ReferenceJSON.object([(key: "keyBytes", value: ReferenceJSON.hex(keyBytes))] + ReferenceJSON.recipeIfPresent(recipe))
+        ReferenceJSON.object(
+            [(key: "keyBytes", value: ReferenceJSON.hex(keyBytes))] + ReferenceJSON.recipeIfPresent(recipe))
     }
 }
 

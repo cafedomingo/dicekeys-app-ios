@@ -30,7 +30,8 @@ struct BackupToStickeysIntroduction: View {
                 }
             }
             Spacer()
-            Instruction("Next, you will create a copy of your DiceKey on the target sheet by placing stickers.", lineLimit: 3)
+            Instruction(
+                "Next, you will create a copy of your DiceKey on the target sheet by placing stickers.", lineLimit: 3)
             Spacer()
             HStack(alignment: .center, spacing: 0) {
                 Spacer()

@@ -58,13 +58,15 @@ public enum OpenPGP {
     /// Timestamp 0 keeps the fingerprint stable, because the v4 fingerprint hashes the
     /// creation time. CryptoKit randomizes the signature, so exports of one key differ only
     /// in the signature MPIs, their bit lengths and, if a leading zero drops, the length octets.
-    public static func secretKeyBlock(_ key: Derivation.SigningKey, userId: String = "", timestamp: UInt32 = 0) -> String {
+    public static func secretKeyBlock(_ key: Derivation.SigningKey, userId: String = "", timestamp: UInt32 = 0)
+        -> String
+    {
         let seed = Array(key.signingKeyBytes.prefix(Derivation.SigningKey.seedLength))
         let publicKey = Array(key.verificationKeyBytes)
         let publicBody = publicKeyPacketBody(publicKey: publicKey, timestamp: timestamp)
         var secretBody = ByteWriter()
         secretBody.append(publicBody)
-        secretBody.byte(0)                       // S2K usage: unprotected
+        secretBody.byte(0)  // S2K usage: unprotected
         var secretMPI = ByteWriter()
         secretMPI.mpi(seed)
         secretBody.append(secretMPI.bytes)
@@ -73,7 +75,11 @@ public enum OpenPGP {
         var block = ByteWriter()
         block.append(packet(tag: secretKeyPacketTag, body: secretBody.bytes))
         block.append(packet(tag: userIdPacketTag, body: userIdBody))
-        block.append(packet(tag: signaturePacketTag, body: signaturePacketBody(seed: seed, publicBody: publicBody, userIdBody: userIdBody, timestamp: timestamp)))
+        block.append(
+            packet(
+                tag: signaturePacketTag,
+                body: signaturePacketBody(
+                    seed: seed, publicBody: publicBody, userIdBody: userIdBody, timestamp: timestamp)))
         return Armor.pem("PGP PRIVATE KEY BLOCK", block.bytes, crc: true)
     }
 
@@ -112,19 +118,21 @@ public enum OpenPGP {
         Array(Insecure.SHA1.hash(data: keyHashPreimage(publicBody: publicBody).bytes))
     }
 
-    private static func signaturePacketBody(seed: [UInt8], publicBody: [UInt8], userIdBody: [UInt8], timestamp: UInt32) -> [UInt8] {
+    private static func signaturePacketBody(seed: [UInt8], publicBody: [UInt8], userIdBody: [UInt8], timestamp: UInt32)
+        -> [UInt8]
+    {
         let fingerprint = fingerprint(publicBody: publicBody)
         var hashedSubpackets = ByteWriter()
         hashedSubpackets.append(subpacket(type: issuerFingerprintSubpacket, body: [version] + fingerprint))
         var creation = ByteWriter()
         creation.uint32(timestamp)
         hashedSubpackets.append(subpacket(type: creationTimeSubpacket, body: creation.bytes))
-        hashedSubpackets.append(subpacket(type: keyFlagsSubpacket, body: [0x03]))                        // certify, sign
+        hashedSubpackets.append(subpacket(type: keyFlagsSubpacket, body: [0x03]))  // certify, sign
         hashedSubpackets.append(subpacket(type: preferredSymmetricSubpacket, body: [0x09, 0x08, 0x07, 0x02]))
         hashedSubpackets.append(subpacket(type: preferredHashSubpacket, body: [0x0a, 0x09, 0x08, 0x0b, 0x02]))
         hashedSubpackets.append(subpacket(type: preferredCompressionSubpacket, body: [0x02, 0x03, 0x01]))
-        hashedSubpackets.append(subpacket(type: featuresSubpacket, body: [0x01]))                        // MDC
-        hashedSubpackets.append(subpacket(type: keyServerPreferencesSubpacket, body: [0x80]))            // no-modify
+        hashedSubpackets.append(subpacket(type: featuresSubpacket, body: [0x01]))  // MDC
+        hashedSubpackets.append(subpacket(type: keyServerPreferencesSubpacket, body: [0x80]))  // no-modify
 
         var hashedRegion = ByteWriter()
         hashedRegion.byte(version)

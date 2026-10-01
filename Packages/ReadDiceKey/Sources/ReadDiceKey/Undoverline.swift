@@ -51,7 +51,8 @@ struct UndoverlineBits {
     /// Decodes bits sampled first-dot-first (the first dot is the most significant bit);
     /// nil unless exactly one end is a 1.
     init?(_ bits: UInt32) {
-        let first = (bits >> 10) & 1, last = bits & 1
+        let first = (bits >> 10) & 1
+        let last = bits & 1
         guard first != last else { return nil }
         wasReversed = last == 1
         var forward = bits
@@ -67,7 +68,9 @@ struct UndoverlineBits {
 
     /// The face this line names, if any.
     var face: FaceWithUnderlineAndOverlineCode? {
-        isOverline ? overlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)] : underlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)]
+        isOverline
+            ? overlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)]
+            : underlineCodeToFaceWithUnderlineAndOverlineCode[Int(code)]
     }
 }
 
@@ -98,11 +101,13 @@ func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
     let acrossIsVertical = abs(delta.x) > abs(delta.y)
     let (outerStart, outerEnd) = (start, end)
     while image.sample(at: start, pixels: 3, acrossIsVertical: acrossIsVertical) > darkBelow,
-          isPoint(start + step, between: outerStart, and: outerEnd) {
+        isPoint(start + step, between: outerStart, and: outerEnd)
+    {
         start += step
     }
     while image.sample(at: end, pixels: 3, acrossIsVertical: acrossIsVertical) > darkBelow,
-          isPoint(end - step, between: start, and: outerEnd) {
+        isPoint(end - step, between: start, and: outerEnd)
+    {
         end -= step
     }
 
@@ -126,7 +131,8 @@ private func isPoint(_ point: Point, between a: Point, and b: Point) -> Bool {
 /// lightest dark and the darkest light sample.
 func twoLevelThreshold(_ samples: [UInt8]) -> UInt8 {
     let sorted = samples.sorted()
-    let firstSplit = MinNumberOfBlackDotsInUndoverline, lastSplit = sorted.count - MinNumberOfWhiteDotsInUndoverline
+    let firstSplit = MinNumberOfBlackDotsInUndoverline
+    let lastSplit = sorted.count - MinNumberOfWhiteDotsInUndoverline
     precondition(firstSplit <= lastSplit, "too few samples to split")
     var sums = [Double](repeating: 0, count: sorted.count + 1)
     var squares = [Double](repeating: 0, count: sorted.count + 1)
@@ -164,12 +170,14 @@ extension GrayImage {
     /// Three pixels are taken across the line (`acrossIsVertical` for a line that runs
     /// more horizontally than vertically), so the sample stays inside a thin bar.
     func sample(at point: Point, pixels: Int, acrossIsVertical: Bool) -> UInt8 {
-        let x = Int(point.x.rounded()), y = Int(point.y.rounded())
+        let x = Int(point.x.rounded())
+        let y = Int(point.y.rounded())
         let offsets = pixels == 3 && acrossIsVertical ? verticalFirstOffsets : horizontalFirstOffsets
         return withUnsafeTemporaryAllocation(of: UInt8.self, capacity: offsets.count) { values in
             var count = 0
             for (dx, dy) in offsets.prefix(pixels) {
-                let sx = x + dx, sy = y + dy
+                let sx = x + dx
+                let sy = y + dy
                 guard sx >= 0, sy >= 0, sx < width, sy < height else { continue }
                 values[count] = self.pixels[sy * width + sx]
                 count += 1

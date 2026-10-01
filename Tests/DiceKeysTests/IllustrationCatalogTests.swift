@@ -55,13 +55,16 @@ struct IllustrationCatalogTests {
     private static let drawnOnPaper: Set<String> = ["Hand with Sticker"]
 
     private static func svg(_ set: String, _ file: String) throws -> String {
-        try String(contentsOf: AssetCatalogSource.resources.appending(path: "Assets.xcassets/\(set).imageset/\(file)"), encoding: .utf8)
+        try String(
+            contentsOf: AssetCatalogSource.resources.appending(path: "Assets.xcassets/\(set).imageset/\(file)"),
+            encoding: .utf8)
     }
 
     // The SVGs total over a megabyte; NSRegularExpression scans them in milliseconds, where
     // Swift Regex takes most of a second.
     // swiftlint:disable force_try
-    private static let element = try! NSRegularExpression(pattern: #"<(?:path|line|polyline|rect|circle|ellipse)\b([^>]*)>"#)
+    private static let element = try! NSRegularExpression(
+        pattern: #"<(?:path|line|polyline|rect|circle|ellipse)\b([^>]*)>"#)
     private static let fill = try! NSRegularExpression(pattern: #"\bfill="([^"]+)""#)
     private static let stroke = try! NSRegularExpression(pattern: #"\bstroke="([^"]+)""#)
     // swiftlint:enable force_try
@@ -76,7 +79,8 @@ struct IllustrationCatalogTests {
     private static func backgroundStrokes(in svg: String) -> Int {
         captures(element, in: svg).filter { attributes in
             let fillValue = captures(fill, in: attributes).first
-            return captures(stroke, in: attributes).first.map(isNearBlack) == true && (fillValue == nil || fillValue == "none")
+            return captures(stroke, in: attributes).first.map(isNearBlack) == true
+                && (fillValue == nil || fillValue == "none")
         }.count
     }
 

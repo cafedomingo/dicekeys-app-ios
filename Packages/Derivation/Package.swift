@@ -13,11 +13,11 @@ let package = Package(
     name: "Derivation",
     platforms: [
         .iOS(.v26),
-        .macOS(.v26),
+        .macOS(.v26)
     ],
     products: [
         .library(name: "Derivation", targets: ["Derivation"]),
-        .library(name: "KeyFormats", targets: ["KeyFormats"]),
+        .library(name: "KeyFormats", targets: ["KeyFormats"])
     ],
     targets: [
         .target(name: "BLAKE2"),
@@ -38,6 +38,6 @@ let package = Package(
             name: "BLAKE2Tests",
             dependencies: ["BLAKE2"],
             resources: [.copy("Fixtures")]
-        ),
+        )
     ]
 )

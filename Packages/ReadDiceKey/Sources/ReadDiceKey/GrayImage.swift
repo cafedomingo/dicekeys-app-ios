@@ -12,7 +12,8 @@ public struct GrayImage: Sendable {
     public let pixels: [UInt8]
 
     public init(width: Int, height: Int, pixels: [UInt8]) {
-        precondition(width >= 0 && height >= 0 && pixels.count == width * height, "pixels must hold width * height bytes")
+        precondition(
+            width >= 0 && height >= 0 && pixels.count == width * height, "pixels must hold width * height bytes")
         self.width = width
         self.height = height
         self.pixels = pixels
@@ -20,7 +21,9 @@ public struct GrayImage: Sendable {
 
     /// The camera formats a frame can be read from: bi-planar Y'CbCr, whose first plane
     /// already is the grayscale image.
-    public static let lumaPixelFormats = [kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]
+    public static let lumaPixelFormats = [
+        kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+    ]
 
     /// The largest centered square of a camera frame's luma (brightness) plane, a copy of
     /// rows. Nil for frames in a format other than `lumaPixelFormats`.
@@ -36,7 +39,8 @@ public struct GrayImage: Sendable {
         let first = luma + ((frameHeight - side) / 2) * rowBytes + (frameWidth - side) / 2
         let pixels = [UInt8](unsafeUninitializedCapacity: side * side) { buffer, count in
             for row in 0..<side {
-                (buffer.baseAddress! + row * side).initialize(from: (first + row * rowBytes).assumingMemoryBound(to: UInt8.self), count: side)
+                (buffer.baseAddress! + row * side).initialize(
+                    from: (first + row * rowBytes).assumingMemoryBound(to: UInt8.self), count: side)
             }
             count = side * side
         }

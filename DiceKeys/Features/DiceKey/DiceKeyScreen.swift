@@ -64,8 +64,9 @@ struct DiceKeyScreen: View {
                 Button {
                     hideDiceExceptCenterDie.toggle()
                 } label: {
-                    Label(hideDiceExceptCenterDie ? "Show Dice" : "Hide Dice",
-                          systemImage: hideDiceExceptCenterDie ? "eye" : "eye.slash")
+                    Label(
+                        hideDiceExceptCenterDie ? "Show Dice" : "Hide Dice",
+                        systemImage: hideDiceExceptCenterDie ? "eye" : "eye.slash")
                 }
             }
             ToolbarSpacer(.fixed, placement: .primaryAction)
@@ -73,8 +74,9 @@ struct DiceKeyScreen: View {
                 Button {
                     showStorageOptions = true
                 } label: {
-                    Label(diceKeyState.isDiceKeyStored ? "Saved" : "Save",
-                          systemImage: diceKeyState.isDiceKeyStored ? "checkmark.circle.fill" : "square.and.arrow.down")
+                    Label(
+                        diceKeyState.isDiceKeyStored ? "Saved" : "Save",
+                        systemImage: diceKeyState.isDiceKeyStored ? "checkmark.circle.fill" : "square.and.arrow.down")
                 }
             }
         }

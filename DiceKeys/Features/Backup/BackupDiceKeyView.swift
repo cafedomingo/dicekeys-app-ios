@@ -62,9 +62,9 @@ struct BackupDiceKeyView: View {
                 prev: (step > 0 || onBackedOut != nil) ? step - 1 : nil,
                 next: step == 0 ? nil : step + 1,
                 nextNext: validationStep,
-                setMaySkip: validationRequired ? { maySkipValidationStep = true } :
-                    step == 0 && thereAreMoreStepsAfterBackup ? { onComplete() } :
-                    nil,
+                setMaySkip: validationRequired
+                    ? { maySkipValidationStep = true }
+                    : step == 0 && thereAreMoreStepsAfterBackup ? { onComplete() } : nil,
                 isLastStep: step == lastStep && !thereAreMoreStepsAfterBackup
             )
         }
@@ -101,8 +101,10 @@ private struct BackupStepsView: View {
                 // shown right now
                 ForEach(0..<25, id: \.self) { index in
                     switch target {
-                    case .Stickeys: TransferStickerInstructions(diceKey: diceKey, faceIndex: index).hideIf(index != faceIndex)
-                    case .DiceKey: TransferDieInstructions(diceKey: diceKey, faceIndex: index).hideIf(index != faceIndex)
+                    case .Stickeys:
+                        TransferStickerInstructions(diceKey: diceKey, faceIndex: index).hideIf(index != faceIndex)
+                    case .DiceKey:
+                        TransferDieInstructions(diceKey: diceKey, faceIndex: index).hideIf(index != faceIndex)
                     }
                 }
             }

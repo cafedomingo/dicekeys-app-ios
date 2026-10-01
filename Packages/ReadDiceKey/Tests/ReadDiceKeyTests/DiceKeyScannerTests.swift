@@ -6,6 +6,7 @@
 import DiceKeySpecification
 import Foundation
 import Testing
+
 @testable import ReadDiceKey
 
 @Suite("DiceKeyScanner")
@@ -18,7 +19,9 @@ struct DiceKeyScannerTests {
     func turnsWrapAround() {
         #expect(ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 4).clockwiseTurns == 0)
         #expect(ScannedFace(letter: .A, digit: ._1, clockwiseTurns: -1).clockwiseTurns == 3)
-        #expect(ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 6) == ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 2))
+        #expect(
+            ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 6)
+                == ScannedFace(letter: .A, digit: ._1, clockwiseTurns: 2))
     }
 
     @Test("a blank frame reads nothing")
@@ -122,9 +125,10 @@ struct DiceKeyScannerTests {
     func repeatedLettersAreNotAKey() {
         // A sheet of StickKeys stickers: each row the same five letters, the digit changing by row.
         // A copy of a key with a sticker in the wrong place repeats a letter the same way.
-        let sheet = SyntheticDiceKey(faces: (0..<25).map { i in
-            ScannedFace(letter: FaceLetter.allCases[i % 5], digit: FaceDigit.allCases[i / 5], clockwiseTurns: 0)
-        })
+        let sheet = SyntheticDiceKey(
+            faces: (0..<25).map { i in
+                ScannedFace(letter: FaceLetter.allCases[i % 5], digit: FaceDigit.allCases[i / 5], clockwiseTurns: 0)
+            })
         var scanner = DiceKeyScanner()
         scanner.scan(sheet.image(side: 1080))
         #expect(scanner.allFaces == sheet.faces)

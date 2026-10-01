@@ -11,6 +11,7 @@
 import Foundation
 import Testing
 import UIKit
+
 @testable import DiceKeys
 
 @MainActor
@@ -24,15 +25,22 @@ struct ColorContrastTests {
         }
     }
 
-    private static func rgba(_ color: UIColor, _ style: UIUserInterfaceStyle, _ level: UIUserInterfaceLevel = .base) -> RGBA {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+    private static func rgba(_ color: UIColor, _ style: UIUserInterfaceStyle, _ level: UIUserInterfaceLevel = .base)
+        -> RGBA
+    {
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
         color.resolvedColor(with: traits(style, level)).getRed(&r, green: &g, blue: &b, alpha: &a)
         return RGBA(r: r, g: g, b: b, a: a)
     }
 
     /// Source-over compositing onto an opaque background.
     private static func over(_ fg: RGBA, _ bg: RGBA) -> RGBA {
-        RGBA(r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a), a: 1)
+        RGBA(
+            r: fg.r * fg.a + bg.r * (1 - fg.a), g: fg.g * fg.a + bg.g * (1 - fg.a), b: fg.b * fg.a + bg.b * (1 - fg.a),
+            a: 1)
     }
 
     private static func luminance(_ c: RGBA) -> Double {
@@ -54,10 +62,13 @@ struct ColorContrastTests {
         for style in Self.styles {
             let accent = Self.rgba(.accent, style)
             for background in [UIColor.systemBackground, .systemGroupedBackground, .secondarySystemBackground] {
-                #expect(Self.contrast(accent, Self.rgba(background, style)) >= 4.5, "\(background) in \(style.rawValue)")
+                #expect(
+                    Self.contrast(accent, Self.rgba(background, style)) >= 4.5, "\(background) in \(style.rawValue)")
             }
             for background in [UIColor.secondarySystemBackground, .tertiarySystemBackground] {
-                #expect(Self.contrast(accent, Self.rgba(background, style, .elevated)) >= 3, "elevated \(background) in \(style.rawValue)")
+                #expect(
+                    Self.contrast(accent, Self.rgba(background, style, .elevated)) >= 3,
+                    "elevated \(background) in \(style.rawValue)")
             }
         }
     }
@@ -68,7 +79,9 @@ struct ColorContrastTests {
             // Filled buttons draw the system's white label; their titles are large text, so 3:1.
             let white = RGBA(r: 1, g: 1, b: 1, a: 1)
             #expect(Self.contrast(white, Self.rgba(.accent, style)) >= 3, "button label in \(style.rawValue)")
-            #expect(Self.contrast(Self.rgba(.Interface.onWarning, style), Self.rgba(.Interface.warningBackground, style)) >= 4.5)
+            #expect(
+                Self.contrast(Self.rgba(.Interface.onWarning, style), Self.rgba(.Interface.warningBackground, style))
+                    >= 4.5)
             let bg = Self.rgba(.systemBackground, style)
             let key = Self.over(Self.rgba(.Interface.keyBackground, style), bg)
             #expect(Self.contrast(Self.rgba(.label, style), key) >= 4.5, "key label, \(style.rawValue)")
@@ -82,8 +95,10 @@ struct ColorContrastTests {
         let box = Self.rgba(.Depiction.diceBox, .dark)
         // Navy DiceKeys are drawn only on screen backgrounds. The one in the save sheet, on an
         // elevated surface where this edge is fainter, is drawn in kitBlue, which reads on its own.
-        let screens = [("systemBackground", Self.rgba(.systemBackground, .dark)),
-                       ("systemGroupedBackground", Self.rgba(.systemGroupedBackground, .dark))]
+        let screens = [
+            ("systemBackground", Self.rgba(.systemBackground, .dark)),
+            ("systemGroupedBackground", Self.rgba(.systemGroupedBackground, .dark))
+        ]
         // The 3:1 that matters is against the background: that is the object's boundary. Against
         // the box the edge only has to read as a rim, and a brighter one would outshine the dice.
         for (name, bg) in screens {
@@ -102,8 +117,10 @@ struct ColorContrastTests {
         for style in Self.styles {
             for (name, ours, system) in pairs {
                 let (a, b) = (Self.rgba(ours, style), Self.rgba(system, style))
-                #expect(abs(a.r - b.r) < 0.002 && abs(a.g - b.g) < 0.002 && abs(a.b - b.b) < 0.002 && abs(a.a - b.a) < 0.002,
-                        "\(name) does not resolve to its system color in \(style.rawValue)")
+                #expect(
+                    abs(a.r - b.r) < 0.002 && abs(a.g - b.g) < 0.002 && abs(a.b - b.b) < 0.002
+                        && abs(a.a - b.a) < 0.002,
+                    "\(name) does not resolve to its system color in \(style.rawValue)")
             }
         }
     }

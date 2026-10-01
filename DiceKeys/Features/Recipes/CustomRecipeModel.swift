@@ -45,7 +45,10 @@ final class CustomRecipeModel: Identifiable {
     var lengthInCharsEntry: Int? {
         get { lengthInChars == 0 ? nil : lengthInChars }
         set {
-            guard let newValue else { lengthInChars = 0; return }
+            guard let newValue else {
+                lengthInChars = 0
+                return
+            }
             if Self.lengthInCharsEntryRange.contains(newValue) { lengthInChars = newValue }
         }
     }
@@ -55,7 +58,10 @@ final class CustomRecipeModel: Identifiable {
     var lengthInBytesEntry: Int? {
         get { lengthInBytes == 0 ? nil : lengthInBytes }
         set {
-            guard let newValue else { lengthInBytes = 0; return }
+            guard let newValue else {
+                lengthInBytes = 0
+                return
+            }
             if Self.lengthInBytesEntryRange.contains(newValue) { lengthInBytes = newValue }
         }
     }
@@ -85,7 +91,9 @@ final class CustomRecipeModel: Identifiable {
 
         switch buildType {
         case .purpose:
-            recipe = getRecipeJson(purpose: purposeString.trim(), sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
+            recipe = getRecipeJson(
+                purpose: purposeString.trim(), sequenceNumber: sequenceNumber, lengthInChars: lengthInChars,
+                lengthInBytes: lengthInBytes)
         case .rawJson:
             do {
                 recipe = try rawJsonString.canonicalizedRecipe()

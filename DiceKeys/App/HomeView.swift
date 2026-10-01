@@ -52,7 +52,8 @@ struct HomeView: View {
                             Image("Seal Box").resizable().scaledToFit()
                         }
                         .aspectRatio(4, contentMode: .fit)
-                        Text("Assemble \(knownDiceKeysStore.storedDiceKeys.isEmpty ? "your First" : "a") DiceKey").font(.title2)
+                        Text("Assemble \(knownDiceKeysStore.storedDiceKeys.isEmpty ? "your First" : "a") DiceKey").font(
+                            .title2)
                     }
                     .frame(maxWidth: .infinity)
                     .contentShape(Rectangle())

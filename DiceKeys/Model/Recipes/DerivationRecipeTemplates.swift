@@ -16,40 +16,64 @@
 //
 
 let derivationRecipeTemplates: [DerivationRecipe] = [
-	DerivationRecipe(type: .password, name: "1Password", recipe: """
-{"allow":[{"host":"*.1password.com"}]}
-"""),
-	DerivationRecipe(type: .password, name: "Apple", recipe: """
-{"allow":[{"host":"*.apple.com"},{"host":"*.icloud.com"}],"lengthInChars":64}
-"""),
-	DerivationRecipe(type: .password, name: "Authy", recipe: """
-{"allow":[{"host":"*.authy.com"}]}
-"""),
-	DerivationRecipe(type: .password, name: "Bitwarden", recipe: """
-{"allow":[{"host":"*.bitwarden.com"}]}
-"""),
-	DerivationRecipe(type: .password, name: "Facebook", recipe: """
-{"allow":[{"host":"*.facebook.com"}]}
-"""),
-	DerivationRecipe(type: .password, name: "Google", recipe: """
-{"allow":[{"host":"*.google.com"}]}
-"""),
-	DerivationRecipe(type: .password, name: "Keeper", recipe: """
-{"allow":[{"host":"*.keepersecurity.com"},{"host":"*.keepersecurity.eu"}]}
-"""),
-	DerivationRecipe(type: .password, name: "LastPass", recipe: """
-{"allow":[{"host":"*.lastpass.com"}]}
-"""),
-	DerivationRecipe(type: .password, name: "Microsoft", recipe: """
-{"allow":[{"host":"*.microsoft.com"},{"host":"*.live.com"}]}
-"""),
-    DerivationRecipe(type: .signingKey, name: "SSH", recipe: """
-{"purpose":"ssh"}
-"""),
-    DerivationRecipe(type: .signingKey, name: "PGP", recipe: """
-{"purpose":"pgp"}
-"""),
-    DerivationRecipe(type: .secret, name: "Cryptocurrency wallet seed", recipe: """
-{"purpose":"wallet"}
-""")
+    DerivationRecipe(
+        type: .password, name: "1Password",
+        recipe: """
+            {"allow":[{"host":"*.1password.com"}]}
+            """),
+    DerivationRecipe(
+        type: .password, name: "Apple",
+        recipe: """
+            {"allow":[{"host":"*.apple.com"},{"host":"*.icloud.com"}],"lengthInChars":64}
+            """),
+    DerivationRecipe(
+        type: .password, name: "Authy",
+        recipe: """
+            {"allow":[{"host":"*.authy.com"}]}
+            """),
+    DerivationRecipe(
+        type: .password, name: "Bitwarden",
+        recipe: """
+            {"allow":[{"host":"*.bitwarden.com"}]}
+            """),
+    DerivationRecipe(
+        type: .password, name: "Facebook",
+        recipe: """
+            {"allow":[{"host":"*.facebook.com"}]}
+            """),
+    DerivationRecipe(
+        type: .password, name: "Google",
+        recipe: """
+            {"allow":[{"host":"*.google.com"}]}
+            """),
+    DerivationRecipe(
+        type: .password, name: "Keeper",
+        recipe: """
+            {"allow":[{"host":"*.keepersecurity.com"},{"host":"*.keepersecurity.eu"}]}
+            """),
+    DerivationRecipe(
+        type: .password, name: "LastPass",
+        recipe: """
+            {"allow":[{"host":"*.lastpass.com"}]}
+            """),
+    DerivationRecipe(
+        type: .password, name: "Microsoft",
+        recipe: """
+            {"allow":[{"host":"*.microsoft.com"},{"host":"*.live.com"}]}
+            """),
+    DerivationRecipe(
+        type: .signingKey, name: "SSH",
+        recipe: """
+            {"purpose":"ssh"}
+            """),
+    DerivationRecipe(
+        type: .signingKey, name: "PGP",
+        recipe: """
+            {"purpose":"pgp"}
+            """),
+    DerivationRecipe(
+        type: .secret, name: "Cryptocurrency wallet seed",
+        recipe: """
+            {"purpose":"wallet"}
+            """)
 ]

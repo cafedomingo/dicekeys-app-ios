@@ -75,10 +75,17 @@ private struct ScanFirstTime: View {
         Spacer()
         if let diceKey {
             DiceKeyView(diceKey: diceKey)
-            PrimaryButton("Scan again") { self.diceKey = nil; scanning = true }
+            PrimaryButton("Scan again") {
+                self.diceKey = nil
+                scanning = true
+            }
         } else if scanning {
-            ScanDiceKeyView(onDiceKeyRead: { diceKey = $0; scanning = false },
-                        onCancel: { scanning = false })
+            ScanDiceKeyView(
+                onDiceKeyRead: {
+                    diceKey = $0
+                    scanning = false
+                },
+                onCancel: { scanning = false })
         } else {
             Image(.scanningADiceKey).resizable().scaledToFit().offset(x: 0, y: -50)
             PrimaryButton("Scan") { scanning = true }
@@ -93,7 +100,8 @@ private struct SealBox: View {
         Spacer()
         Image("Seal Box").resizable().scaledToFit()
         Spacer()
-        Instruction("Press firmly down along the edges. The box will snap together, helping to prevent accidental re-opening.")
+        Instruction(
+            "Press firmly down along the edges. The box will snap together, helping to prevent accidental re-opening.")
         Spacer()
     }
 }
@@ -115,7 +123,9 @@ private struct InstructionsDone: View {
             Spacer()
         }
         if createdDiceKey {
-            Instruction("When you press the \"Done\" button, we'll take you to the same screen you'll see after scanning your DiceKey from the home screen.")
+            Instruction(
+                "When you press the \"Done\" button, we'll take you to the same screen you'll see after scanning your DiceKey from the home screen."
+            )
             Spacer()
         }
     }
@@ -171,7 +181,8 @@ struct AssemblyInstructionsScreen: View {
                         progress: backupProgress
                     )
                 case .SealBox: SealBox()
-                case .Done: InstructionsDone(createdDiceKey: diceKeyScanned != nil, backedUpSuccessfully: backupSuccessful)
+                case .Done:
+                    InstructionsDone(createdDiceKey: diceKeyScanned != nil, backedUpSuccessfully: backupSuccessful)
                 }
             }
             .padding(.horizontal, 15)

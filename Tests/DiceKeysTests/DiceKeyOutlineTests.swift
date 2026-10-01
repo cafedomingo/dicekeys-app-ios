@@ -5,6 +5,7 @@
 
 import SwiftUI
 import Testing
+
 @testable import DiceKeys
 
 struct DiceKeyOutlineTests {

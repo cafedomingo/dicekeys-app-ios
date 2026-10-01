@@ -1,17 +1,17 @@
 //
 //  DiceKeyView.swift
-//  
+//
 //
 
 import SwiftUI
 
 struct DiceKeySizeModel {
     let bounds: CGSize
-    init (_ bounds2d: CGSize, hasTab: Bool = false) {
+    init(_ bounds2d: CGSize, hasTab: Bool = false) {
         bounds = bounds2d
         self.hasTab = hasTab
     }
-    init (_ bounds1d: CGFloat, hasTab: Bool = false) {
+    init(_ bounds1d: CGFloat, hasTab: Bool = false) {
         bounds = CGSize(width: bounds1d, height: bounds1d)
         self.hasTab = hasTab
     }
@@ -21,9 +21,7 @@ struct DiceKeySizeModel {
     let fractionOfVerticalSpaceRequiredForTab: CGFloat = 0.1
 
     var aspectRatio: CGFloat {
-      (hasTab) ?
-        (1 - fractionOfVerticalSpaceUsedByTab) :
-        1
+        (hasTab) ? (1 - fractionOfVerticalSpaceUsedByTab) : 1
     }
 
     var width: CGFloat { min(bounds.width, bounds.height * aspectRatio) }
@@ -61,9 +59,13 @@ struct DiceKeySizeModel {
 
     let marginOfBoxEdgeAsFractionOfDieSize: CGFloat = 0.25
     let distanceBetweenFacesAsFractionOfFaceSize: CGFloat = 0.15
-    var faceSize: CGFloat { return ( linearSizeOfBox / (5 + 4 * distanceBetweenFacesAsFractionOfFaceSize + 2 * marginOfBoxEdgeAsFractionOfDieSize) ) }
+    var faceSize: CGFloat {
+        return
+            (linearSizeOfBox
+            / (5 + 4 * distanceBetweenFacesAsFractionOfFaceSize + 2 * marginOfBoxEdgeAsFractionOfDieSize))
+    }
 
-    let faceRadiusAsFractionOfSize: CGFloat = 1/8
+    let faceRadiusAsFractionOfSize: CGFloat = 1 / 8
     var faceRadius: CGFloat { faceSize * faceRadiusAsFractionOfSize }
 
     var stepSize: CGFloat { (1 + distanceBetweenFacesAsFractionOfFaceSize) * faceSize }
@@ -108,17 +110,11 @@ struct DiceKeyView: View {
         }
     }
 
+    /// Unless the caller chose, a key given only by its center face shows just the center die
+    /// (index 12); a whole key shows all 25.
     var computedShowDiceAtIndexes: Set<Int> {
-        showDiceAtIndexes ?? (
-            // If the caller did not directly specify which indexes to show,
-            // show only the center die if the diceKey is specified via centerFace,
-            // and how all 25 dice otherwise
-            (diceKey == nil && centerFace != nil) ?
-                // Just the center die
-                Set([12]) :
-                // all 25 dice
-                Set(0..<25)
-        )
+        if let showDiceAtIndexes { return showDiceAtIndexes }
+        return diceKey == nil && centerFace != nil ? Set([12]) : Set(0..<25)
     }
 
     private var sizeModel: DiceKeySizeModel {
@@ -135,8 +131,9 @@ struct DiceKeyView: View {
 
     private var boxOutline: Path {
         DiceKeyOutline.path(
-            box: CGRect(x: hCenter - linearSizeOfBox / 2, y: vCenterOfBox - linearSizeOfBox / 2,
-                        width: linearSizeOfBox, height: linearSizeOfBox),
+            box: CGRect(
+                x: hCenter - linearSizeOfBox / 2, y: vCenterOfBox - linearSizeOfBox / 2,
+                width: linearSizeOfBox, height: linearSizeOfBox),
             cornerRadius: sizeModel.boxCornerRadius,
             tabRadius: drawsLidTab ? sizeModel.lidTabRadius : nil
         )
@@ -153,7 +150,7 @@ struct DiceKeyView: View {
     private var facePositions: [DiePosition] {
         let partialFaces = partialFacesToRender
         return [Int](0...24).map { index in
-            DiePosition(indexInArray: index, partialFace: partialFaces[index] )
+            DiePosition(indexInArray: index, partialFace: partialFaces[index])
         }
     }
 
@@ -171,23 +168,31 @@ struct DiceKeyView: View {
                     boxOutline.fill(diceBoxColor)
                     // The edge that keeps the box visible on a dark background
                     boxOutline
-                        .stroke(Color.Interface.objectEdge, lineWidth: DiceKeyOutline.edgeWidth(forBoxSize: linearSizeOfBox))
+                        .stroke(
+                            Color.Interface.objectEdge, lineWidth: DiceKeyOutline.edgeWidth(forBoxSize: linearSizeOfBox)
+                        )
                         .allowsHitTesting(false)
                     // The dice
                     ForEach(facePositions) { facePosition in
                         let dieIsCenterDie = (facePosition.indexInArray == 12)
-                        if computedShowDiceAtIndexes.contains(facePosition.id) && (!hideFaces || !hideDiceExceptCenterDie || dieIsCenterDie) {
-                            DieView(partialFace: facePosition.partialFace, dieSize: faceSize, penColor: diePenColor, faceSurfaceColor: highlightIndexes.contains(facePosition.indexInArray) ? Color.Depiction.highlighter : faceSurfaceColor )
-                                .position(
-                                    x: hCenter + CGFloat(-2 + facePosition.column) * dieStepSize,
-                                    y: vCenterOfBox + CGFloat(-2 + facePosition.row) * dieStepSize
-                                )
-                                .if(onFacePressed != nil) {
-                                    $0.onTapGesture {
-                                        onFacePressed?(facePosition.indexInArray)
-                                    }
+                        if computedShowDiceAtIndexes.contains(facePosition.id)
+                            && (!hideFaces || !hideDiceExceptCenterDie || dieIsCenterDie)
+                        {
+                            DieView(
+                                partialFace: facePosition.partialFace, dieSize: faceSize, penColor: diePenColor,
+                                faceSurfaceColor: highlightIndexes.contains(facePosition.indexInArray)
+                                    ? Color.Depiction.highlighter : faceSurfaceColor
+                            )
+                            .position(
+                                x: hCenter + CGFloat(-2 + facePosition.column) * dieStepSize,
+                                y: vCenterOfBox + CGFloat(-2 + facePosition.row) * dieStepSize
+                            )
+                            .if(onFacePressed != nil) {
+                                $0.onTapGesture {
+                                    onFacePressed?(facePosition.indexInArray)
                                 }
-                                .accessibilityAddTraits(onFacePressed != nil ? .isButton : [])
+                            }
+                            .accessibilityAddTraits(onFacePressed != nil ? .isButton : [])
                         } else {
                             RoundedRectangle(cornerRadius: sizeModel.faceRadius)
                                 .size(width: faceSize, height: faceSize)
@@ -202,7 +207,9 @@ struct DiceKeyView: View {
                         if hideFaces && hideDiceExceptCenterDie {
                             RoundedRectangle(cornerRadius: sizeModel.faceRadius)
                                 .size(width: faceSize, height: faceSize)
-                                .fill(dieIsCenterDie ? diceBoxDieSlotHiddenColor.opacity(0.5) : diceBoxDieSlotHiddenColor)
+                                .fill(
+                                    dieIsCenterDie ? diceBoxDieSlotHiddenColor.opacity(0.5) : diceBoxDieSlotHiddenColor
+                                )
                                 .frame(width: faceSize, height: faceSize)
                                 .position(
                                     x: hCenter + CGFloat(-2 + facePosition.column) * dieStepSize,
@@ -212,7 +219,7 @@ struct DiceKeyView: View {
                     }
                 }
             }
-            .aspectRatio(aspectRatioMatchStickeys ? 130/155 : sizeModel.aspectRatio, contentMode: .fit)
+            .aspectRatio(aspectRatioMatchStickeys ? 130 / 155 : sizeModel.aspectRatio, contentMode: .fit)
             .if(hideFaces) {
                 $0.onTapGesture {
                     toggleHideFaces()

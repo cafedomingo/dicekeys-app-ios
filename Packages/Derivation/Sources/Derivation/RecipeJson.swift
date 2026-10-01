@@ -36,7 +36,8 @@ public indirect enum RecipeJsonValue: Equatable {
             }
             // Names are written decoded between plain quotes, unescaped; the parser rejects
             // names for which that would not be valid JSON.
-            return "{" + sorted.map { "\"\($0.element.name)\":\($0.element.value.canonicalText)" }.joined(separator: ",") + "}"
+            return "{"
+                + sorted.map { "\"\($0.element.name)\":\($0.element.value.canonicalText)" }.joined(separator: ",") + "}"
         case .array(let items):
             return "[" + items.map(\.canonicalText).joined(separator: ",") + "]"
         case .string(let quoted):
@@ -187,9 +188,15 @@ public struct RecipeJsonParser {
         case UInt8(ascii: "{"): return try parseObjectBody()
         case UInt8(ascii: "["): return try parseArray()
         case UInt8(ascii: "\""): return .string(quoted: try parseString())
-        case UInt8(ascii: "t"): try expect("true"); return .bool(true)
-        case UInt8(ascii: "f"): try expect("false"); return .bool(false)
-        case UInt8(ascii: "n"): try expect("null"); return .null
+        case UInt8(ascii: "t"):
+            try expect("true")
+            return .bool(true)
+        case UInt8(ascii: "f"):
+            try expect("false")
+            return .bool(false)
+        case UInt8(ascii: "n"):
+            try expect("null")
+            return .null
         case UInt8(ascii: "-"), UInt8(ascii: "0")...UInt8(ascii: "9"): return try parseNumber()
         default: throw .invalid(offset: index)
         }
@@ -206,14 +213,21 @@ public struct RecipeJsonParser {
         index += 1
         var fields: [RecipeJsonField] = []
         skipWhitespace()
-        if peek == UInt8(ascii: "}") { index += 1; return .object(fields) }
+        if peek == UInt8(ascii: "}") {
+            index += 1
+            return .object(fields)
+        }
         while true {
             skipWhitespace()
             guard peek == UInt8(ascii: "\"") else { throw .invalid(offset: index) }
             let nameStart = index
             _ = try parseString()
             let name = try decode(quotedRange: nameStart..<index)
-            guard name.unicodeScalars.allSatisfy({ $0 != "\"" && $0 != "\\" && $0.value >= UInt32(firstUnescapedCodePoint) }) else {
+            guard
+                name.unicodeScalars.allSatisfy({
+                    $0 != "\"" && $0 != "\\" && $0.value >= UInt32(firstUnescapedCodePoint)
+                })
+            else {
                 throw .unrepresentableKey(offset: nameStart)
             }
             // Reference implementations disagree on duplicates (one keeps the last value), so
@@ -230,7 +244,9 @@ public struct RecipeJsonParser {
             skipWhitespace()
             switch peek {
             case UInt8(ascii: ","): index += 1
-            case UInt8(ascii: "}"): index += 1; return .object(fields)
+            case UInt8(ascii: "}"):
+                index += 1
+                return .object(fields)
             default: throw .invalid(offset: index)
             }
         }
@@ -242,14 +258,19 @@ public struct RecipeJsonParser {
         index += 1
         var items: [RecipeJsonValue] = []
         skipWhitespace()
-        if peek == UInt8(ascii: "]") { index += 1; return .array(items) }
+        if peek == UInt8(ascii: "]") {
+            index += 1
+            return .array(items)
+        }
         while true {
             skipWhitespace()
             items.append(try parseValue())
             skipWhitespace()
             switch peek {
             case UInt8(ascii: ","): index += 1
-            case UInt8(ascii: "]"): index += 1; return .array(items)
+            case UInt8(ascii: "]"):
+                index += 1
+                return .array(items)
             default: throw .invalid(offset: index)
             }
         }
@@ -270,7 +291,7 @@ public struct RecipeJsonParser {
                 guard let escaped = peek else { throw .invalid(offset: index) }
                 switch escaped {
                 case UInt8(ascii: "\""), UInt8(ascii: "\\"), UInt8(ascii: "/"), UInt8(ascii: "b"),
-                     UInt8(ascii: "f"), UInt8(ascii: "n"), UInt8(ascii: "r"), UInt8(ascii: "t"):
+                    UInt8(ascii: "f"), UInt8(ascii: "n"), UInt8(ascii: "r"), UInt8(ascii: "t"):
                     index += 1
                 case UInt8(ascii: "u"):
                     index += 1
@@ -289,7 +310,9 @@ public struct RecipeJsonParser {
     private mutating func parseHex4() throws(RecipeJsonError) -> UInt32 {
         var value: UInt32 = 0
         for _ in 0..<Self.hexDigitsPerEscape {
-            guard let byte = peek, let digit = Character(UnicodeScalar(byte)).hexDigitValue else { throw .invalid(offset: index) }
+            guard let byte = peek, let digit = Character(UnicodeScalar(byte)).hexDigitValue else {
+                throw .invalid(offset: index)
+            }
             value = value << 4 | UInt32(digit)
             index += 1
         }
@@ -331,12 +354,13 @@ public struct RecipeJsonParser {
             let byte = bytes[cursor]
             if byte != UInt8(ascii: "\\") {
                 try flushSurrogate()
-                let length = switch byte {
-                case ..<0x80: 1
-                case ..<0xE0: 2
-                case ..<0xF0: 3
-                default: 4
-                }
+                let length =
+                    switch byte {
+                    case ..<0x80: 1
+                    case ..<0xE0: 2
+                    case ..<0xF0: 3
+                    default: 4
+                    }
                 let text = String(decoding: bytes[cursor..<cursor + length], as: UTF8.self)
                 scalars.append(contentsOf: text.unicodeScalars)
                 cursor += length
@@ -355,9 +379,13 @@ public struct RecipeJsonParser {
                     continue
                 }
                 if lowSurrogates.contains(unit) {
-                    guard let high = pendingHighSurrogate else { throw .invalid(offset: cursor - Self.unicodeEscapeLength) }
+                    guard let high = pendingHighSurrogate else {
+                        throw .invalid(offset: cursor - Self.unicodeEscapeLength)
+                    }
                     pendingHighSurrogate = nil
-                    let combined = firstSupplementaryCodePoint + ((high.value - highSurrogates.lowerBound) << 10) + (unit - lowSurrogates.lowerBound)
+                    let combined =
+                        firstSupplementaryCodePoint + ((high.value - highSurrogates.lowerBound) << 10)
+                        + (unit - lowSurrogates.lowerBound)
                     scalars.append(UnicodeScalar(combined)!)
                     continue
                 }

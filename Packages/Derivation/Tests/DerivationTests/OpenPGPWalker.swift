@@ -14,7 +14,7 @@ struct OpenPGPWalker {
         var timestamp: UInt32
         var algorithm: UInt8
         var oid: [UInt8]
-        var publicKeyMPI: [UInt8]      // bit length prefix included
+        var publicKeyMPI: [UInt8]  // bit length prefix included
         var s2kUsage: UInt8
         var secretKeyMPI: [UInt8]
         var checksum: UInt16
@@ -34,9 +34,9 @@ struct OpenPGPWalker {
         var hashed: [Subpacket]
         var unhashed: [Subpacket]
         var hashPrefix: [UInt8]
-        var r: [UInt8]                 // bit length prefix included
+        var r: [UInt8]  // bit length prefix included
         var s: [UInt8]
-        var hashedRegion: [UInt8]      // version through the hashed subpackets, for the preimage
+        var hashedRegion: [UInt8]  // version through the hashed subpackets, for the preimage
     }
 
     let packets: [(tag: UInt8, body: [UInt8])]
@@ -53,7 +53,10 @@ struct OpenPGPWalker {
         for line in lines.dropFirst() {
             if line.hasPrefix("-----END") { break }
             if line.isEmpty { continue }
-            if line.hasPrefix("=") { crc = [UInt8](try #require(Data(base64Encoded: String(line.dropFirst())))); continue }
+            if line.hasPrefix("=") {
+                crc = [UInt8](try #require(Data(base64Encoded: String(line.dropFirst()))))
+                continue
+            }
             body += line
         }
         bytes = [UInt8](try #require(Data(base64Encoded: body)))
@@ -87,7 +90,9 @@ struct OpenPGPWalker {
             let secretKeyMPI = reader.mpi()
             let checksum = reader.uint16()
             #expect(reader.atEnd)
-            return SecretKeyPacket(version: version, timestamp: timestamp, algorithm: algorithm, oid: oid, publicKeyMPI: publicKeyMPI, s2kUsage: s2kUsage, secretKeyMPI: secretKeyMPI, checksum: checksum, body: body)
+            return SecretKeyPacket(
+                version: version, timestamp: timestamp, algorithm: algorithm, oid: oid, publicKeyMPI: publicKeyMPI,
+                s2kUsage: s2kUsage, secretKeyMPI: secretKeyMPI, checksum: checksum, body: body)
         }
     }
 
@@ -113,7 +118,10 @@ struct OpenPGPWalker {
             let r = reader.mpi()
             let s = reader.mpi()
             #expect(reader.atEnd)
-            return SignaturePacket(version: version, signatureType: signatureType, publicKeyAlgorithm: publicKeyAlgorithm, hashAlgorithm: hashAlgorithm, hashed: hashed, unhashed: unhashed, hashPrefix: hashPrefix, r: r, s: s, hashedRegion: hashedRegion)
+            return SignaturePacket(
+                version: version, signatureType: signatureType, publicKeyAlgorithm: publicKeyAlgorithm,
+                hashAlgorithm: hashAlgorithm, hashed: hashed, unhashed: unhashed, hashPrefix: hashPrefix, r: r, s: s,
+                hashedRegion: hashedRegion)
         }
     }
 
@@ -122,10 +130,16 @@ struct OpenPGPWalker {
         var offset = 0
         init(_ bytes: [UInt8]) { self.bytes = bytes }
         var atEnd: Bool { offset == bytes.count }
-        mutating func byte() -> UInt8 { defer { offset += 1 }; return bytes[offset] }
+        mutating func byte() -> UInt8 {
+            defer { offset += 1 }
+            return bytes[offset]
+        }
         mutating func uint16() -> UInt16 { UInt16(byte()) << 8 | UInt16(byte()) }
         mutating func uint32() -> UInt32 { UInt32(uint16()) << 16 | UInt32(uint16()) }
-        mutating func take(_ count: Int) -> [UInt8] { defer { offset += count }; return Array(bytes[offset..<offset + count]) }
+        mutating func take(_ count: Int) -> [UInt8] {
+            defer { offset += count }
+            return Array(bytes[offset..<offset + count])
+        }
         mutating func mpi() -> [UInt8] {
             let bits = Int(uint16())
             let count = (bits + 7) / 8

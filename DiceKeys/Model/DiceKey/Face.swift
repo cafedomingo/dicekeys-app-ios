@@ -72,26 +72,27 @@ struct Face: Equatable {
     var underlineCode11Bits: UInt16 {
         // always set the high order bit (bit 11: 1 << 10) to 1 and low order bit to 0
         // to signal order
-        (1 << 10) |
-        // set the next high-order bit only on overlines
-        0 |
-        // shift the face code 1 to the left to leave the 0th bit empty
-        ( UInt16(underlineCode8Bits) << 1 )
+        (1 << 10)
+            // set the next high-order bit only on overlines
+            | 0
+            // shift the face code 1 to the left to leave the 0th bit empty
+            | (UInt16(underlineCode8Bits) << 1)
     }
 
     var overlineCode11Bits: UInt16 {
         // always set the high order bit (bit 11: 1 << 10) to 1 and low order bit to 0
         // to signal order
-        (1 << 10) |
-        // set the next high-order bit on overlines
-        (1 << 9) |
-        // shift the face code 1 to the left to leave the 0th bit empty
-        ( UInt16(overlineCode8Bits) << 1 )
+        (1 << 10)
+            // set the next high-order bit on overlines
+            | (1 << 9)
+            // shift the face code 1 to the left to leave the 0th bit empty
+            | (UInt16(overlineCode8Bits) << 1)
     }
 
-    init(letter: FaceLetter,
-         digit: FaceDigit,
-         orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl
+    init(
+        letter: FaceLetter,
+        digit: FaceDigit,
+        orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl
     ) {
         self.letter = letter
         self.digit = digit
@@ -99,14 +100,25 @@ struct Face: Equatable {
     }
 
     init(fromHumanReadableForm humanReadableForm: String, offsetErrorIndxesBy: Int = 0) throws {
-        guard let letter = FaceLetter(rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 0)])) else {
+        guard
+            let letter = FaceLetter(
+                rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 0)]))
+        else {
             throw IllegalCharacterError.inLetter(position: offsetErrorIndxesBy + 0)
         }
-        guard let digit = FaceDigit(rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 1)])) else {
+        guard
+            let digit = FaceDigit(
+                rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 1)]))
+        else {
             throw IllegalCharacterError.inDigit(position: offsetErrorIndxesBy + 1)
         }
-        guard let orientationAsLowercaseLetterTrbl = humanReadableForm.count > 2 ? FaceOrientationLetterTrbl(rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 2)])) :
-            FaceOrientationLetterTrbl.Top else {
+        guard
+            let orientationAsLowercaseLetterTrbl = humanReadableForm.count > 2
+                ? FaceOrientationLetterTrbl(
+                    rawValue: String(
+                        humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 2)]))
+                : FaceOrientationLetterTrbl.Top
+        else {
             throw IllegalCharacterError.inOrientation(position: offsetErrorIndxesBy + 2)
         }
         self.init(

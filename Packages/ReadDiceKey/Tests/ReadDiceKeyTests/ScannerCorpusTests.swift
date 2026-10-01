@@ -18,6 +18,7 @@ import DiceKeySpecification
 import Foundation
 import ImageIO
 import Testing
+
 @testable import ReadDiceKey
 
 // MARK: - Corpus
@@ -36,7 +37,8 @@ struct CorpusImage: Sendable, CustomTestStringConvertible {
     static let all: [CorpusImage] = ["well-framed", "other"].flatMap { folder in
         let dir = Bundle.module.resourceURL!.appendingPathComponent("Fixtures/images/\(folder)")
         let files = (try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []
-        return files
+        return
+            files
             .filter { ["jpg", "png"].contains($0.pathExtension.lowercased()) }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
             .map { url in
@@ -71,7 +73,8 @@ enum Corpus {
             return try gray(from: url, square: 1080)
         }
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-              let raw = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+            let raw = CGImageSourceCreateImageAtIndex(source, 0, nil)
+        else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
         }
         let options: [CFString: Any] = [
@@ -82,32 +85,42 @@ enum Corpus {
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
         }
-        let scale = size == .native ? 1 : (size == .shorterSide810 ? 810 : 1080) / Double(min(image.width, image.height))
-        return try draw(image, width: Int((Double(image.width) * scale).rounded()), height: Int((Double(image.height) * scale).rounded()))
+        let scale =
+            size == .native ? 1 : (size == .shorterSide810 ? 810 : 1080) / Double(min(image.width, image.height))
+        return try draw(
+            image, width: Int((Double(image.width) * scale).rounded()),
+            height: Int((Double(image.height) * scale).rounded()))
     }
 
     /// The photo scaled to cover a `side` x `side` square and cropped to its center, as the app frames the camera.
     static func gray(from url: URL, square side: Int) throws -> GrayImage {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-              let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
-                  kCGImageSourceCreateThumbnailWithTransform: true,
-                  kCGImageSourceCreateThumbnailFromImageAlways: true,
-                  kCGImageSourceThumbnailMaxPixelSize: side * 2
-              ] as CFDictionary) else {
+            let image = CGImageSourceCreateThumbnailAtIndex(
+                source, 0,
+                [
+                    kCGImageSourceCreateThumbnailWithTransform: true,
+                    kCGImageSourceCreateThumbnailFromImageAlways: true,
+                    kCGImageSourceThumbnailMaxPixelSize: side * 2
+                ] as CFDictionary)
+        else {
             throw CorpusError.cannotDecode(url.lastPathComponent)
         }
         let scale = Double(side) / Double(min(image.width, image.height))
         let drawn = CGSize(width: Double(image.width) * scale, height: Double(image.height) * scale)
-        return try draw(image, width: side, height: side, in: CGRect(
-            origin: CGPoint(x: (Double(side) - drawn.width) / 2, y: (Double(side) - drawn.height) / 2), size: drawn
-        ))
+        return try draw(
+            image, width: side, height: side,
+            in: CGRect(
+                origin: CGPoint(x: (Double(side) - drawn.width) / 2, y: (Double(side) - drawn.height) / 2), size: drawn
+            ))
     }
 
     private static func draw(_ image: CGImage, width: Int, height: Int, in rect: CGRect? = nil) throws -> GrayImage {
-        guard let context = CGContext(
-            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width,
-            space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue
-        ), let data = context.data else {
+        guard
+            let context = CGContext(
+                data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width,
+                space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue
+            ), let data = context.data
+        else {
             throw CorpusError.cannotDecode("\(width)x\(height)")
         }
         context.interpolationQuality = .high
@@ -128,8 +141,9 @@ enum Corpus {
                 continue
             }
             guard let letter = FaceLetter(rawValue: String(chars[i * 3])),
-                  let digit = FaceDigit(rawValue: String(chars[i * 3 + 1])),
-                  let turns = turnsByOrientation[chars[i * 3 + 2]] else { return nil }
+                let digit = FaceDigit(rawValue: String(chars[i * 3 + 1])),
+                let turns = turnsByOrientation[chars[i * 3 + 2]]
+            else { return nil }
             faces.append(ScannedFace(letter: letter, digit: digit, clockwiseTurns: turns))
         }
         return faces
@@ -141,7 +155,8 @@ enum Corpus {
         var candidate = expected
         var best = (right: -1, wrong: 0)
         for _ in 0..<4 {
-            var right = 0, wrong = 0
+            var right = 0
+            var wrong = 0
             for (face, want) in zip(read, candidate) {
                 guard let face, let want else { continue }
                 if face == want { right += 1 } else { wrong += 1 }
@@ -223,9 +238,11 @@ struct ScannerCorpusTests {
         let asset = AVURLAsset(url: url)
         let track = try #require(try await asset.loadTracks(withMediaType: .video).first)
         let reader = try AVAssetReader(asset: asset)
-        let output = AVAssetReaderTrackOutput(track: track, outputSettings: [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
-        ])
+        let output = AVAssetReaderTrackOutput(
+            track: track,
+            outputSettings: [
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+            ])
         reader.add(output)
         #expect(reader.startReading())
         var scanner = DiceKeyScanner()
@@ -234,7 +251,9 @@ struct ScannerCorpusTests {
             scanner.scan(image)
             #expect(Corpus.score(scanner.faces, against: expected).wrong == 0)
         }
-        print("video \(url.lastPathComponent.suffix(12)): \(scanner.faces.compactMap { $0 }.count) faces known after the last frame")
+        print(
+            "video \(url.lastPathComponent.suffix(12)): \(scanner.faces.compactMap { $0 }.count) faces known after the last frame"
+        )
         #expect(scanner.faces.compactMap { $0 }.count >= 16)
     }
 }

@@ -90,9 +90,11 @@ struct DerivedValueQrCodeSheet: View {
         Text("Caution: iPhone and iPads can leak secrets from QR codes")
             .bold()
             .frame(maxWidth: .infinity, alignment: .leading)
-        Text("Clicking on the notification that appears when the camera has scanned your QR code will start a web search. The web search sends your secrets to your search engine over the Internet. Your search engine will likely store them.\n\nTo prevent your secrets from being exposed, swipe the notification downward to the bottom of the screen to expose the copy option. This option copies the secret to the clipboard on your device.")
-            .font(.caption)
-            .frame(maxWidth: .infinity)
+        Text(
+            "Clicking on the notification that appears when the camera has scanned your QR code will start a web search. The web search sends your secrets to your search engine over the Internet. Your search engine will likely store them.\n\nTo prevent your secrets from being exposed, swipe the notification downward to the bottom of the screen to expose the copy option. This option copies the secret to the clipboard on your device."
+        )
+        .font(.caption)
+        .frame(maxWidth: .infinity)
         Button("Got it. I'll be careful") {
             askForUsage = false
         }

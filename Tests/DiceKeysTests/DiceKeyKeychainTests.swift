@@ -11,6 +11,7 @@
 import Foundation
 import Security
 import Testing
+
 @testable import DiceKeys
 
 /// Serialized because every test here works on the one keychain item for `DiceKey.Example`:
@@ -61,13 +62,16 @@ final class DiceKeyKeychainTests {
         // `SecAccessControl` compares by its constraints, and one created with no flags is
         // still non-nil while demanding nothing, so check the constraints themselves.
         let storedAccessControl = try #require(attributes[kSecAttrAccessControl as String]) as AnyObject
-        let expectedAccessControl = try #require(SecAccessControlCreateWithFlags(
-            nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .userPresence, nil
-        ))
+        let expectedAccessControl = try #require(
+            SecAccessControlCreateWithFlags(
+                nil, kSecAttrAccessibleWhenUnlockedThisDeviceOnly, .userPresence, nil
+            ))
         #expect(CFEqual(storedAccessControl, expectedAccessControl))
 
         // The DiceKey must not be readable while the device is locked, nor restorable onto
         // another device.
-        #expect(attributes[kSecAttrAccessible as String] as? String == kSecAttrAccessibleWhenUnlockedThisDeviceOnly as String)
+        #expect(
+            attributes[kSecAttrAccessible as String] as? String == kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+                as String)
     }
 }

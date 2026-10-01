@@ -29,17 +29,17 @@
 import CoreGraphics
 
 public enum FaceLetter: String, Codable, CaseIterable, Sendable {
-  case A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, R, S, T, U, V, W, X, Y, Z
+    case A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, R, S, T, U, V, W, X, Y, Z
 }
 public let FaceLetters = Array(FaceLetter.allCases)
 
 public enum FaceDigit: String, Codable, CaseIterable, Sendable {
-  case _1 = "1"
-  case _2 = "2"
-  case _3 = "3"
-  case _4 = "4"
-  case _5 = "5"
-  case _6 = "6"
+    case _1 = "1"
+    case _2 = "2"
+    case _3 = "3"
+    case _4 = "4"
+    case _5 = "5"
+    case _6 = "6"
 }
 public let FaceDigits = Array(FaceDigit.allCases)
 
@@ -90,10 +90,10 @@ public let faceDigitValues: [FaceDigit: UInt8] = [
 ]
 
 public enum FaceOrientationLetterTrbl: String, Codable, CaseIterable, Sendable {
-  case Top = "t"
-  case Right = "r"
-  case Bottom = "b"
-  case Left = "l"
+    case Top = "t"
+    case Right = "r"
+    case Bottom = "b"
+    case Left = "l"
 }
 public let FaceOrientationLettersTrbl = Array(FaceOrientationLetterTrbl.allCases)
 
@@ -102,10 +102,10 @@ public let MinNumberOfBlackDotsInUndoverline: Int = 4
 public let MinNumberOfWhiteDotsInUndoverline: Int = 4
 
 public struct FaceWithUnderlineAndOverlineCode: Sendable {
-  public let letter: FaceLetter
-  public let digit: FaceDigit
-  public let underlineCode: UInt8
-  public let overlineCode: UInt8
+    public let letter: FaceLetter
+    public let digit: FaceDigit
+    public let underlineCode: UInt8
+    public let overlineCode: UInt8
 }
 
 public class FaceDimensionsFractional {
@@ -136,7 +136,10 @@ public class FaceDimensionsFractional {
     public static let spaceBetweenLetterAndDigit: CGFloat = 0.04375
     public static let textRegionWidth: CGFloat = 0.785685
     public static let textRegionHeight: CGFloat = 0.488194
-    public static let dotCentersAsFractionOfUndoverline: [CGFloat] = [0.0967745, 0.1774195, 0.2580645, 0.3387095, 0.41935449999999996, 0.4999995, 0.5806445, 0.6612894999999999, 0.7419344999999999, 0.8225795, 0.9032244999999999]
+    public static let dotCentersAsFractionOfUndoverline: [CGFloat] = [
+        0.0967745, 0.1774195, 0.2580645, 0.3387095, 0.41935449999999996, 0.4999995, 0.5806445, 0.6612894999999999,
+        0.7419344999999999, 0.8225795, 0.9032244999999999
+    ]
 }
 
 public let letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes: [FaceWithUnderlineAndOverlineCode] = [

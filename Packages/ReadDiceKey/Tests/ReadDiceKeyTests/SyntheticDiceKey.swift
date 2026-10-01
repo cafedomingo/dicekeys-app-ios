@@ -10,6 +10,7 @@
 import CoreGraphics
 import DiceKeySpecification
 import Foundation
+
 @testable import ReadDiceKey
 
 struct SyntheticDiceKey {
@@ -17,15 +18,20 @@ struct SyntheticDiceKey {
     let faces: [ScannedFace]
 
     /// 25 different letters, with digits and turns varied across the grid.
-    static let sample = SyntheticDiceKey(faces: FaceLetter.allCases.enumerated().map { i, letter in
-        ScannedFace(letter: letter, digit: FaceDigit.allCases[(i * 5) % 6], clockwiseTurns: (i * 3) % 4)
-    })
+    static let sample = SyntheticDiceKey(
+        faces: FaceLetter.allCases.enumerated().map { i, letter in
+            ScannedFace(letter: letter, digit: FaceDigit.allCases[(i * 5) % 6], clockwiseTurns: (i * 3) % 4)
+        })
 
     /// The same dice, each with its digit moved on by one: a different key face for face.
     var withOtherDigits: SyntheticDiceKey {
-        SyntheticDiceKey(faces: faces.map { face in
-            ScannedFace(letter: face.letter, digit: FaceDigit.allCases[(FaceDigit.allCases.firstIndex(of: face.digit)! + 1) % 6], clockwiseTurns: face.clockwiseTurns)
-        })
+        SyntheticDiceKey(
+            faces: faces.map { face in
+                ScannedFace(
+                    letter: face.letter,
+                    digit: FaceDigit.allCases[(FaceDigit.allCases.firstIndex(of: face.digit)! + 1) % 6],
+                    clockwiseTurns: face.clockwiseTurns)
+            })
     }
 
     /// The key as it reads after turning the whole box a quarter turn clockwise.
@@ -75,7 +81,9 @@ struct SyntheticDiceKey {
             let spec = specs.firstIndex { $0.letter == face.letter && $0.digit == face.digit }!
             let overline = specs[unreadable.contains(index) ? (spec + 1) % specs.count : spec].overlineCode
             let lineOffset = faceSize * FaceDimensionsFractional.centerOfUndoverlineToCenterOfFace
-            drawLine(in: context, code: specs[spec].underlineCode, isOverline: false, centerY: lineOffset, faceSize: faceSize)
+            drawLine(
+                in: context, code: specs[spec].underlineCode, isOverline: false, centerY: lineOffset, faceSize: faceSize
+            )
             drawLine(in: context, code: overline, isOverline: true, centerY: -lineOffset, faceSize: faceSize)
             context.restoreGState()
         }

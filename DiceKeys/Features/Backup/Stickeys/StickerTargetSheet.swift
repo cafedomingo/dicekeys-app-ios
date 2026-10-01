@@ -6,8 +6,8 @@
 import SwiftUI
 
 struct StickerTargetSheetSpecification {
-    static let longSideOverShortSide = CGFloat(155.0/130.0)
-    static let shortSideOverLongSide = 1/longSideOverShortSide
+    static let longSideOverShortSide = CGFloat(155.0 / 130.0)
+    static let shortSideOverLongSide = 1 / longSideOverShortSide
 }
 
 struct StickerTargetSheet: View {
@@ -25,23 +25,25 @@ struct StickerTargetSheet: View {
     var orientation: Orientation? = .portrait
 
     private var computedOrientation: Orientation {
-        orientation ?? (
-            bounds.height >= bounds.width ? .portrait : .landscape
-        )
+        orientation ?? (bounds.height >= bounds.width ? .portrait : .landscape)
     }
 
     var width: CGFloat {
         min(
             bounds.width,
-            bounds.height * ( computedOrientation != .landscape ? StickerTargetSheetSpecification.shortSideOverLongSide : StickerTargetSheetSpecification.longSideOverShortSide
-            )
+            bounds.height
+                * (computedOrientation != .landscape
+                    ? StickerTargetSheetSpecification.shortSideOverLongSide
+                    : StickerTargetSheetSpecification.longSideOverShortSide)
         )
     }
     var height: CGFloat {
         min(
             bounds.height,
-            bounds.width * ( computedOrientation == .landscape ? StickerTargetSheetSpecification.shortSideOverLongSide : StickerTargetSheetSpecification.longSideOverShortSide
-            )
+            bounds.width
+                * (computedOrientation == .landscape
+                    ? StickerTargetSheetSpecification.shortSideOverLongSide
+                    : StickerTargetSheetSpecification.longSideOverShortSide)
         )
     }
 
@@ -80,47 +82,58 @@ struct StickerTargetSheet: View {
 
     var body: some View {
         CalculateBounds(bounds: $bounds) {
-        ZStack(alignment: .center) {
-            // The sheet
-            Rectangle()
-                .size(width: width, height: height)
-                .fill(Color.Depiction.stickerSheet)
-                .border(foregroundColor ?? Color.Depiction.stickerSheetEdge)
-            // The dice
-            ForEach(0..<25, id: \.self) { faceIndex in
-                if faceIndex < showLettersBeforeIndex, let diceKey {
-                    DieView(face: diceKey.faces[faceIndex], dieSize: faceSize, penColor: foregroundColor ?? Color.Depiction.diePen, faceBorderColor: foregroundColor ?? Color.Depiction.stickerFaceBorder)
+            ZStack(alignment: .center) {
+                // The sheet
+                Rectangle()
+                    .size(width: width, height: height)
+                    .fill(Color.Depiction.stickerSheet)
+                    .border(foregroundColor ?? Color.Depiction.stickerSheetEdge)
+                // The dice
+                ForEach(0..<25, id: \.self) { faceIndex in
+                    if faceIndex < showLettersBeforeIndex, let diceKey {
+                        DieView(
+                            face: diceKey.faces[faceIndex], dieSize: faceSize,
+                            penColor: foregroundColor ?? Color.Depiction.diePen,
+                            faceBorderColor: foregroundColor ?? Color.Depiction.stickerFaceBorder
+                        )
                         .offset(self.offset(forFaceIndex: faceIndex))
-                } else {
-                    Image("Sticker Target")
-                    .resizable()
-                    .frame(width: faceSize, height: faceSize, alignment: .center)
-                    .offset(self.offset(forFaceIndex: faceIndex))
+                    } else {
+                        Image("Sticker Target")
+                            .resizable()
+                            .frame(width: faceSize, height: faceSize, alignment: .center)
+                            .offset(self.offset(forFaceIndex: faceIndex))
+                    }
                 }
-            }
-            if let atDieIndex = self.atDieIndex {
-                if atDieIndex < 25 && atDieIndex >= 0 {
-                    // Highlight-colored box
-                    RoundedRectangle(cornerRadius: faceSize / 8)
-                        .size(width: faceSize * 1.2, height: faceSize * 1.2)
-                        .fill(Color.Depiction.highlighter)
-                        .offset(self.offset(forFaceIndex: atDieIndex))
-                        .frame(width: faceSize * 1.2, height: faceSize * 1.2)
-                    // Hand image
-                    Image("Hand with Sticker")
-                        .resizable()
-                        .frame(width: handImageWidth, height: handImageHeight).scaledToFit()
-                        .frame(width: width, height: height)
-                        .offset(handImageOffsetToCenterOfDie)
-                        .offset(self.offset(forFaceIndex: atDieIndex))
-                    // Face being placed
-                    if let diceKey = self.diceKey {
-                        DieView(face: diceKey.faces[atDieIndex], dieSize: faceSize, penColor: foregroundColor ?? Color.Depiction.diePen, faceSurfaceColor: Color.clear)
+                if let atDieIndex = self.atDieIndex {
+                    if atDieIndex < 25 && atDieIndex >= 0 {
+                        // Highlight-colored box
+                        RoundedRectangle(cornerRadius: faceSize / 8)
+                            .size(width: faceSize * 1.2, height: faceSize * 1.2)
+                            .fill(Color.Depiction.highlighter)
                             .offset(self.offset(forFaceIndex: atDieIndex))
+                            .frame(width: faceSize * 1.2, height: faceSize * 1.2)
+                        // Hand image
+                        Image("Hand with Sticker")
+                            .resizable()
+                            .frame(width: handImageWidth, height: handImageHeight).scaledToFit()
+                            .frame(width: width, height: height)
+                            .offset(handImageOffsetToCenterOfDie)
+                            .offset(self.offset(forFaceIndex: atDieIndex))
+                        // Face being placed
+                        if let diceKey = self.diceKey {
+                            DieView(
+                                face: diceKey.faces[atDieIndex], dieSize: faceSize,
+                                penColor: foregroundColor ?? Color.Depiction.diePen, faceSurfaceColor: Color.clear
+                            )
+                            .offset(self.offset(forFaceIndex: atDieIndex))
+                        }
                     }
                 }
             }
-        }}.aspectRatio(computedOrientation == .landscape ? StickerTargetSheetSpecification.longSideOverShortSide : StickerTargetSheetSpecification.shortSideOverLongSide, contentMode: .fit)
+        }.aspectRatio(
+            computedOrientation == .landscape
+                ? StickerTargetSheetSpecification.longSideOverShortSide
+                : StickerTargetSheetSpecification.shortSideOverLongSide, contentMode: .fit)
     }
 }
 

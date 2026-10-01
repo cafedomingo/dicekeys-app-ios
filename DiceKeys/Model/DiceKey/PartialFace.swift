@@ -29,7 +29,10 @@ struct PartialFace: Identifiable, Equatable, Sendable {
         self.index = index ?? 0
     }
 
-    init(letter: FaceLetter? = nil, digit: FaceDigit? = nil, orientation: FaceOrientationLetterTrbl = .Top, index: Int? = nil) {
+    init(
+        letter: FaceLetter? = nil, digit: FaceDigit? = nil, orientation: FaceOrientationLetterTrbl = .Top,
+        index: Int? = nil
+    ) {
         self.letter = letter
         self.digit = digit
         self.orientation = orientation

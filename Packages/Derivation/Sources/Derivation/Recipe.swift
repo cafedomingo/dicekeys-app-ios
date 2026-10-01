@@ -41,12 +41,13 @@ public struct Recipe: Sendable, Equatable {
             throw .typeMismatch(recipe: declared, requested: type)
         }
         if let algorithm = try fields.string("algorithm") {
-            let expected: String? = switch type {
-            case .symmetricKey: "XSalsa20Poly1305"
-            case .unsealingKey: "X25519"
-            case .signingKey: "Ed25519"
-            case .password, .secret: nil
-            }
+            let expected: String? =
+                switch type {
+                case .symmetricKey: "XSalsa20Poly1305"
+                case .unsealingKey: "X25519"
+                case .signingKey: "Ed25519"
+                case .password, .secret: nil
+                }
             guard algorithm == expected else { throw .invalidAlgorithm(algorithm) }
         }
         let hashName = try fields.string("hashFunction") ?? HashFunction.blake2b.rawValue
@@ -74,18 +75,24 @@ public struct Recipe: Sendable, Equatable {
             case (let bits?, nil):
                 resolvedWords = Recipe.wordsFor(bits: bits, bitsPerWord: bitsPerWord)
             case (let bits?, let words?):
-                guard words == Recipe.wordsFor(bits: bits, bitsPerWord: bitsPerWord) else { throw .bitsAndWordsConflict }
+                guard words == Recipe.wordsFor(bits: bits, bitsPerWord: bitsPerWord) else {
+                    throw .bitsAndWordsConflict
+                }
                 resolvedWords = words
             }
             self.lengthInWords = resolvedWords
             self.lengthInBytes = resolvedWords * PasswordFormatter.bytesPerWord
         case .secret:
-            self.lengthInBytes = try fields.integer(Recipe.lengthInBytesField, in: 1...Recipe.maximumLengthInBytes) ?? Recipe.defaultLengthInBytes
+            self.lengthInBytes =
+                try fields.integer(Recipe.lengthInBytesField, in: 1...Recipe.maximumLengthInBytes)
+                ?? Recipe.defaultLengthInBytes
             self.lengthInChars = nil
             self.wordList = .en512
             self.lengthInWords = 0
         case .symmetricKey, .unsealingKey, .signingKey:
-            if let bytes = try fields.integer(Recipe.lengthInBytesField, in: Int.min...Int.max), bytes != Recipe.keyLengthInBytes {
+            if let bytes = try fields.integer(Recipe.lengthInBytesField, in: Int.min...Int.max),
+                bytes != Recipe.keyLengthInBytes
+            {
                 throw .lengthMustBe32(type)
             }
             self.lengthInBytes = Recipe.keyLengthInBytes

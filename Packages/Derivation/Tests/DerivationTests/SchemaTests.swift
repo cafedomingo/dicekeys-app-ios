@@ -5,6 +5,7 @@
 
 import Foundation
 import Testing
+
 @testable import Derivation
 
 private typealias JSONObject = [String: Any]
@@ -24,8 +25,9 @@ private func properties(of schema: JSONObject) throws -> [String: JSONObject] {
 /// A JSON integer as JSONSerialization returns it: a number that is neither a boolean nor a fraction.
 private func integer(_ value: Any) -> Int? {
     guard let number = value as? NSNumber,
-          CFGetTypeID(number) != CFBooleanGetTypeID(),
-          !CFNumberIsFloatType(number) else { return nil }
+        CFGetTypeID(number) != CFBooleanGetTypeID(),
+        !CFNumberIsFloatType(number)
+    else { return nil }
     return number.intValue
 }
 

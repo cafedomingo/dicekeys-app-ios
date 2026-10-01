@@ -43,12 +43,13 @@ final class DiceKeyScanModel {
 extension DiceKey {
     /// The faces the scanner read, rows top to bottom as the camera saw them.
     convenience init(_ scanned: [ScannedFace]) {
-        self.init(scanned.map { face in
-            Face(
-                letter: face.letter,
-                digit: face.digit,
-                orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.allCases[face.clockwiseTurns]
-            )
-        })
+        self.init(
+            scanned.map { face in
+                Face(
+                    letter: face.letter,
+                    digit: face.digit,
+                    orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl.allCases[face.clockwiseTurns]
+                )
+            })
     }
 }

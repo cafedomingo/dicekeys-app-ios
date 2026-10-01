@@ -57,12 +57,16 @@ private struct DiceKeyInMemory: View {
                     Divider()
                 }
                 if isCountdownRunning {
-                    Button("\(extensionActionText) five minutes") { diceKeyMemoryStore.extendDeadlineBy(seconds: 5 * 60) }
+                    Button("\(extensionActionText) five minutes") {
+                        diceKeyMemoryStore.extendDeadlineBy(seconds: 5 * 60)
+                    }
                     Button("\(extensionActionText) one hour") { diceKeyMemoryStore.extendDeadlineBy(seconds: 60 * 60) }
                     Button("Keep keys in memory until I quit") { diceKeyMemoryStore.setKeysNeverExpire() }
                     Divider()
                 }
-                Button("\(expirationActionText) Immediately", role: .destructive) { diceKeyMemoryStore.expireKey(diceKey) }
+                Button("\(expirationActionText) Immediately", role: .destructive) {
+                    diceKeyMemoryStore.expireKey(diceKey)
+                }
             } label: {
                 HStack {
                     Text(menuText)
