@@ -8,47 +8,6 @@ Everything above the Ideas heading is wanted, whether or not it is scheduled. Ev
 below it is a question rather than a plan, kept so the reasoning behind it survives, and it
 may well be answered by deciding not to do it.
 
-## Derive in Swift
-
-**Decided.** `Packages/SeededCrypto` (libsodium compiled from source, the seeded-crypto C++
-subtree, a C ABI over it, and a Swift wrapper: about 2.2 MB of vendored C) is replaced by a
-Swift package over CryptoKit and a BLAKE2b of our own. Derived values stay byte for byte
-identical for every recipe the app can build or that the TypeScript app accepts, apart from
-the behaviors listed as legacy in the design.
-
-**What settled it.** The app only derives and formats; nothing seals, unseals, signs or
-verifies, and those are the only operations that need what CryptoKit lacks
-(XSalsa20-Poly1305). CryptoKit reproduces libsodium's Ed25519 and X25519 keys from the same
-seeds, checked over 200 random seeds with SHA-512 applied to the X25519 seed by hand. BLAKE2b
-has no maintained Swift package: swift-sodium is a binary xcframework, the pure Swift
-candidates have single-digit stars, and swift-crypto and CryptoSwift have none. RFC 7693 is
-about 150 lines with official known-answer vectors, so we write it, and test it against
-libsodium while libsodium is still in the tree.
-
-**What is dropped.** Seal, unseal, sign and verify as operations. Argon2id: no DiceKeys app
-ever surfaced it, libsodium's public API cannot take the salt it needs, and no credible Swift
-package exists; a recipe asking for it gets a clear error, and its vectors are kept so it can
-return (see the parity item below). The web address mode of the recipe builder, since the
-`allow` field is only enforced by the inter-app API, which this app does not have.
-`excludeOrientationOfFaces`, which no app honors outside Android's API path. The C++'s
-lenient parsing, which reads `16.9` as 16 and `true` as 1 and accepts lengths that hang the
-main thread. Every rejected or changed behavior is documented with what the C++ produced.
-
-**What changes on purpose.** OpenPGP exports stop being byte-stable: CryptoKit randomizes
-Ed25519 signatures by design, so the self-signature differs per derivation while the key and
-fingerprint do not. The TypeScript app already stamps the current time into its export. The
-export also gains the armor blank line and CRC it was missing, proper packet lengths, and
-key flags that let PGP tools sign with the key. The raw JSON canonicalizer is rewritten to
-match the TypeScript reference; today it turns `true` into `1`, reformats numbers, and
-collapses duplicate keys.
-
-**How it lands.** Each its own PR, in order: the canonicalizer; an expanded vector fixture
-generated from the C++ while it exists, since it is the only reference implementation and
-nothing can be generated after; the new package with the C++ behind an engine protocol and
-the app switched to it; BLAKE2b; the Swift engine with differential tests against the C++;
-then the swap and the deletion, with `docs/derivation.md` and `docs/recipe-format.md`
-taking over from the vendored documentation.
-
 ## Rotate the whole app, or nothing
 
 **Why it exists.** The app is locked to portrait on iPhone while the camera rotates
@@ -256,8 +215,8 @@ The recorded total in `ScannerCorpusTests` then resets to what the new photos re
 
 ## Argon2id, for parity
 
-Wanted only so that a recipe written for the C++ library derives here too; no DiceKeys app
-ever offered it. RFC 9106 over our BLAKE2b: `H'`, the compression function `G`, memory
+Wanted only so that a recipe written for the reference C++ library derives here too; no
+DiceKeys app ever offered it. RFC 9106 over our BLAKE2b: `H'`, the compression function `G`, memory
 filling with Argon2id's switch from data-independent to data-dependent addressing, and
 multi-lane support because the RFC vectors use four lanes. About 300 to 400 lines. Verify
 against the RFC vectors and against the legacy cases in the fixture, which cover the
