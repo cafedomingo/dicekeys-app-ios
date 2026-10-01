@@ -187,6 +187,8 @@ GitHub-hosted macOS runners, currently Xcode 26.6:
   `Packages/ReadDiceKey` the scanner over upstream's photos, the owner's photos and video,
   and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
+- On Ubuntu: `swift format lint --strict` (layout is the toolchain formatter's, configured in
+  `.swift-format`), SwiftLint, ruff, shellcheck and actionlint.
 
 The runners have no iOS 27 SDK, which is why the deployment target is 26 and the one
 27-only API in use sits behind a compile-time SDK gate rather than a runtime `#available`.

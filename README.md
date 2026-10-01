@@ -12,6 +12,7 @@ use (about a minute):
 
 ```
 swift run --package-path BuildTools xcodegen generate
+swift format format --in-place --recursive DiceKeys Packages Tests scripts   # before committing
 open DiceKeys.xcodeproj
 ```
 

@@ -1,4 +1,8 @@
 disabled_rules:
+  # Layout is swift-format's (see .swift-format): it puts the brace of a wrapped declaration
+  # header on its own line and wraps closure parameters, which these two rules would flag.
+  - closure_parameter_position
+  - opening_brace
   - cyclomatic_complexity
   - file_length
   - function_body_length
