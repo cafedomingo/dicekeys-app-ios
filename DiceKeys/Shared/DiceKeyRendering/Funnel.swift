@@ -2,8 +2,6 @@
 //  Funnel.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/11/26.
-//
 
 import SwiftUI
 

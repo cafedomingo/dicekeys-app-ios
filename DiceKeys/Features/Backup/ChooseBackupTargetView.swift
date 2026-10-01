@@ -2,8 +2,6 @@
 //  ChooseBackupTargetView.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/11/28.
-//
 
 import SwiftUI
 

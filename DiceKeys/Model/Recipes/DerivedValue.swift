@@ -2,8 +2,6 @@
 //  DerivedValueView.swift
 //  DiceKeys
 //
-//  Created by Angelos Veglektsis on 7/6/22.
-//
 
 import Derivation
 import KeyFormats

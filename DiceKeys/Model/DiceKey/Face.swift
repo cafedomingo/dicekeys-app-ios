@@ -1,9 +1,6 @@
 //
 //  Face.swift
 //
-//
-//  Created by Stuart Schechter on 2020/11/12.
-//
 
 import DiceKeySpecification
 

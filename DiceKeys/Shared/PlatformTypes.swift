@@ -2,8 +2,6 @@
 //  PlatformTypes.swift
 //  DiceKeys
 //
-//  Created by bakhtiyor on 28/12/20.
-//
 
 import UIKit
 

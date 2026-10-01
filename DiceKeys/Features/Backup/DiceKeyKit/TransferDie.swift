@@ -2,8 +2,6 @@
 //  TransferDie.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/07.
-//
 
 import SwiftUI
 

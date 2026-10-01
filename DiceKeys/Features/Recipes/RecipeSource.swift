@@ -2,8 +2,6 @@
 //  RecipeSource.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/12/11.
-//
 
 /// What the derivation screen was opened with: a finished recipe, or a
 /// template that still needs a sequence number.

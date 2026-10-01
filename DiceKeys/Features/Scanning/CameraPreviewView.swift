@@ -2,8 +2,6 @@
 //  CameraPreviewView.swift
 //  DiceKeys
 //
-//  Created by Stuart Schechter on 2020/11/19.
-//
 
 import SwiftUI
 import AVFoundation
