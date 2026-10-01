@@ -19,15 +19,19 @@ struct TransferStickerInstructions: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Remove the \(face.letterAndDigit) sticker from the sheet with letters \(stickerSheet.firstLetter.rawValue) through \(stickerSheet.lastLetter.rawValue).")
-                .font(.title)
-                .minimumScaleFactor(0.5)
+            Text(
+                "Remove the \(face.letterAndDigit) sticker from the sheet with letters \(stickerSheet.firstLetter.rawValue) through \(stickerSheet.lastLetter.rawValue)."
+            )
+            .font(.title)
+            .minimumScaleFactor(0.5)
             if face.orientationAsLowercaseLetterTrbl != .Top {
                 Text("Rotate it so the top faces to the \(face.orientationAsLowercaseLetterTrbl.asFacingString).")
                     .font(.title)
                     .minimumScaleFactor(0.5)
             }
-            Text("Place it squarely covering the target rectangle\( faceIndex == 0 ? " at the top left of the target sheet" : "").")
+            Text(
+                "Place it squarely covering the target rectangle\( faceIndex == 0 ? " at the top left of the target sheet" : "")."
+            )
             .font(.title)
             .minimumScaleFactor(0.5)
         }
@@ -42,13 +46,11 @@ struct TransferSticker: View {
     let sideMarginFraction: CGFloat = 0
     let centerMarginFraction: CGFloat = 0.05
     var aspectRatio: CGFloat {
-        2 * StickerTargetSheetSpecification.shortSideOverLongSide +
-        2 * sideMarginFraction +
-        2 * centerMarginFraction
+        2 * StickerTargetSheetSpecification.shortSideOverLongSide + 2 * sideMarginFraction + 2 * centerMarginFraction
     }
 
     var fractionalWidthOfPortraitSheet: CGFloat {
-        ( CGFloat(1) - (2 * sideMarginFraction + centerMarginFraction) ) / 2
+        (CGFloat(1) - (2 * sideMarginFraction + centerMarginFraction)) / 2
     }
     var totalHeight: CGFloat {
         min(
@@ -80,50 +82,32 @@ struct TransferSticker: View {
         Int(faceIndex / 5)
     }
 
+    /// From the left edge of the left sheet to the center of the sticker's face, then a little
+    /// toward its right edge.
     var lineStart: CGPoint {
-        return CGPoint(
-        x:
-            // Start at left side of left sheet
-            (sideMarginFraction * totalWidth) +
-            // Move to center of left sheet
-            (portraitSheetSize.width / 2) +
-            // Move the the center of the face
-            ( (stickerSheet.column - 2) * faceSizeModel.stepSize ) +
-            // Move closer to the right edge of the face
-            faceSizeModel.faceSize * 0.4,
-        y:
-            // Move to center height
-            (portraitSheetSize.height / 2) +
-            // Move to the center of the die
-            ( stickerSheet.row - 2.5) * faceSizeModel.stepSize
-        )
+        let faceCenterX =
+            sideMarginFraction * totalWidth + portraitSheetSize.width / 2
+            + (stickerSheet.column - 2) * faceSizeModel.stepSize
+        let faceCenterY = portraitSheetSize.height / 2 + (stickerSheet.row - 2.5) * faceSizeModel.stepSize
+        return CGPoint(x: faceCenterX + faceSizeModel.faceSize * 0.4, y: faceCenterY)
     }
 
+    /// From the right edge of the right sheet to the center of the target face, then a little
+    /// toward its left edge.
     var lineEnd: CGPoint {
-        return CGPoint(
-        x:
-            // Start at right side of right sheet
-            ((CGFloat(1) - sideMarginFraction) * totalWidth) -
-            // Move to center of left sheet
-            (portraitSheetSize.width / 2) +
-            // Move the the center of the face
-            ( CGFloat(keyColumn) - 2 ) * faceSizeModel.stepSize -
-            // Move closer to the left edge of the face
-            faceSizeModel.faceSize * 0.4,
-        y:
-            // Move to center height
-            (portraitSheetSize.height / 2) +
-            // Move to the center of the die
-            ( CGFloat(keyRow) - 2) * faceSizeModel.stepSize
-        )
+        let faceCenterX =
+            (CGFloat(1) - sideMarginFraction) * totalWidth - portraitSheetSize.width / 2
+            + (CGFloat(keyColumn) - 2) * faceSizeModel.stepSize
+        let faceCenterY = portraitSheetSize.height / 2 + (CGFloat(keyRow) - 2) * faceSizeModel.stepSize
+        return CGPoint(x: faceCenterX - faceSizeModel.faceSize * 0.4, y: faceCenterY)
     }
 
     var body: some View {
         ChildSizeReader(size: $bounds) {
             HStack(alignment: .center, spacing: 0) {
-                StickerSheet(showLetter: face.letter, highlightFaceWithDigit: face.digit)// .frame(width: portraitSheetSize.width, height: portraitSheetSize.height)
+                StickerSheet(showLetter: face.letter, highlightFaceWithDigit: face.digit)
                 Spacer().frame(maxWidth: bounds.width * centerMarginFraction)
-                StickerTargetSheet(diceKey: diceKey, showLettersBeforeIndex: faceIndex, atDieIndex: faceIndex)// .frame(width: portraitSheetSize.width, height: portraitSheetSize.height)
+                StickerTargetSheet(diceKey: diceKey, showLettersBeforeIndex: faceIndex, atDieIndex: faceIndex)
             }.overlay(
                 Path { path in
                     path.move(to: lineStart)
