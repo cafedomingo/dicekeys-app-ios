@@ -43,7 +43,7 @@ jobs:
       - name: ruff format
         run: ruff format --check scripts
       - name: shellcheck
-        run: shellcheck scripts/*.sh
+        run: shellcheck scripts/*.sh .githooks/*
       # actionlint also runs shellcheck over each workflow `run:` block.
       - name: actionlint
         run: actionlint
