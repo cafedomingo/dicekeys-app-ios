@@ -1,14 +1,12 @@
 //
 //  Mnemonic.swift
+//  KeyFormats
 //
-//  See BIP39 specification for more info:
-//  https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
-//
-//  Created by Liu Pengpeng on 2019/10/10.
-//  Edited by Angelos Veglektsis on 7/12/22.
-//
+
 import CryptoKit
 
+/// BIP39 (https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki): entropy bytes to
+/// a checksummed word phrase. Adapted from pengpengliu/BIP39; see THIRD_PARTY_LICENSES.
 enum Mnemonic {
     // Entropy -> Mnemonic
     static func toMnemonic(_ bytes: [UInt8], wordlist: [String] = Wordlist.english) -> [String] {

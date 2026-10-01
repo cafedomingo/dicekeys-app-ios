@@ -2,8 +2,6 @@
 //  Wordlist.swift
 //  KeyFormats
 //
-//  Created by Angelos Veglektsis on 7/12/22.
-//
 
 struct Wordlist {
     /// The 2048 English words of BIP39, in the standard's order; the index is the value.

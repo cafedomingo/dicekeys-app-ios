@@ -23,7 +23,8 @@ License:   NONE GRANTED. Upstream's LICENSE.md reads, in full:
     candidate license or by email us at license@dicekeys.com.
 
 Where in this repo:
-    DiceKeys/Model/DiceKey, DiceKeys/Model/Recipes, DiceKeys/Model/BIP39,
+    DiceKeys/Model/DiceKey, DiceKeys/Model/Recipes,
+    Packages/Derivation/Sources/KeyFormats/Mnemonic.swift and Wordlist.swift,
     DiceKeys/Services/Api, Packages/ReadDiceKey/Sources/DiceKeySpecification
     (the generated face specification), the illustrations in
     DiceKeys/Resources/Assets.xcassets, the app-icon mark
@@ -141,7 +142,7 @@ Where:     DiceKeys/fonts/Inconsolata-Bold.otf (shipped in the app bundle).
 Origin:    https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt
 Authors:   Marek Palatinus, Pavol Rusnak, Aaron Voisine, Sean Bowe
 License:   MIT (BIP-39 is published under "License: MIT" in the BIPs repository).
-Where:     DiceKeys/Model/BIP39/Wordlist.swift (the 2048 words, verbatim) and the
+Where:     Packages/Derivation/Sources/KeyFormats/Wordlist.swift (the 2048 words, verbatim) and the
            word lists under Packages/SeededCrypto/Vendor/seeded-crypto/lib-seeded/externally-generated.
 
 
@@ -149,3 +150,33 @@ Where:     DiceKeys/Model/BIP39/Wordlist.swift (the 2048 words, verbatim) and th
 ------------------------------------
 - DiceKeys/Services/Camera/CameraSession.swift keeps the upstream header credit
   to https://github.com/RosayGaspard/SwiftUI-Simple-camera-app (MIT).
+- Packages/Derivation/Sources/KeyFormats/Mnemonic.swift is adapted from
+  https://github.com/pengpengliu/BIP39 (Liu Pengpeng, 2019; the original file header
+  named the author, and upstream edited it in 2022). That repository's LICENSE.txt is
+  the BSD 2-Clause text below, with a copyright line copied from Homebrew.
+
+    BSD 2-Clause License
+
+    Copyright (c) 2009-present, Homebrew contributors
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this
+      list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above copyright notice,
+      this list of conditions and the following disclaimer in the documentation
+      and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
