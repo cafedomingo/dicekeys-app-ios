@@ -6,21 +6,18 @@
 import Derivation
 import Foundation
 
-func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int = -1, lengthInBytes: Int = -1) -> String
-{
+func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInBytes: Int? = nil) -> String {
     RecipeJsonValue.object(
         [RecipeJsonField(name: Recipe.purposeField, value: .text(purpose))]
-            + optionalRecipeFields(
-                sequenceNumber: sequenceNumber, lengthInChars: lengthInChars, lengthInBytes: lengthInBytes)
+            + optionalRecipeFields(sequenceNumber: sequenceNumber, lengthInChars: nil, lengthInBytes: lengthInBytes)
     ).canonicalText
 }
 
 func getRecipeJson(purpose: String, sequenceNumber: Int, choices: PasswordRecipeChoices) -> String {
-    var fields = [RecipeJsonField(name: Recipe.purposeField, value: .text(purpose))] + choices.fields
-    if sequenceNumber > 1 {
-        fields.append(RecipeJsonField(name: Recipe.sequenceNumberField, value: .int(sequenceNumber)))
-    }
-    return RecipeJsonValue.object(fields).canonicalText
+    RecipeJsonValue.object(
+        [RecipeJsonField(name: Recipe.purposeField, value: .text(purpose))] + choices.fields
+            + optionalRecipeFields(sequenceNumber: sequenceNumber, lengthInChars: nil, lengthInBytes: nil)
+    ).canonicalText
 }
 
 /// The fields a user can set on any recipe. Each is written only when it differs from the
