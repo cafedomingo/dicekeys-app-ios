@@ -150,10 +150,43 @@ shows a DiceKey's entries whether or not it is unlocked. The id is itself a deri
 and every saved DiceKey and entry is keyed afresh. It reveals nothing about the key, and the
 same name under two DiceKeys is two unrelated keys.
 
-**What stays.** Scanning, manual entry, backup to Stickeys or a DiceKey kit, several DiceKeys
-in memory at once, and the memory store with its expiry are the root-key half of the app. The site templates, web-address and
-raw JSON recipes, per-site password flows and the AutoFill idea go; AutoFill is the opposite
-bet, so choosing one rules out the other.
+## Screens
+
+The app shrinks to loading a DiceKey and working with its keys. Setup, meaning assembling a
+DiceKey and copying it to a backup, moves out of the app into a written guide.
+
+**What remains.**
+
+- **Home.** Saved and unlocked DiceKeys, and Load. The Assemble entry goes.
+- **Load.** Scan or type, as now. Scanning a DiceKey that differs from one already loaded in
+  only a few dice highlights those dice, which is all that survives of validating a backup:
+  copy the key, load the original, scan the copy.
+- **A DiceKey.** Two tabs rather than three: the key itself, with saving to the keychain and
+  the expiry as now, and its keys, the catalog entries for this DiceKey. The Backup tab goes.
+- **New key.** A kind and a name, nothing else.
+- **A key.** Its name, kind and public key or fingerprint, whether it verified on this
+  unlock, and the deliberate actions: reveal, copy, share as a file.
+- **Catalog import and export**, including the paper copy with its QR code.
+
+**What goes.** The assembly walkthrough and its illustrations; the backup flows, Stickeys and
+a second DiceKey kit, with their sticker sheets, die-by-die transfer steps and progress; the
+recipe list, templates, custom recipe form, raw JSON view and sequence number field; the QR
+code sheet for derived values, which none of the export paths above needs. Raw JSON and web
+address recipes go with them, and the AutoFill idea is the opposite bet, so choosing one
+rules out the other.
+
+**The guide.** Upstream never published these instructions anywhere but inside its apps; the
+DiceKeys FAQ covers only reopening a box sealed too early. So the guide is written here, short
+and with photographs rather than the app's illustrations:
+
+- assembling: shake the dice, let them fall into the base, place the stragglers without
+  turning them, load the DiceKey in the app before sealing, so a die the scanner cannot read
+  is found while the box is still open, then line up the hinges and press the top on;
+- backing up: a Stickeys sheet or a second kit, copied die by die with the same letter, digit
+  and orientation in the same place, then checked by scanning it as above;
+- what to keep where: the box, the backup apart from it, and the catalog's paper copy in the
+  box;
+- a recovery drill: load the DiceKey now and then and let verify confirm every key.
 
 **Before starting.** The rewritten scanner has not run on a device, and every output depends
 on reading the key right. A phone is also a worse place for a root secret than an offline
