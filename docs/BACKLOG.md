@@ -82,10 +82,12 @@ work; trimming the built in list is still open.
 `docs/superpowers/specs/2026-10-02-password-screen-design.md`. The custom password sheet
 becomes a generator in 1Password's shape: Memorable Password (words), Random Password
 (characters) and PIN Code (digits), a length slider, separator and capitalization choices,
-a live preview and a strength bar scored on zxcvbn's bands. Two new word lists, EFF's
-large list and a curated emoji list, and three new recipe fields, all salt to other
-implementations, so a recipe written without them derives and spells as it always
-did. Raw JSON moves to its own sheet. Three stacked PRs; this item goes when the last lands.
+a live preview and a strength bar scored on zxcvbn's bands. Every type is a Password
+recipe: a character alphabet is a word list of one-character words, so random passwords
+and PINs add no mechanism. New lists (EFF's large list, a curated emoji list, five
+character sets) and two spelling fields extend the format; a recipe written without them
+derives and spells as it always did. Raw JSON moves to its own sheet. Two stacked PRs;
+this item goes when the last lands.
 
 ## A hash function selector
 
