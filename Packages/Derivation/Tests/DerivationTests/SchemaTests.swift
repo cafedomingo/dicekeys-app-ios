@@ -50,6 +50,8 @@ struct SchemaTests {
         #expect(allowed("algorithm") == ["XSalsa20Poly1305", "X25519", "Ed25519"])
         #expect(allowed("hashFunction") == [HashFunction.blake2b.rawValue])
         #expect(allowed("wordList") == Set(WordList.allCases.map(\.rawValue)))
+        #expect(allowed("separator") == Set(Separator.allCases.map(\.rawValue)))
+        #expect(properties["capitalize"]?["type"] as? String == "boolean")
         for name in ["lengthInBytes", "lengthInChars", "lengthInBits", "lengthInWords", "#"] {
             #expect(properties[name]?["type"] as? String == "integer", "\(name)")
             #expect(properties[name]?["minimum"] as? Int == 1, "\(name)")
@@ -64,7 +66,7 @@ struct SchemaTests {
     @Test("every object recipe in the fixture has values the schema allows")
     func fixtureRecipesConform() throws {
         let properties = try properties(of: loadSchema())
-        for text in fixture.cases.map(\.recipe) where !text.isEmpty {
+        for text in (fixture.cases.map(\.recipe) + extensionFixture.cases.map(\.recipe)) where !text.isEmpty {
             let recipe = try #require(try JSONSerialization.jsonObject(with: Data(text.utf8)) as? JSONObject, "\(text)")
             for (name, value) in recipe {
                 guard let definition = properties[name] else { continue }
