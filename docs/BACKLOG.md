@@ -82,9 +82,9 @@ work; trimming the built in list is still open.
 `docs/superpowers/specs/2026-10-02-password-screen-design.md`. The custom password sheet
 becomes a generator in 1Password's shape: Memorable Password (words), Random Password
 (characters) and PIN Code (digits), a length slider, separator and capitalization choices,
-a live preview and a strength bar scored on zxcvbn's bands. Three new word lists, EFF's
-large list, 1Password's and a curated emoji list, and three new recipe fields, all salt to
-other implementations, so a recipe written without them derives and spells as it always
+a live preview and a strength bar scored on zxcvbn's bands. Two new word lists, EFF's
+large list and a curated emoji list, and three new recipe fields, all salt to other
+implementations, so a recipe written without them derives and spells as it always
 did. Raw JSON moves to its own sheet. Three stacked PRs; this item goes when the last lands.
 
 ## A hash function selector
@@ -228,6 +228,16 @@ seven bytes matter.
 
 Not decided, and not commitments. Each records what makes the idea non-obvious, so that
 evaluating it later starts from the constraint rather than from scratch.
+
+## 1Password's word list
+
+**Not decided.** 1Password's generator is open source (github.com/1Password/spg, Apache
+2.0) and its `agilewords.go` holds 18,325 words of 3 to 8 lowercase letters, about 14.2
+bits each, so 5 words pass 70 bits where EFF's list needs 6. It would slot in beside the
+EFF list once that exists: same block-modulo selection, same exhaustive words-for-bits
+test with a different size. The trade is memorability: EFF curated for recognizable words,
+1Password's includes abaci, abatis and abattoir. Left out of the password screen work to
+keep that to one new English list.
 
 ## Concealing secrets on screen, not just in the snapshot
 
