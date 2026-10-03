@@ -97,7 +97,13 @@ and a text field. Recovering after losing the phone needs the box and the names,
 should be ones that could be typed again from memory, and the catalog can be exported or
 synced, since it holds nothing that unlocks anything. The sturdiest export is on paper, kept
 in the box: whoever holds the box already holds every key, so the list costs nothing there,
-and recovery then needs only the box. Exported public keys let verify run on a new phone.
+and recovery then needs only the box.
+
+Exporting implies importing, so the format is a small versioned file of its own, read back
+on a new phone or merged into an existing catalog, with the paper copy carrying it as a QR
+code beside the readable list so it can be scanned rather than typed. An imported entry keeps
+its public key, so the first unlock of its DiceKey re-derives each key and compares: a
+mismatch means a mistyped name or the wrong DiceKey, caught before the key is needed.
 
 **Getting a key off the phone.** Exports are rare, once to provision and once after a
 disaster, so they can be deliberate rather than convenient. In order of preference:
