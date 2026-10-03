@@ -187,8 +187,10 @@ struct RecipeTests {
     @Test("password-only fields are salt on other types and are not validated there")
     func passwordFieldsElsewhere() throws {
         #expect(
-            try Recipe(json: #"{"lengthInChars":0,"lengthInWords":0,"wordList":"nonsense"}"#, type: .secret)
-                .lengthInBytes == 32)
+            try Recipe(
+                json: #"{"lengthInChars":0,"lengthInWords":0,"wordList":"nonsense","separator":"--"}"#, type: .secret
+            )
+            .lengthInBytes == 32)
     }
 
     @Test("malformed JSON is reported with the parser's reason")
@@ -220,5 +222,100 @@ struct RecipeTests {
         #expect(
             DerivationError.outOfRange(field: "lengthInBytes", allowed: 1...8160).errorDescription
                 == "lengthInBytes must be between 1 and 8160")
+    }
+
+    @Test("capitalize must be a JSON boolean and separator a string")
+    func joiningFieldTypes() {
+        #expect(throws: DerivationError.wrongType(field: "capitalize", expected: "true or false")) {
+            try Recipe(json: #"{"separator":"-","capitalize":1}"#, type: .password)
+        }
+        #expect(throws: DerivationError.wrongType(field: "capitalize", expected: "true or false")) {
+            try Recipe(json: #"{"separator":"-","capitalize":"yes"}"#, type: .password)
+        }
+        #expect(throws: DerivationError.wrongType(field: "separator", expected: "a string")) {
+            try Recipe(json: #"{"separator":1}"#, type: .password)
+        }
+    }
+
+    @Test("a password without separator is joined the reference way; with one, the modern way")
+    func joining() throws {
+        #expect(try Recipe(json: "{}", type: .password).joining == .reference)
+        #expect(
+            try Recipe(json: #"{"separator":"-"}"#, type: .password).joining
+                == .modern(separator: .hyphen, capitalize: false))
+        #expect(
+            try Recipe(json: #"{"separator":"digits","capitalize":true}"#, type: .password).joining
+                == .modern(separator: .digits, capitalize: true))
+        for (text, separator) in [
+            ("-", Separator.hyphen), (" ", .space), (".", .period), (",", .comma), ("_", .underscore), ("", .empty),
+            ("digits", .digits)
+        ] {
+            #expect(
+                try Recipe(json: #"{"separator":"\#(text)"}"#, type: .password).joining
+                    == .modern(separator: separator, capitalize: false))
+        }
+        #expect(throws: DerivationError.unknownSeparator("--")) {
+            try Recipe(json: #"{"separator":"--"}"#, type: .password)
+        }
+        #expect(throws: DerivationError.invalidJoining) {
+            try Recipe(json: #"{"capitalize":true}"#, type: .password)
+        }
+        #expect(throws: DerivationError.invalidJoining) {
+            try Recipe(json: #"{"capitalize":false}"#, type: .password)
+        }
+    }
+
+    @Test("a character set joins one way and takes its length in characters")
+    func characterSets() throws {
+        let pin = try Recipe(json: #"{"wordList":"CHARS_10_digits_20261002","lengthInChars":6}"#, type: .password)
+        #expect(pin.lengthInWords == 6)
+        #expect(pin.lengthInBytes == 48)
+        #expect(pin.lengthInChars == 6)
+        #expect(pin.joining == .modern(separator: .empty, capitalize: false))
+        let emoji = try Recipe(json: #"{"wordList":"EMOJI_512_single_code_point_20261002"}"#, type: .password)
+        #expect(emoji.lengthInWords == 15)
+        let words = try Recipe(
+            json: #"{"wordList":"CHARS_67_letters_digits_symbols_20261002","lengthInWords":10,"lengthInChars":4}"#,
+            type: .password)
+        #expect(words.lengthInWords == 10)
+        #expect(words.lengthInChars == 4)
+        #expect(
+            try Recipe(json: #"{"wordList":"CHARS_49_letters_20261002","lengthInChars":1020}"#, type: .password)
+                .lengthInWords == 1020)
+        #expect(throws: DerivationError.outOfRange(field: "lengthInChars", allowed: 1...1020)) {
+            try Recipe(json: #"{"wordList":"CHARS_10_digits_20261002","lengthInChars":1021}"#, type: .password)
+        }
+        #expect(
+            try Recipe(
+                json: #"{"wordList":"CHARS_10_digits_20261002","separator":"","capitalize":false}"#, type: .password
+            )
+            .joining == .modern(separator: .empty, capitalize: false))
+        #expect(throws: DerivationError.invalidJoining) {
+            try Recipe(json: #"{"wordList":"CHARS_10_digits_20261002","separator":"-"}"#, type: .password)
+        }
+        #expect(throws: DerivationError.invalidJoining) {
+            try Recipe(json: #"{"wordList":"EMOJI_512_single_code_point_20261002","capitalize":true}"#, type: .password)
+        }
+    }
+
+    @Test("the EFF list rounds bits up to whole words")
+    func effBits() throws {
+        let eff = "EFF_large_7776_words_9_chars_max_20160719"
+        #expect(try Recipe(json: #"{"wordList":"\#(eff)"}"#, type: .password).lengthInWords == 10)
+        #expect(try Recipe(json: #"{"wordList":"\#(eff)","lengthInBits":12}"#, type: .password).lengthInWords == 1)
+        #expect(try Recipe(json: #"{"wordList":"\#(eff)","lengthInBits":13}"#, type: .password).lengthInWords == 2)
+        #expect(
+            try Recipe(json: #"{"wordList":"\#(eff)","lengthInBits":128,"lengthInWords":10}"#, type: .password)
+                .lengthInWords == 10)
+        #expect(throws: DerivationError.bitsAndWordsConflict) {
+            try Recipe(json: #"{"wordList":"\#(eff)","lengthInBits":128,"lengthInWords":11}"#, type: .password)
+        }
+    }
+
+    @Test("joining fields are salt on every other type")
+    func joiningElsewhere() throws {
+        let recipe = try Recipe(json: #"{"separator":"--","capitalize":"yes"}"#, type: .secret)
+        #expect(recipe.joining == .reference)
+        #expect(recipe.lengthInBytes == 32)
     }
 }

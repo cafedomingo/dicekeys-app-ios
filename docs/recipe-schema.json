@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "DiceKeys recipe",
-  "description": "The fields Packages/Derivation reads, and the two the app writes (`purpose`, `#`), from a recipe that is a JSON object; a recipe may also be the empty string. Any other field is salt: it is hashed with the rest of the text and never read. recipe-format.md has the rules a schema cannot express.",
+  "description": "The fields Packages/Derivation reads, and the two the app writes (`purpose`, `#`), from a recipe that is a JSON object; a recipe may also be the empty string. Any other field is salt: it is hashed with the rest of the text and never read. The reference DiceKeys format is the subset without separator and capitalize that names only the two lists dated 2020. recipe-format.md has the rules a schema cannot express.",
   "type": "object",
   "properties": {
     "type": {
@@ -23,7 +23,7 @@
       "maximum": 8160
     },
     "lengthInChars": {
-      "description": "Password only. Truncates the finished password.",
+      "description": "Password only. Truncates the finished password. On a character-set list, given alone, it is instead the number of characters derived, 1 to 1020.",
       "type": "integer",
       "minimum": 1
     },
@@ -33,18 +33,33 @@
       "minimum": 1
     },
     "lengthInWords": {
-      "description": "Password only. Given with lengthInBits, it must equal ceil(lengthInBits / bits per word).",
+      "description": "Password only. Given with lengthInBits, it must equal the fewest words whose combinations reach 2^lengthInBits.",
       "type": "integer",
       "minimum": 1,
       "maximum": 1020
     },
     "wordList": {
-      "description": "Password only.",
+      "description": "Password only. Lists dated 2020 are the reference's; the rest are this app's.",
       "enum": [
         "EN_512_words_5_chars_max_ed_4_20200917",
-        "EN_1024_words_6_chars_max_ed_4_20200917"
+        "EN_1024_words_6_chars_max_ed_4_20200917",
+        "EFF_large_7776_words_9_chars_max_20160719",
+        "EMOJI_512_single_code_point_20261002",
+        "CHARS_67_letters_digits_symbols_20261002",
+        "CHARS_57_letters_digits_20261002",
+        "CHARS_59_letters_symbols_20261002",
+        "CHARS_49_letters_20261002",
+        "CHARS_10_digits_20261002"
       ],
       "default": "EN_512_words_5_chars_max_ed_4_20200917"
+    },
+    "separator": {
+      "description": "Password only; on a character set only the empty string is allowed. This app's extension. Present, the password has no count prefix and its words are joined by this; `digits` puts one derived digit between words. Absent, the reference joining.",
+      "enum": ["-", " ", ".", ",", "_", "", "digits"]
+    },
+    "capitalize": {
+      "description": "Password only, with separator. One whole word uppercased.",
+      "type": "boolean"
     },
     "purpose": {
       "description": "The recipe's label. Written by the app, not read by Derivation.",

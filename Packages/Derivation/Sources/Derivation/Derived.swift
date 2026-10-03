@@ -13,7 +13,7 @@ public struct Password: Sendable, Equatable {
         let parsed = try Recipe(json: recipe, type: .password)
         let secret = Engine.secret(seed: seed, type: .password, recipe: parsed)
         let password = PasswordFormatter.password(
-            from: secret, wordList: parsed.wordList, lengthInChars: parsed.lengthInChars)
+            from: secret, wordList: parsed.wordList, joining: parsed.joining, lengthInChars: parsed.lengthInChars)
         return Password(password: password, recipe: parsed)
     }
 
