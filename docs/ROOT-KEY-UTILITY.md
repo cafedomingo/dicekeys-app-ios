@@ -111,8 +111,15 @@ disaster, so they can be deliberate rather than convenient. In order of preferen
 
 Not a network transport or an SSH agent: large, and easy to get wrong.
 
-**What stays.** Scanning, manual entry, backup to Stickeys or a DiceKey kit, and the memory
-store with its expiry are the root-key half of the app. The site templates, web-address and
+**Several DiceKeys.** The memory store already holds more than one unlocked DiceKey, keyed
+by `DiceKey.id`, and that stays: each catalog entry belongs to one DiceKey, and the catalog
+shows a DiceKey's entries whether or not it is unlocked. The id is itself a derived value,
+16 bytes from the current engine, so it moves to the new construction as a kind of its own,
+and every saved DiceKey and entry is keyed afresh. It reveals nothing about the key, and the
+same name under two DiceKeys is two unrelated keys.
+
+**What stays.** Scanning, manual entry, backup to Stickeys or a DiceKey kit, several DiceKeys
+in memory at once, and the memory store with its expiry are the root-key half of the app. The site templates, web-address and
 raw JSON recipes, per-site password flows and the AutoFill idea go; AutoFill is the opposite
 bet, so choosing one rules out the other.
 
