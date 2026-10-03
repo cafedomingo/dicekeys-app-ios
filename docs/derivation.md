@@ -48,6 +48,10 @@ wraps.
 fewest entries whose combinations reach 2^bits, computed in floating point and checked for
 every list and bit count against an exact multi-limb comparison in `WordListTests`.
 
+The app's sheet shows strength as bits, exact because every value is uniform. Its bar fills
+at 80 bits and turns from red to green at 40, 50 and 60; no standard scores bits, so the
+scale is the app's own.
+
 ## JSON output
 
 `toJson()` returns the engine's text unchanged, because it is a displayed format that other

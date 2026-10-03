@@ -52,7 +52,8 @@ DiceKeys/
     DiceKey/      DiceKey, Face, PartialFace,
                   FaceOrientationLetterTrbl+Rotation
     Recipes/      DerivationRecipe (was Derivables), DerivableType+Descriptions,
-                  DerivationRecipeTemplates, DerivedValue (was DerivedValueView)
+                  DerivationRecipeTemplates, DerivedValue (was DerivedValueView),
+                  PasswordRecipeChoices, PasswordStrength
     Settings.swift
   Services/       things that talk to the OS
     Keychain/     DiceKeyKeychain (was EncryptedDiceKeyStore)
@@ -65,15 +66,17 @@ DiceKeys/
     ManualEntry/  LoadDiceKeyScreen, TypeYourDiceKeyView, DiceKeyboardView,
                   EditableDiceKeyState
     Recipes/      DerivationRecipeStore, RecipeListView, RecipeSource, RecipeBuilderState,
-                  TemplateRecipeBuilder, CustomRecipeModel, CustomRecipeForm, RecipeJsonView,
-                  SequenceNumberField, DerivedValueScreen, RecipeCardView,
+                  TemplateRecipeBuilder, PasswordRecipeModel, PasswordRecipeForm,
+                  StrengthBar, CustomRecipeModel, CustomRecipeForm, RawJsonRecipeModel,
+                  RawJsonRecipeForm, RecipeJsonView, SequenceNumberField,
+                  DerivedValueScreen, RecipeCardView,
                   DerivedValueOutputView, DerivedValueQrCodeSheet
     Backup/       BackupDiceKeyView, BackupProgress, ChooseBackupTargetView,
                   ValidateBackupView, DiceKeyKit/*, Stickeys/*
     Assembly/     AssemblyInstructionsScreen
   Shared/
     Components/   Instruction, ActionButtons (PrimaryButton/SecondaryButton), StepFooter,
-                  ChildSizeReader, PresentableError (+ .errorAlert)
+                  ChildSizeReader, PresentableError (+ .errorAlert), ColoredSecretText
     DiceKeyRendering/  DiceKeyView, DiceKeyOutline, DieView, DiceKeyCenterFaceOnlyView,
                        DerivedFromDiceKey, Funnel
     Extensions/   Data, String, View
