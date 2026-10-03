@@ -74,9 +74,9 @@ the only one OpenSSH writes for Ed25519, and the public key as an `ssh-ed25519` 
 comment becomes the entry's name, in both, so `authorized_keys` says which key a line is;
 today it is a fixed `DiceKeys`. No choice of key type: RSA has no standard way to be derived
 from a seed, and ECDSA would be added only if a device that has to be reached turns out to
-refuse Ed25519. The one option worth having is a passphrase on the exported file, typed at
-export time, since that file is what sits in Downloads; it needs bcrypt_pbkdf, which
-CryptoKit lacks, so it is not free.
+refuse Ed25519. A possible extension, not part of the first version: a passphrase on the
+exported file, typed at export time, since that file is what sits in Downloads. It needs
+bcrypt_pbkdf, which CryptoKit lacks, so it is not free.
 
 **The wallet.** BIP39 is the format wallets import, and `KeyFormats` already encodes it with
 the English list, so it costs nothing. It does put a wallet's master secret on a phone's
