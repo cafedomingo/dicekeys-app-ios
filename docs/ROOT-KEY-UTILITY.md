@@ -7,6 +7,10 @@ What a DiceKey uniquely gives is a root secret that lives offline and regenerate
 secrets on demand. That suits secrets touched rarely and costly to lose, so the app would be
 where those are rebuilt from, never where they are used.
 
+**Who it is for.** The owner, using their own DiceKeys for things they actually need. If
+others find it useful, good, but no one is owed compatibility, the owner included: nothing
+derived today has to keep working.
+
 **What it would be for.** The owner's actual uses, and nothing else:
 
 - SSH keys, for clients and for server hosts, where a derived host key lets a rebuilt server
@@ -65,12 +69,12 @@ reimplement from, and CI should derive the vectors twice: once in Swift, once in
 independent script (Python's standard library has HKDF's pieces and Ed25519 is one package
 away). If the fork dies, the spec and that script are how the keys come back.
 
-**What it costs.** The other DiceKeys apps can no longer reproduce anything, which today is
-the fallback if this fork stops building. Goal 1 in `ARCHITECTURE.md` becomes "re-derive the
-same secrets as the spec" rather than "as the reference". And every secret derived today
-changes: anything already in use (an SSH key, a master password) has to be re-derived with the
-current engine one last time and replaced, so the current engine stays until that is done and
-is deleted after.
+**What changes in the rules.** Goal 1 in `ARCHITECTURE.md` becomes "re-derive the same
+secrets as the spec" rather than "as the reference", and the rule that any change to a
+derived byte is a bug carries over to the new construction unchanged. Every value derived
+today changes, deliberately: there is no migration, and the current engine is deleted rather
+than kept alongside. The other DiceKeys apps stop being a fallback, which is why the spec and
+its independent script matter.
 
 **What it deletes.** The BLAKE2 target, the BLAKE2b HKDF, JSON recipes and their
 canonicalizer, `recipe-format.md`, `recipe-schema.json`, the password formatter's options,
@@ -109,5 +113,5 @@ bet, so choosing one rules out the other.
 **Before starting.** The rewritten scanner has not run on a device, and every output depends
 on reading the key right. A phone is also a worse place for a root secret than an offline
 machine; the answer is that the key is loaded rarely and briefly, which the expiry already
-enforces. The order would be the spec and its two implementations first, then the catalog and
-verify, then the removals, with the current engine last of all.
+enforces. The order would be the spec and its two implementations first, replacing the current
+engine outright, then the catalog and verify, then the removals.
