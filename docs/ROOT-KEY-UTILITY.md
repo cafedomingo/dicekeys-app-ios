@@ -43,23 +43,14 @@ record, so TestFlight history and the keychain items saved under the old one sta
 Nothing has to stay compatible, so that is acceptable, and doing it once, with the new
 derivation, beats doing it twice.
 
-**What "the owner's own" covers, against `THIRD_PARTY_LICENSES`.** Upstream's unlicensed
-pieces are what stand between this fork and a license of its own, and most go anyway:
-
-- the recipe model, the illustrations, the icon mark and the setup flows are deleted above;
-- the remaining screens are written fresh around the catalog rather than edited from
-  upstream's, so they stop being derived;
-- the DiceKey model and its seed string give way to this spec's encoding;
-- upstream's test photographs go, as the backlog already plans, leaving the owner's.
-
-Two pieces are harder, because reading a DiceKey at all depends on them. The face
-specification, `DiceKeySpecification`, is the table of which bars each of the 150 faces
-carries; it is upstream's generated code, though what it records is a fact about printed
-dice, which could be re-recorded from the owner's own dice and photographs. The scanner
-began as a port of read-dicekey and still follows its approach. Making both the owner's
-means rebuilding them from a description of the hardware rather than from upstream's code,
-and whether that suffices is a licensing question, not a technical one. Until then they stay
-credited as they are now. The MIT-licensed BIP39 word list stays credited too.
+**Written for this app, not inherited.** No existing behavior binds the new one. Upstream's
+code is a reference for how something was once done, never a constraint on how it is done
+now: the DiceKey model, its seed encoding, the screens and the catalog are designed from this
+app's needs and written fresh rather than edited into shape. Where something already serves
+well, it stays on its merits: the scanner and the face specification read a DiceKey
+correctly, are already Swift written here, and change only where the new app needs them to.
+Licensing is not a goal of the break; `THIRD_PARTY_LICENSES` keeps crediting whatever
+remains, as now.
 
 ## A new derivation
 
