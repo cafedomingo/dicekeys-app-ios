@@ -212,9 +212,10 @@ evaluating it later starts from the constraint rather than from scratch.
 **Not decided, and the largest idea here.** Strip the app down to regenerating a few rarely
 touched, costly-to-lose keys (SSH, WireGuard, a NAS passphrase, a password manager's master
 password) and drop per-site passwords, replacing the DiceKeys-compatible derivation with
-HKDF-SHA256 and one fixed output per kind. It would settle the Argon2id, seeding and Simpler
-recipes items and rule out the AutoFill provider. `ROOT-KEY-UTILITY.md` has the case, the
-construction, the cost and what it would remove.
+HKDF-SHA256 and one fixed output per kind, under a new name with nothing of DiceKeys' look.
+It would settle the Argon2id, seeding and Simpler recipes items and rule out the AutoFill
+provider. `ROOT-KEY-UTILITY.md` has the case, the construction, the cost and what it would
+remove.
 
 ## Concealing secrets on screen, not just in the snapshot
 

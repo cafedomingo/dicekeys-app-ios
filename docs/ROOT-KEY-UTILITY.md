@@ -27,6 +27,40 @@ derived today has to keep working.
 
 Per-site passwords are not on the list, and they are what most of the app is built around.
 
+## A clean break
+
+**Minimal, and the owner's own.** A new name, a new icon, and nothing of DiceKeys' look: no
+illustrations, no brand colors, no Inconsolata, no privacy-cover mesh. System font, system
+tint, stock controls, plain backgrounds, and a DiceKey drawn, where it has to be drawn at all,
+as a grid of letters, digits and orientations. The only credit is to the hardware: an About
+line saying the app reads DiceKeys, made by DiceKeys, LLC, and calling the physical object a
+DiceKey wherever the user has to know which box to fetch.
+
+**Renaming touches more than the display name.** The app, the scheme, the `DiceKeys/` source
+folder, the `com.dicekeys` prefix in `project.yml`, the repository and the docs all carry the
+name. The bundle identifier is the expensive one: a new identifier is a new App Store Connect
+record, so TestFlight history and the keychain items saved under the old one stay behind.
+Nothing has to stay compatible, so that is acceptable, and doing it once, with the new
+derivation, beats doing it twice.
+
+**What "the owner's own" covers, against `THIRD_PARTY_LICENSES`.** Upstream's unlicensed
+pieces are what stand between this fork and a license of its own, and most go anyway:
+
+- the recipe model, the illustrations, the icon mark and the setup flows are deleted above;
+- the remaining screens are written fresh around the catalog rather than edited from
+  upstream's, so they stop being derived;
+- the DiceKey model and its seed string give way to this spec's encoding;
+- upstream's test photographs go, as the backlog already plans, leaving the owner's.
+
+Two pieces are harder, because reading a DiceKey at all depends on them. The face
+specification, `DiceKeySpecification`, is the table of which bars each of the 150 faces
+carries; it is upstream's generated code, though what it records is a fact about printed
+dice, which could be re-recorded from the owner's own dice and photographs. The scanner
+began as a port of read-dicekey and still follows its approach. Making both the owner's
+means rebuilding them from a description of the hardware rather than from upstream's code,
+and whether that suffices is a licensing question, not a technical one. Until then they stay
+credited as they are now. The MIT-licensed BIP39 word list stays credited too.
+
 ## A new derivation
 
 Leaving the DiceKeys ecosystem is what makes the rest simple. The current derivation exists
@@ -36,8 +70,9 @@ whose exact text is the salt, a canonical form that follows the reference rather
 
 **The construction.** HKDF-SHA256 (RFC 5869, `HKDF<SHA256>` in CryptoKit) with:
 
-- input key material: the seed string as today, the DiceKey rotated to its smallest form, so
-  `DiceKeySeedTests` still proves every way of holding the key agrees;
+- input key material: the 25 dice as a byte encoding of this spec's own, each die's letter,
+  digit and orientation in reading order, taken from whichever of the four rotations sorts
+  first, so every way of holding the key still derives the same values;
 - salt: one fixed, versioned domain string, the only place a version lives;
 - info: the kind and the name, each length-prefixed, so no two inputs encode alike and
   there is no text format to canonicalize;
