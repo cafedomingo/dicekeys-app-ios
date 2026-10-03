@@ -18,6 +18,7 @@ derived today has to keep working.
 - WireGuard keys;
 - the encryption passphrase for a Synology NAS;
 - one password, the password manager's master password;
+- a cryptocurrency wallet seed, as a BIP39 recovery phrase;
 - possibly an age identity for encrypting backups. [age](https://age-encryption.org) is a
   small file encryption tool and format, a modern stand-in for encrypting files with GPG: a
   key is one line of text, and a file is encrypted to its public half. It matters only if
@@ -40,24 +41,35 @@ whose exact text is the salt, a canonical form that follows the reference rather
 - salt: one fixed, versioned domain string, the only place a version lives;
 - info: the kind and the name, each length-prefixed, so no two inputs encode alike and
   there is no text format to canonicalize;
-- output: 32 bytes, always.
+- output: 32 bytes for every kind but the passphrase, which reads as many as it needs.
 
 No stretching: a DiceKey carries about 196 bits of entropy, so a slow hash such as Argon2id
 adds nothing, which also answers the Argon2id idea in `BACKLOG.md`.
 
 **One output per kind, with no options.**
 
-| Kind | From the 32 bytes | Checked against |
+| Kind | From the derived bytes | Checked against |
 |---|---|---|
 | SSH, client or host | Ed25519 seed, OpenSSH format | `ssh-keygen -y` |
 | WireGuard | X25519 private key directly, base64 | `wg pubkey` |
 | age | X25519 private key directly, bech32 | `age-keygen -y` |
-| Passphrase | a fixed number of words from the BIP39 English list, 11 bits each | |
+| Passphrase | a fixed number of characters from one fixed alphabet | the Python script |
+| Wallet | 24-word BIP39 recovery phrase from 32 bytes | BIP39's published vectors |
 
-Nothing like `lengthInChars`, `lengthInWords` or a choice of word list. Twelve words is 132
-bits. The one risk of a fixed format is a system that caps passphrase length, so Synology's
-limits have to be known before the count is fixed, because the count can never change
-afterwards.
+**The passphrase.** Characters rather than words: upper and lower case letters and digits,
+less the look-alikes `0 O 1 l I`, since these passphrases get typed by hand, and a small
+fixed set of symbols that need no quoting in a shell or escaping in a URL. About 65
+characters, so 22 of them is about 132 bits. Each character comes from one derived byte by
+rejection sampling, so none is likelier than another, and a finished string missing any of
+the four classes is thrown away for the next one from the same output, so every passphrase
+passes the usual composition rules. Nothing like `lengthInChars` or a choice of alphabet:
+the alphabet, the symbols and the length are fixed once and can never change, so Synology's
+limits on length and characters have to be known before they are.
+
+**The wallet.** BIP39 is the format wallets import, and `KeyFormats` already encodes it with
+the English list, so it costs nothing. It does put a wallet's master secret on a phone's
+screen, which is the exposure hardware wallets exist to avoid; it suits a wallet the DiceKey
+backs up and restores, not one used from the phone.
 
 **The name.** A free text field, and the only way to get more than one key of a kind:
 `nas` and `nas backup` are two passphrases, `github` and `homelab` two SSH keys. Rotating a
@@ -79,8 +91,8 @@ than kept alongside. The other DiceKeys apps stop being a fallback, which is why
 its independent script matter.
 
 **What it deletes.** The BLAKE2 target, the BLAKE2b HKDF, JSON recipes and their
-canonicalizer, `recipe-format.md`, `recipe-schema.json`, the password formatter's options,
-all but one word list, OpenPGP, and in the end `vectors.json`. The open questions about
+canonicalizer, `recipe-format.md`, `recipe-schema.json`, the password formatter,
+every word list but BIP39's English one, OpenPGP, and in the end `vectors.json`. The open questions about
 Argon2id, the seeding implementation and simpler recipes in `BACKLOG.md` all go with them.
 
 ## The app around it
