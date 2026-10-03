@@ -78,28 +78,29 @@ work; trimming the built in list is still open.
 
 ## The password screen
 
-**Why it exists.** The builder's minimum of 8 characters gives a 9-bit password: each word
-carries exactly 9 bits, and `lengthInChars` truncates the finished string, count prefix
-included, so `lengthInChars: 8` yields `15-Buzz-`. Nothing warns. And the recipe format has
-two choices, `hashFunction` and `wordList`, that only raw JSON can reach.
+**In progress.** Spec on the `password-screen` branch,
+`docs/superpowers/specs/2026-10-02-password-screen-design.md`. The custom password sheet
+becomes a generator in 1Password's shape: Memorable Password (words), Random Password
+(characters) and PIN Code (digits), a length slider, separator and capitalization choices,
+a live preview and a strength bar scored on zxcvbn's bands. Three new word lists, EFF's
+large list, 1Password's and a curated emoji list, and three new recipe fields, all salt to
+other implementations, so a recipe written without them derives and spells as it always
+did. Raw JSON moves to its own sheet. Three stacked PRs; this item goes when the last lands.
 
-**What is left.** Raise the floor and show bit strength next to the length field. Add a hash
-function selector and a word list selector; each writes its field only for a non-default
-choice, so existing recipes and templates are untouched. Look at the TypeScript and Android
-builders for ideas; both were more complete than the upstream iOS app.
+## A hash function selector
 
-**Decided for the hash selector.** HKDF-SHA-512 through CryptoKit, standard RFC 5869 with no
-code of our own, becomes the second `hashFunction` and the default for new recipes; BLAKE2b
-stays for every existing one. An unknown name fails, nothing falls back. Slow functions such
-as Argon2id buy nothing for a 196-bit seed.
+**Decided.** HKDF-SHA-512 through CryptoKit, standard RFC 5869 with no code of our own,
+becomes the second `hashFunction` and the default for new recipes; BLAKE2b stays for every
+existing one. An unknown name fails, nothing falls back. Slow functions such as Argon2id
+buy nothing for a 196-bit seed. Split from the password screen because it is a Derivation
+change with its own vectors; the sheet gains the selector once the function exists.
 
-**Decided for word lists.** Sizes must be powers of two, because a word is an 8-byte block
-modulo the list size. Two candidates. The BIP39 English list the app already ships for
-mnemonics: 2,048 words, 11 bits each, 12 for 128 bits, every word unique in its first four
-letters; use it as is, since BIP39 is fixed, even if a spelling turns out not to be US. And
-an emoji list: 512 single code point emoji with default emoji presentation, no modifiers,
-sequences or flags, old enough to render on every supported OS. Label emoji a novelty: many
-sites reject non-ASCII passwords, and each emoji is four UTF-8 bytes against length limits.
+## The derive screen
+
+**Why it exists.** The screen that shows a derived value grew by accretion: recipe card,
+format picker, QR button, funnel illustration, copy button. It wants a redesign as a whole
+rather than more additions. When that happens, the strength readout the password sheet is
+getting belongs here too, and the QR code sheet below is part of the same redo.
 
 ## The QR code sheet
 
