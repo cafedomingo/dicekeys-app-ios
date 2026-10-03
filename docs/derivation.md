@@ -48,6 +48,9 @@ wraps.
 fewest entries whose combinations reach 2^bits, computed in floating point and checked for
 every list and bit count against an exact multi-limb comparison in `WordListTests`.
 
+The app's sheet reports strength in zxcvbn's bands (guesses under 10^3, 10^6, 10^8, 10^10),
+computed from bits as 2^bits since every value is uniform.
+
 ## JSON output
 
 `toJson()` returns the engine's text unchanged, because it is a displayed format that other
