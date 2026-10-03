@@ -1,0 +1,162 @@
+{
+  "cases" : [
+    {
+      "json" : "{\"password\":\"10-Dandy-gusty-attribute-degraded-purple-dancing-atom-excitable-exact-skydiver\",\"recipe\":\"{\\\"wordList\\\":\\\"EFF_large_7776_words_9_chars_max_20160719\\\"}\"}",
+      "name" : "EFF default length",
+      "password" : "10-Dandy-gusty-attribute-degraded-purple-dancing-atom-excitable-exact-skydiver",
+      "recipe" : "{\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}"
+    },
+    {
+      "json" : "{\"password\":\"hamster-pursuable-rants-jot-showman-viselike\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"-\\\",\\\"wordList\\\":\\\"EFF_large_7776_words_9_chars_max_20160719\\\"}\"}",
+      "name" : "EFF 6 words hyphens",
+      "password" : "hamster-pursuable-rants-jot-showman-viselike",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}"
+    },
+    {
+      "json" : "{\"password\":\"10-Crudeness-outwit-unworldly-ecosystem-confider-peddling-essential-maximum-sarcastic-ooze\",\"recipe\":\"{\\\"lengthInBits\\\":128,\\\"wordList\\\":\\\"EFF_large_7776_words_9_chars_max_20160719\\\"}\"}",
+      "name" : "EFF 128 bits reference",
+      "password" : "10-Crudeness-outwit-unworldly-ecosystem-confider-peddling-essential-maximum-sarcastic-ooze",
+      "recipe" : "{\"lengthInBits\":128,\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}"
+    },
+    {
+      "json" : "{\"password\":\"shortcut-ragweed-UNWASHED-linoleum-music-trunks\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"-\\\",\\\"capitalize\\\":true,\\\"wordList\\\":\\\"EFF_large_7776_words_9_chars_max_20160719\\\"}\"}",
+      "name" : "EFF capitalize",
+      "password" : "shortcut-ragweed-UNWASHED-linoleum-music-trunks",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\"-\",\"capitalize\":true,\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}"
+    },
+    {
+      "json" : "{\"password\":\"RICKETY3basis1cuddle6unclothed6revoke2consent\",\"recipe\":\"{\\\"capitalize\\\":true,\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"digits\\\",\\\"wordList\\\":\\\"EFF_large_7776_words_9_chars_max_20160719\\\"}\"}",
+      "name" : "EFF digits capitalize",
+      "password" : "RICKETY3basis1cuddle6unclothed6revoke2consent",
+      "recipe" : "{\"capitalize\":true,\"lengthInWords\":6,\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}"
+    },
+    {
+      "json" : "{\"password\":\"reversing-guidab\",\"recipe\":\"{\\\"lengthInChars\\\":16,\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"-\\\",\\\"wordList\\\":\\\"EFF_large_7776_words_9_chars_max_20160719\\\"}\"}",
+      "name" : "EFF truncated modern",
+      "password" : "reversing-guidab",
+      "recipe" : "{\"lengthInChars\":16,\"lengthInWords\":6,\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}"
+    },
+    {
+      "json" : "{\"password\":\"15-Gecko-getup-chewy-retry-petty-brute-goofy-raven-thaws-virus-spent-lilac-denim-reply-yodel\",\"recipe\":\"{\\\"purpose\\\":\\\"x\\\"}\"}",
+      "name" : "512 reference still",
+      "password" : "15-Gecko-getup-chewy-retry-petty-brute-goofy-raven-thaws-virus-spent-lilac-denim-reply-yodel",
+      "recipe" : "{\"purpose\":\"x\"}"
+    },
+    {
+      "json" : "{\"password\":\"NERVY\",\"recipe\":\"{\\\"lengthInWords\\\":1,\\\"separator\\\":\\\"digits\\\",\\\"capitalize\\\":true}\"}",
+      "name" : "512 modern one word",
+      "password" : "NERVY",
+      "recipe" : "{\"lengthInWords\":1,\"separator\":\"digits\",\"capitalize\":true}"
+    },
+    {
+      "json" : "{\"password\":\"13-Pacify-entree-dil\",\"recipe\":\"{\\\"lengthInChars\\\":20,\\\"wordList\\\":\\\"EN_1024_words_6_chars_max_ed_4_20200917\\\"}\"}",
+      "name" : "1024 reference truncated",
+      "password" : "13-Pacify-entree-dil",
+      "recipe" : "{\"lengthInChars\":20,\"wordList\":\"EN_1024_words_6_chars_max_ed_4_20200917\"}"
+    },
+    {
+      "json" : "{\"password\":\"🦺🎤💧🛟🐘🚨🪢🫐🍟🚃💺🪙🐹🚏🎒\",\"recipe\":\"{\\\"wordList\\\":\\\"EMOJI_512_single_code_point_20261002\\\"}\"}",
+      "name" : "emoji default",
+      "password" : "🦺🎤💧🛟🐘🚨🪢🫐🍟🚃💺🪙🐹🚏🎒",
+      "recipe" : "{\"wordList\":\"EMOJI_512_single_code_point_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"🌱📞🍇🧿🍚🧄\",\"recipe\":\"{\\\"lengthInChars\\\":6,\\\"wordList\\\":\\\"EMOJI_512_single_code_point_20261002\\\"}\"}",
+      "name" : "emoji 6",
+      "password" : "🌱📞🍇🧿🍚🧄",
+      "recipe" : "{\"lengthInChars\":6,\"wordList\":\"EMOJI_512_single_code_point_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"🧨🍷🍮📐\",\"recipe\":\"{\\\"lengthInChars\\\":4,\\\"lengthInWords\\\":10,\\\"wordList\\\":\\\"EMOJI_512_single_code_point_20261002\\\"}\"}",
+      "name" : "emoji words then truncated",
+      "password" : "🧨🍷🍮📐",
+      "recipe" : "{\"lengthInChars\":4,\"lengthInWords\":10,\"wordList\":\"EMOJI_512_single_code_point_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"Pk2e\",\"recipe\":\"{\\\"lengthInChars\\\":4,\\\"lengthInWords\\\":10,\\\"wordList\\\":\\\"CHARS_67_letters_digits_symbols_20261002\\\"}\"}",
+      "name" : "chars 67 words and chars",
+      "password" : "Pk2e",
+      "recipe" : "{\"lengthInChars\":4,\"lengthInWords\":10,\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"ninja-stump-whole-magma-oozes-sugar\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"-\\\"}\"}",
+      "name" : "512 6 words separator hyphen",
+      "password" : "ninja-stump-whole-magma-oozes-sugar",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\"-\"}"
+    },
+    {
+      "json" : "{\"password\":\"avoid creed party gains wifi phony\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\" \\\"}\"}",
+      "name" : "512 6 words separator space",
+      "password" : "avoid creed party gains wifi phony",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\" \"}"
+    },
+    {
+      "json" : "{\"password\":\"study.scam.guise.crept.canal.spoon\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\".\\\"}\"}",
+      "name" : "512 6 words separator period",
+      "password" : "study.scam.guise.crept.canal.spoon",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\".\"}"
+    },
+    {
+      "json" : "{\"password\":\"canal,civil,rigor,theme,state,error\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\",\\\"}\"}",
+      "name" : "512 6 words separator comma",
+      "password" : "canal,civil,rigor,theme,state,error",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\",\"}"
+    },
+    {
+      "json" : "{\"password\":\"irked_dowry_slits_human_lanky_virus\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"_\\\"}\"}",
+      "name" : "512 6 words separator underscore",
+      "password" : "irked_dowry_slits_human_lanky_virus",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\"_\"}"
+    },
+    {
+      "json" : "{\"password\":\"bulgemanlygrapekneltninthshank\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"\\\"}\"}",
+      "name" : "512 6 words separator empty",
+      "password" : "bulgemanlygrapekneltninthshank",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\"\"}"
+    },
+    {
+      "json" : "{\"password\":\"query5herbs1croak3afar6swear7treat\",\"recipe\":\"{\\\"lengthInWords\\\":6,\\\"separator\\\":\\\"digits\\\"}\"}",
+      "name" : "512 6 words separator digits",
+      "password" : "query5herbs1croak3afar6swear7treat",
+      "recipe" : "{\"lengthInWords\":6,\"separator\":\"digits\"}"
+    },
+    {
+      "json" : "{\"password\":\"d3Ue7wH-_ocFkUq-9C87\",\"recipe\":\"{\\\"lengthInChars\\\":20,\\\"wordList\\\":\\\"CHARS_67_letters_digits_symbols_20261002\\\"}\"}",
+      "name" : "lettersDigitsSymbols 20",
+      "password" : "d3Ue7wH-_ocFkUq-9C87",
+      "recipe" : "{\"lengthInChars\":20,\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"DPx5XpUCbg4RVCKT3ET2\",\"recipe\":\"{\\\"lengthInChars\\\":20,\\\"wordList\\\":\\\"CHARS_57_letters_digits_20261002\\\"}\"}",
+      "name" : "lettersDigits 20",
+      "password" : "DPx5XpUCbg4RVCKT3ET2",
+      "recipe" : "{\"lengthInChars\":20,\"wordList\":\"CHARS_57_letters_digits_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"z-XorKPWuxJCFKpvozJv\",\"recipe\":\"{\\\"lengthInChars\\\":20,\\\"wordList\\\":\\\"CHARS_59_letters_symbols_20261002\\\"}\"}",
+      "name" : "lettersSymbols 20",
+      "password" : "z-XorKPWuxJCFKpvozJv",
+      "recipe" : "{\"lengthInChars\":20,\"wordList\":\"CHARS_59_letters_symbols_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"zgcbGJpCgVQpnTUmNzum\",\"recipe\":\"{\\\"lengthInChars\\\":20,\\\"wordList\\\":\\\"CHARS_49_letters_20261002\\\"}\"}",
+      "name" : "letters 20",
+      "password" : "zgcbGJpCgVQpnTUmNzum",
+      "recipe" : "{\"lengthInChars\":20,\"wordList\":\"CHARS_49_letters_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"514240\",\"recipe\":\"{\\\"lengthInChars\\\":6,\\\"wordList\\\":\\\"CHARS_10_digits_20261002\\\"}\"}",
+      "name" : "PIN 6",
+      "password" : "514240",
+      "recipe" : "{\"lengthInChars\":6,\"wordList\":\"CHARS_10_digits_20261002\"}"
+    },
+    {
+      "json" : "{\"password\":\"479198785820\",\"recipe\":\"{\\\"lengthInChars\\\":12,\\\"wordList\\\":\\\"CHARS_10_digits_20261002\\\"}\"}",
+      "name" : "PIN 12",
+      "password" : "479198785820",
+      "recipe" : "{\"lengthInChars\":12,\"wordList\":\"CHARS_10_digits_20261002\"}"
+    }
+  ],
+  "origin" : "generated by Packages/Derivation (ExtensionVectorTests.regenerate); this app's extensions, not the reference",
+  "seed" : "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t"
+}
