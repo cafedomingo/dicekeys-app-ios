@@ -59,7 +59,10 @@ adds nothing, which also answers the Argon2id idea in `BACKLOG.md`.
 **The passphrase.** Characters rather than words: upper and lower case letters and digits,
 less the look-alikes `0 O 1 l I`, since these passphrases get typed by hand, and a small
 fixed set of symbols that need no quoting in a shell or escaping in a URL. About 65
-characters, so 22 of them is about 132 bits. Each character comes from one derived byte by
+characters, so 22 of them is about 132 bits. Carrying all of the DiceKey's 196 would take 33,
+and gain nothing: 128 bits is past any brute force, the SSH, WireGuard and age keys stop at
+about 128 bits of security themselves, and a passphrase that leaks reveals nothing about the
+DiceKey or its other keys whatever its length. Each character comes from one derived byte by
 rejection sampling, so none is likelier than another, and a finished string missing any of
 the four classes is thrown away for the next one from the same output, so every passphrase
 passes the usual composition rules. Nothing like `lengthInChars` or a choice of alphabet:
