@@ -15,6 +15,14 @@ func getRecipeJson(purpose: String, sequenceNumber: Int = 1, lengthInChars: Int 
     ).canonicalText
 }
 
+func getRecipeJson(purpose: String, sequenceNumber: Int, choices: PasswordRecipeChoices) -> String {
+    var fields = [RecipeJsonField(name: Recipe.purposeField, value: .text(purpose))] + choices.fields
+    if sequenceNumber > 1 {
+        fields.append(RecipeJsonField(name: Recipe.sequenceNumberField, value: .int(sequenceNumber)))
+    }
+    return RecipeJsonValue.object(fields).canonicalText
+}
+
 /// The fields a user can set on any recipe. Each is written only when it differs from the
 /// default, because a recipe with `"#":1` derives a different secret from one without it.
 private func optionalRecipeFields(sequenceNumber: Int, lengthInChars: Int?, lengthInBytes: Int?) -> [RecipeJsonField] {
