@@ -95,7 +95,9 @@ entry and unlocking the DiceKey, and the key is derived again; the key itself is
 None of the entry is secret, so it can be stored freely, and creating one is a choice of kind
 and a text field. Recovering after losing the phone needs the box and the names, so names
 should be ones that could be typed again from memory, and the catalog can be exported or
-synced, since it holds nothing that unlocks anything.
+synced, since it holds nothing that unlocks anything. The sturdiest export is on paper, kept
+in the box: whoever holds the box already holds every key, so the list costs nothing there,
+and recovery then needs only the box. Exported public keys let verify run on a new phone.
 
 **Getting a key off the phone.** Exports are rare, once to provision and once after a
 disaster, so they can be deliberate rather than convenient. In order of preference:
