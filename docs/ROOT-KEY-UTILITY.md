@@ -49,6 +49,8 @@ now: the DiceKey model, its seed encoding, the screens and the catalog are desig
 app's needs and written fresh rather than edited into shape. Where something already serves
 well, it stays on its merits: the scanner and the face specification read a DiceKey
 correctly, are already Swift written here, and change only where the new app needs them to.
+What proves them should be the owner's too: the scanner's corpus moves entirely to the
+owner's own photographs, as the test photos item in `BACKLOG.md` describes.
 Licensing is not a goal of the break; `THIRD_PARTY_LICENSES` keeps crediting whatever
 remains, as now.
 

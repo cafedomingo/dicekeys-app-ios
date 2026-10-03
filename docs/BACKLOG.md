@@ -170,11 +170,12 @@ When it matters, the portrait lock is the first thing to revisit, and the fold t
 resizes the app live, which is the resizable-window problem above arriving on a phone. Work
 done for the iPad carries over.
 
-## Replace upstream's test photos before publishing
+## Replace upstream's test photos
 
-**Why it exists.** Most of the scanner's photo corpus comes from read-dicekey, which grants no
-license, so those photos cannot be redistributed. The owner's photos can. Nothing needs to
-change while the repository stays private.
+**Why it exists.** Most of the scanner's photo corpus comes from read-dicekey. The scanner
+should be proved by the owner's own photographs of the owner's own keys, wanted whether or
+not the repository is ever published; that those photos can also be redistributed, and
+upstream's cannot, is a bonus rather than the reason.
 
 **What is left.** Photograph test keys to stand in for upstream's photos, then delete them;
 `Fixtures/images/README.md` lists which are upstream's. Besides well-framed keys they cover
