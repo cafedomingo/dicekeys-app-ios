@@ -38,8 +38,8 @@ whose exact text is the salt, a canonical form that follows the reference rather
 - input key material: the seed string as today, the DiceKey rotated to its smallest form, so
   `DiceKeySeedTests` still proves every way of holding the key agrees;
 - salt: one fixed, versioned domain string, the only place a version lives;
-- info: the kind, the label and an index, each length-prefixed, so no two inputs encode
-  alike and there is no text format to canonicalize;
+- info: the kind and the name, each length-prefixed, so no two inputs encode alike and
+  there is no text format to canonicalize;
 - output: 32 bytes, always.
 
 No stretching: a DiceKey carries about 196 bits of entropy, so a slow hash such as Argon2id
@@ -59,9 +59,11 @@ bits. The one risk of a fixed format is a system that caps passphrase length, so
 limits have to be known before the count is fixed, because the count can never change
 afterwards.
 
-**The label and the index.** The label says what the key is for, and the index replaces the
-sequence number: rotating a key is the next index. Both are public, stored in the catalog
-below, and shown on screen.
+**The name.** A free text field, and the only way to get more than one key of a kind:
+`nas` and `nas backup` are two passphrases, `github` and `homelab` two SSH keys. Rotating a
+key is a new name. The name is the salt, so one changed character is a different key; it is
+trimmed and normalized to NFC before hashing, and otherwise kept exactly as typed, case
+included. It is public, saved in the catalog below, and shown on screen.
 
 **Proving it without a reference.** Today's derivation is proved by vectors recorded from
 the reference C++. A new one has no reference, so the spec has to be complete enough to
@@ -87,9 +89,13 @@ Argon2id, the seeding implementation and simpler recipes in `BACKLOG.md` all go 
 compare it with the one recorded when the key was made. That is a recovery drill which shows
 nothing secret, and a check on the scanner as well.
 
-**A catalog, not recipes.** Each key is a kind, a label, an index and, where there is one, a
-public key. None of it is secret, so it can be stored freely, and the recipe builder becomes
-a choice of kind and a text field.
+**A catalog, not recipes.** Making a key saves an entry: the kind, the name, which DiceKey
+it belongs to and, where there is one, the public key. Retrieving it later is picking the
+entry and unlocking the DiceKey, and the key is derived again; the key itself is never saved.
+None of the entry is secret, so it can be stored freely, and creating one is a choice of kind
+and a text field. Recovering after losing the phone needs the box and the names, so names
+should be ones that could be typed again from memory, and the catalog can be exported or
+synced, since it holds nothing that unlocks anything.
 
 **Getting a key off the phone.** Exports are rare, once to provision and once after a
 disaster, so they can be deliberate rather than convenient. In order of preference:
