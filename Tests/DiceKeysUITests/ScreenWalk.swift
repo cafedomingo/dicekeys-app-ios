@@ -66,6 +66,11 @@ final class ScreenWalk: XCTestCase {
         tap(tab.exists ? tab : button(label), "\(label) tab")
     }
 
+    /// A menu picker, which renders as a button labeled with its current selection.
+    private func menu(showing selection: String) -> XCUIElement {
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", selection)).firstMatch
+    }
+
     private func back() {
         tap(app.navigationBars.buttons.element(boundBy: 0), "nav back")
         Thread.sleep(forTimeInterval: 0.8)
@@ -176,25 +181,35 @@ final class ScreenWalk: XCTestCase {
         snap("derived-signing-key", settle: 1.5)
         back()
 
-        // Custom recipe sheet
+        // Custom recipe sheets
         app.swipeUp()
         Thread.sleep(forTimeInterval: 0.8)
         tap(button("Password"), "Custom Password")
-        snap("custom-recipe-purpose", settle: 1.2)
-        tap(button("Raw JSON"), "Raw JSON segment")
-        snap("custom-recipe-raw-json-alert", settle: 1)
-        tap(app.alerts.buttons["I accept the risk"], "accept risk")
-        snap("custom-recipe-raw-json", settle: 0.8)
-        tap(button("Purpose"), "Purpose segment")
+        snap("password-memorable", settle: 1.2)
         let purposeField = app.textFields["purpose"]
         tap(purposeField, "purpose field")
         purposeField.typeText("dicekeys.org")
-        snap("custom-recipe-filled-keyboard", settle: 0.8)
-        tap(app.navigationBars.buttons["Done"], "custom Done")
+        snap("password-memorable-preview", settle: 1)
+        app.swipeUp()  // the sheet opens at half height; this raises it to full
+        Thread.sleep(forTimeInterval: 0.8)
+        tap(menu(showing: "Memorable Password"), "Type menu")
+        tap(button("Random Password"), "Random")
+        snap("password-random", settle: 1)
+        tap(menu(showing: "Random Password"), "Type menu")
+        tap(button("PIN Code"), "PIN")
+        snap("password-pin", settle: 1)
+        tap(app.navigationBars.buttons["Done"], "password Done")
         snap("derived-custom-recipe", settle: 1.5)
         tap(button("Save recipe in the menu"), "Save recipe")
         Thread.sleep(forTimeInterval: 0.6)
         back()
+        app.swipeUp()
+        Thread.sleep(forTimeInterval: 0.8)
+        tap(button("Raw JSON"), "Raw JSON entry")
+        snap("raw-json-alert", settle: 1)
+        tap(app.alerts.buttons["I accept the risk"], "accept risk")
+        snap("raw-json", settle: 0.8)
+        tap(app.navigationBars.buttons["Cancel"], "raw JSON Cancel")
         app.swipeDown()
         snap("recipes-with-saved", settle: 0.8)
 

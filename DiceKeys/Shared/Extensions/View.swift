@@ -35,4 +35,13 @@ extension View {
             self.hidden()
         }
     }
+
+    /// Text entry without autocorrection or automatic capitalization.
+    func plainTextEntry() -> some View {
+        self
+            .autocorrectionDisabled()
+            .font(.body)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.alphabet)
+    }
 }

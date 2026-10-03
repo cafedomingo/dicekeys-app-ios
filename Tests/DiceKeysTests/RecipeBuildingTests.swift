@@ -14,11 +14,9 @@ struct RecipeBuildingTests {
     func purposeRecipe() {
         #expect(getRecipeJson(purpose: #"say "hi""#) == #"{"purpose":"say \"hi\""}"#)
         #expect(
-            getRecipeJson(purpose: "x", sequenceNumber: 2, lengthInChars: 20)
-                == ##"{"purpose":"x","lengthInChars":20,"#":2}"##)
-        #expect(
-            getRecipeJson(purpose: "x", sequenceNumber: 1, lengthInChars: 0, lengthInBytes: 64)
-                == #"{"purpose":"x","lengthInBytes":64}"#)
+            getRecipeJson(purpose: "x", sequenceNumber: 2, lengthInBytes: 64)
+                == ##"{"purpose":"x","lengthInBytes":64,"#":2}"##)
+        #expect(getRecipeJson(purpose: "x", sequenceNumber: 1, lengthInBytes: 0) == #"{"purpose":"x"}"#)
     }
 
     @Test("rebuilding from a template keeps every other field, nested objects included")
@@ -59,21 +57,6 @@ struct RecipeBuildingTests {
         #expect(stored.fields.isEmpty)
     }
 
-    @Test("raw JSON that is not an object is reported, not passed through")
-    @MainActor
-    func rawJsonErrors() {
-        let model = CustomRecipeModel(type: .password)
-        model.buildType = .rawJson
-        model.rawJsonString = "[]"
-        #expect(model.progress == .error(RecipeJsonError.notAnObject.message))
-        model.rawJsonString = #"{"purpose":"x",}"#
-        #expect(model.progress == .error(RecipeJsonError.invalid(offset: 15).message))
-        model.rawJsonString = "   "
-        #expect(model.progress == .incomplete)
-        model.rawJsonString = ##"{ "#":2, "purpose":"x" }"##
-        #expect(model.progress.recipe?.recipe == ##"{"purpose":"x","#":2}"##)
-    }
-
     @Test("stored recipes still decode with the package's type names")
     func storedRecipeDecodes() throws {
         let stored =
@@ -89,13 +72,5 @@ struct RecipeBuildingTests {
         #expect(throws: DerivationError.wrongType(field: "lengthInBytes", expected: "an integer")) {
             try recipe.derivedValue(diceKey: DiceKey.example)
         }
-    }
-
-    @Test("the custom builder starts on purpose and has no web address mode")
-    @MainActor
-    func builderModes() {
-        let model = CustomRecipeModel(type: .password)
-        #expect(model.buildType == .purpose)
-        #expect(RecipeBuildType.allCases == [.purpose, .rawJson])
     }
 }

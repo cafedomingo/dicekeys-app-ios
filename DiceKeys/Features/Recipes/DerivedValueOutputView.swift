@@ -41,14 +41,20 @@ struct DerivedValueOutputView: View {
             .padding(.horizontal, 10)
 
             DerivedFromDiceKey(diceKey: diceKey) {
-                Text(valueText)
-                    .padding(3)
-                    .foregroundStyle(Color.Depiction.funnelText)
-                    .font(.body)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(8)
-                    .minimumScaleFactor(0.4)
-                    .fixedSize(horizontal: false, vertical: true)
+                Group {
+                    if format == .password {
+                        ColoredSecretText(valueText)
+                    } else {
+                        Text(valueText)
+                    }
+                }
+                .padding(3)
+                .foregroundStyle(Color.Depiction.funnelText)
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .lineLimit(8)
+                .minimumScaleFactor(0.4)
+                .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 5)
             .layoutPriority(-1)
