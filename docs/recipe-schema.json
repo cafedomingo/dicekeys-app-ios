@@ -42,7 +42,14 @@
       "description": "Password only.",
       "enum": [
         "EN_512_words_5_chars_max_ed_4_20200917",
-        "EN_1024_words_6_chars_max_ed_4_20200917"
+        "EN_1024_words_6_chars_max_ed_4_20200917",
+        "EFF_large_7776_words_9_chars_max_20160719",
+        "EMOJI_512_single_code_point_20261002",
+        "CHARS_67_letters_digits_symbols_20261002",
+        "CHARS_57_letters_digits_20261002",
+        "CHARS_59_letters_symbols_20261002",
+        "CHARS_49_letters_20261002",
+        "CHARS_10_digits_20261002"
       ],
       "default": "EN_512_words_5_chars_max_ed_4_20200917"
     },

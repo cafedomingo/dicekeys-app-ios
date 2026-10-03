@@ -59,8 +59,7 @@ public struct Recipe: Sendable, Equatable {
             let listName = try fields.string("wordList") ?? WordList.en512.rawValue
             guard let wordList = WordList(rawValue: listName) else { throw .unknownWordList(listName) }
             self.wordList = wordList
-            let bitsPerWord = wordList.bitsPerWord
-            let bitsRange = 1...(Recipe.maximumLengthInWords * bitsPerWord)
+            let bitsRange = 1...wordList.maximumLengthInBits
             let bits = try fields.integer("lengthInBits", in: bitsRange)
             let words = try fields.integer("lengthInWords", in: 1...Recipe.maximumLengthInWords)
             self.lengthInChars = try fields.integer(Recipe.lengthInCharsField, in: 1...Int.max)
@@ -69,15 +68,13 @@ public struct Recipe: Sendable, Equatable {
             let resolvedWords: Int
             switch (bits, words) {
             case (nil, nil):
-                resolvedWords = Recipe.wordsFor(bits: Recipe.defaultLengthInBits, bitsPerWord: bitsPerWord)
+                resolvedWords = wordList.words(forBits: Recipe.defaultLengthInBits)
             case (nil, let words?):
                 resolvedWords = words
             case (let bits?, nil):
-                resolvedWords = Recipe.wordsFor(bits: bits, bitsPerWord: bitsPerWord)
+                resolvedWords = wordList.words(forBits: bits)
             case (let bits?, let words?):
-                guard words == Recipe.wordsFor(bits: bits, bitsPerWord: bitsPerWord) else {
-                    throw .bitsAndWordsConflict
-                }
+                guard words == wordList.words(forBits: bits) else { throw .bitsAndWordsConflict }
                 resolvedWords = words
             }
             self.lengthInWords = resolvedWords
@@ -100,10 +97,6 @@ public struct Recipe: Sendable, Equatable {
             self.wordList = .en512
             self.lengthInWords = 0
         }
-    }
-
-    private static func wordsFor(bits: Int, bitsPerWord: Int) -> Int {
-        (bits + bitsPerWord - 1) / bitsPerWord
     }
 
     private static func parse(_ json: String) throws(DerivationError) -> RecipeFields {
