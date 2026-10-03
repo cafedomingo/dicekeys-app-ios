@@ -69,6 +69,15 @@ passes the usual composition rules. Nothing like `lengthInChars` or a choice of 
 the alphabet, the symbols and the length are fixed once and can never change, so Synology's
 limits on length and characters have to be known before they are.
 
+**SSH.** Ed25519 only, as now: the private key in OpenSSH's own `openssh-key-v1` format,
+the only one OpenSSH writes for Ed25519, and the public key as an `ssh-ed25519` line. The
+comment becomes the entry's name, in both, so `authorized_keys` says which key a line is;
+today it is a fixed `DiceKeys`. No choice of key type: RSA has no standard way to be derived
+from a seed, and ECDSA would be added only if a device that has to be reached turns out to
+refuse Ed25519. The one option worth having is a passphrase on the exported file, typed at
+export time, since that file is what sits in Downloads; it needs bcrypt_pbkdf, which
+CryptoKit lacks, so it is not free.
+
 **The wallet.** BIP39 is the format wallets import, and `KeyFormats` already encodes it with
 the English list, so it costs nothing. It does put a wallet's master secret on a phone's
 screen, which is the exposure hardware wallets exist to avoid; it suits a wallet the DiceKey
