@@ -12,8 +12,39 @@ struct RecipeListView: View {
     @Environment(AppRouter.self) private var router
     @Environment(DerivationRecipeStore.self) private var derivationRecipeStore
 
-    /// The recipe being built in the "Custom Recipe" sheet.
-    @State private var customRecipeModel: CustomRecipeModel?
+    /// Which custom sheet is up. One optional drives `.sheet(item:)`.
+    private enum CustomSheet: Identifiable {
+        case password(PasswordRecipeModel)
+        case purpose(CustomRecipeModel)
+        case rawJson(RawJsonRecipeModel)
+
+        var id: ObjectIdentifier {
+            switch self {
+            case .password(let model): return ObjectIdentifier(model)
+            case .purpose(let model): return ObjectIdentifier(model)
+            case .rawJson(let model): return ObjectIdentifier(model)
+            }
+        }
+
+        var title: String {
+            switch self {
+            case .password: return "Password"
+            case .purpose(let model): return model.type.descriptionForRecipeBuilder.capitalized
+            case .rawJson: return "Raw JSON"
+            }
+        }
+
+        @MainActor var progress: RecipeBuilderProgress {
+            switch self {
+            case .password(let model): return model.progress
+            case .purpose(let model): return model.progress
+            case .rawJson(let model): return model.progress
+            }
+        }
+    }
+
+    @State private var customSheet: CustomSheet?
+    @Environment(DiceKeyMemoryStore.self) private var diceKeyMemoryStore
 
     var body: some View {
         List {
@@ -34,32 +65,49 @@ struct RecipeListView: View {
             Section("Custom Recipe") {
                 ForEach(DerivableType.allCases) { type in
                     Button(type.description) {
-                        customRecipeModel = CustomRecipeModel(type: type)
+                        if type == .password {
+                            customSheet = .password(
+                                PasswordRecipeModel(seed: diceKeyMemoryStore.diceKeyLoaded?.toSeed()))
+                        } else {
+                            customSheet = .purpose(CustomRecipeModel(type: type))
+                        }
                     }
                     .foregroundStyle(.primary)
                 }
+                Button("Raw JSON") { customSheet = .rawJson(RawJsonRecipeModel()) }
+                    .foregroundStyle(.primary)
             }
         }
         .scrollEdgeEffectStyle(.soft, for: .top)
-        .sheet(item: $customRecipeModel) { model in
-            CustomRecipeSheet(model: model) { recipe in
-                router.push(.derive(.recipe(recipe)))
-            }
+        .sheet(item: $customSheet) { sheet in
+            CustomRecipeSheet(
+                title: sheet.title, progress: sheet.progress, onDone: { router.push(.derive(.recipe($0))) },
+                content: {
+                    switch sheet {
+                    case .password(let model): PasswordRecipeForm(model: model)
+                    case .purpose(let model): CustomRecipeForm(model: model)
+                    case .rawJson(let model): RawJsonRecipeForm(model: model)
+                    }
+                }
+            )
             .presentationDetents([.medium, .large])
         }
     }
 }
 
-/// Builds a custom recipe from a web address, a purpose, or raw JSON.
-private struct CustomRecipeSheet: View {
+/// The navigation chrome around a custom recipe form: title, Cancel, and Done once there is
+/// a recipe.
+private struct CustomRecipeSheet<Content: View>: View {
     @Environment(\.dismiss) private var dismiss
-    let model: CustomRecipeModel
+    let title: String
+    let progress: RecipeBuilderProgress
     let onDone: (DerivationRecipe) -> Void
+    @ViewBuilder let content: Content
 
     var body: some View {
         NavigationStack {
-            CustomRecipeForm(model: model)
-                .navigationTitle(model.type.descriptionForRecipeBuilder.capitalized)
+            content
+                .navigationTitle(title)
                 .toolbarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
@@ -67,12 +115,10 @@ private struct CustomRecipeSheet: View {
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") {
-                            if let recipe = model.progress.recipe {
-                                onDone(recipe)
-                            }
+                            if let recipe = progress.recipe { onDone(recipe) }
                             dismiss()
                         }
-                        .disabled(model.progress.recipe == nil)
+                        .disabled(progress.recipe == nil)
                     }
                 }
         }
