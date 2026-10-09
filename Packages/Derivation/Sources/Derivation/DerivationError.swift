@@ -18,6 +18,8 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
     case unknownWordList(String)
     case lengthMustBe32(DerivableType)
     case bitsAndWordsConflict
+    case unknownSeparator(String)
+    case invalidJoining
 
     public var errorDescription: String? {
         switch self {
@@ -46,6 +48,11 @@ public enum DerivationError: Error, Equatable, Sendable, LocalizedError {
             return "A \(type.rawValue) is always 32 bytes; leave lengthInBytes out or set it to 32"
         case .bitsAndWordsConflict:
             return "lengthInBits and lengthInWords disagree; give one or the other"
+        case .unknownSeparator(let name):
+            return "Unknown separator \"\(name)\"; use -, a space, ., ,, _, an empty string or digits"
+        case .invalidJoining:
+            return
+                "separator and capitalize do not apply here: a character set is always concatenated, and capitalize needs a separator"
         }
     }
 }
