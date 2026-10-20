@@ -10,7 +10,7 @@
 //
 //  The app scans the centered square of a 1920x1080 session, so the frame here is a corpus
 //  photo scaled to 1080x1080. The first scan warms up the allocator; the median of the rest
-//  is the number to compare against docs/SCANNING.md.
+//  is the number to compare against docs/scanning.md.
 //
 
 import Darwin

@@ -60,20 +60,37 @@ final class ScreenWalk: XCTestCase {
         key.tap()
     }
 
-    /// The tab bar button, or the plain button that stands in for it when the bar is minimized.
-    private func selectTab(_ label: String) {
-        let tab = app.tabBars.buttons[label].firstMatch
-        tap(tab.exists ? tab : button(label), "\(label) tab")
-    }
-
-    /// A menu picker, which renders as a button labeled with its current selection.
-    private func menu(showing selection: String) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", selection)).firstMatch
-    }
-
+    /// The leftmost button in a navigation bar on screen: home's bar stays in the tree, offscreen,
+    /// while a screen is pushed over it.
     private func back() {
-        tap(app.navigationBars.buttons.element(boundBy: 0), "nav back")
+        let visible = app.navigationBars.buttons.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }
+        guard let button = visible.min(by: { $0.frame.minX < $1.frame.minX }) else {
+            XCTFail("missing: nav back")
+            return
+        }
+        button.tap()
         Thread.sleep(forTimeInterval: 0.8)
+    }
+
+    private func makeKey(name: String, kind: String? = nil) {
+        tap(button("New key"), "New key")
+        if let kind {
+            tap(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Kind'")).firstMatch, "Kind picker")
+            tap(button(kind), kind)
+        }
+        let field = app.textFields.firstMatch
+        tap(field, "Name field")
+        field.typeText(name)
+        snap("new-key-\(name)")
+        if kind != nil {
+            tap(button("Show"), "Show preview")
+            snap("new-key-\(name)-shown")
+        }
+        tap(button("Save"), "Save")
+        snap("key-\(name)")
+        tap(button("Reveal"), "Reveal")
+        snap("key-\(name)-revealed")
+        back()
     }
 
     func testWalk() throws {
@@ -81,203 +98,54 @@ final class ScreenWalk: XCTestCase {
         continueAfterFailure = true
         app = XCUIApplication()
         app.launch()
-        snap("home-empty", settle: 2)
-
-        // Scan (no camera in the Simulator)
-        tap(app.staticTexts["Load your DiceKey"], "Load your DiceKey")
-        Thread.sleep(forTimeInterval: 2)
+        snap("home-first-launch", settle: 2.5)
+        tap(button("Scan your DiceKey"), "Scan your DiceKey")
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        if springboard.alerts.firstMatch.waitForExistence(timeout: 2) {
+        if springboard.alerts.firstMatch.waitForExistence(timeout: 3) {
             snap("scan-camera-permission-alert")
-            let alert = springboard.alerts.firstMatch
-            if alert.buttons["Allow"].exists {
-                alert.buttons["Allow"].tap()
-            } else {
-                alert.buttons.element(boundBy: 0).tap()
-            }
-            Thread.sleep(forTimeInterval: 1.5)
+            springboard.alerts.firstMatch.buttons.element(boundBy: 1).tap()
         }
-        snap("scan")
+        snap("scan", settle: 2)
 
-        // Manual entry
-        tap(button("Enter the DiceKey by Hand"), "Enter by hand")
-        snap("manual-entry-empty", settle: 1)
-
-        let letters = "ABCDEFGHIJKLMNOPRSTUVWXYZ".map(String.init)
-        for (index, letter) in letters.enumerated() {
+        tap(button("Type it in"), "Type it in")
+        snap("manual-entry-empty")
+        for (index, letter) in "ABCDEFGHIJKLMNOPRSTUVWXYZ".map(String.init).enumerated() {
+            let digit = String(index % 6 + 1)
             pressKey(letter)
-            pressKey(String(index % 6 + 1))
-            if index == 11 {
-                snap("manual-entry-partial")
-            }
+            if index == 0 { snap("manual-entry-number") }
+            pressKey(digit)
+            if index == 11 { snap("manual-entry-orientation") }
+            let direction = ["upright", "right", "down", "left"][index % 4]
+            tap(button("\(letter)\(digit), \(direction)"), "\(letter)\(digit) \(direction)")
+            if index == 12 { snap("manual-entry-partial") }
         }
         snap("manual-entry-complete")
-        tap(button("Done"), "Done manual")
-        Thread.sleep(forTimeInterval: 1.5)
+        tap(button("Open DiceKey"), "Open DiceKey")
+        snap("keep-offer", settle: 1.5)
+        tap(app.alerts.buttons["Not now"], "Not now")
+        snap("dicekey-new", settle: 1.5)
+        tap(button("Show dice"), "Show dice")
+        snap("dicekey-dice-shown")
 
-        // DiceKey screen
-        snap("dicekey")
-        tap(button("Hide Dice"), "Hide Dice")
-        snap("dicekey-hidden-dice")
-        tap(button("Show Dice"), "Show Dice")
+        makeKey(name: "github")
+        makeKey(name: "nas", kind: "Passphrase")
+        makeKey(name: "cold", kind: "Wallet")
+        snap("dicekey-with-keys")
 
-        // Save sheet
-        tap(button("Save"), "Save toolbar")
-        snap("save-sheet", settle: 1)
-        let toggle = app.switches.firstMatch
-        if toggle.waitForExistence(timeout: 3) {
-            (toggle.switches.firstMatch.exists ? toggle.switches.firstMatch : toggle).tap()
-            Thread.sleep(forTimeInterval: 2)
-            if app.alerts.firstMatch.exists {
-                snap("save-sheet-error-alert")
-                app.alerts.firstMatch.buttons.firstMatch.tap()
-            } else {
-                snap("save-sheet-saved")
-            }
-        }
-        tap(app.navigationBars["Save DiceKey"].buttons["Done"], "Save sheet Done")
-        Thread.sleep(forTimeInterval: 1)
+        app.cells.containing(.staticText, identifier: "nas").firstMatch.swipeLeft()
+        snap("key-swiped")
+        tap(button("Delete"), "Delete")
+        snap("key-delete-confirm")
+        tap(button("Delete key"), "Delete key")
+        snap("key-deleted-by-swipe")
 
-        // Secrets
-        selectTab("Secrets")
-        snap("recipes", settle: 1)
+        tap(app.cells.containing(.staticText, identifier: "github").firstMatch, "github")
         app.swipeUp()
-        snap("recipes-scrolled", settle: 1)
-        app.swipeDown()
-        Thread.sleep(forTimeInterval: 1)
-
-        // Derived value: password template
-        tap(button("1Password"), "1Password")
-        snap("derived-password", settle: 1.5)
-        let picker = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Password' OR label CONTAINS 'JSON'"))
-            .allElementsBoundByIndex
-            .first { $0.frame.minY > 300 && $0.label != "Copy Password" }
-        if let picker {
-            picker.tap()
-            snap("derived-format-menu", settle: 1)
-            app.tap()
-            Thread.sleep(forTimeInterval: 0.5)
-            if app.collectionViews.firstMatch.exists || app.otherElements["Output Format"].exists {
-                app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
-            }
-        }
-        tap(button("Show QR code"), "QR button")
-        snap("qr-usage-question", settle: 1)
-        tap(button("The camera app on an iPhone or iPad"), "iPhone camera")
-        snap("qr-ios-warning", settle: 0.8)
-        tap(button("Got it. I'll be careful"), "Got it")
-        snap("qr-code", settle: 0.8)
-        tap(button("OK"), "QR OK")
-        Thread.sleep(forTimeInterval: 1)
+        tap(button("Delete key"), "Delete key on detail")
+        snap("key-detail-delete-confirm")
+        tap(app.alerts.buttons["Delete key"], "confirm Delete key")
+        snap("key-deleted-from-detail", settle: 1.5)
         back()
-
-        // Derived value: secret (BIP39) template
-        app.swipeUp()
-        Thread.sleep(forTimeInterval: 0.8)
-        tap(button("Cryptocurrency wallet seed"), "wallet seed")
-        snap("derived-secret", settle: 1.5)
-        back()
-        tap(button("SSH"), "SSH")
-        snap("derived-signing-key", settle: 1.5)
-        back()
-
-        // Custom recipe sheets
-        app.swipeUp()
-        Thread.sleep(forTimeInterval: 0.8)
-        tap(button("Password"), "Custom Password")
-        snap("password-memorable", settle: 1.2)
-        let purposeField = app.textFields["purpose"]
-        tap(purposeField, "purpose field")
-        purposeField.typeText("dicekeys.org")
-        snap("password-memorable-preview", settle: 1)
-        app.swipeUp()  // the sheet opens at half height; this raises it to full
-        Thread.sleep(forTimeInterval: 0.8)
-        tap(menu(showing: "Memorable Password"), "Type menu")
-        tap(button("Random Password"), "Random")
-        snap("password-random", settle: 1)
-        tap(menu(showing: "Random Password"), "Type menu")
-        tap(button("PIN Code"), "PIN")
-        snap("password-pin", settle: 1)
-        tap(app.navigationBars.buttons["Done"], "password Done")
-        snap("derived-custom-recipe", settle: 1.5)
-        tap(button("Save recipe in the menu"), "Save recipe")
-        Thread.sleep(forTimeInterval: 0.6)
-        back()
-        app.swipeUp()
-        Thread.sleep(forTimeInterval: 0.8)
-        tap(button("Raw JSON"), "Raw JSON entry")
-        snap("raw-json-alert", settle: 1)
-        tap(app.alerts.buttons["I accept the risk"], "accept risk")
-        snap("raw-json", settle: 0.8)
-        tap(app.navigationBars.buttons["Cancel"], "raw JSON Cancel")
-        app.swipeDown()
-        snap("recipes-with-saved", settle: 0.8)
-
-        // Backup: Stickeys
-        selectTab("Backup")
-        snap("backup-choose", settle: 1)
-        tap(app.staticTexts["Use a Stickeys Kit"], "Stickeys")
-        snap("backup-stickeys-intro", settle: 1)
-        tap(button("Next"), "Next")
-        snap("backup-stickeys-step-first-die", settle: 1)
-        for _ in 0..<12 { button("Next").tap() }
-        snap("backup-stickeys-step-center-die", settle: 1)
-        tap(button("Skip to the end"), "Skip to end")
-        snap("backup-stickeys-validate", settle: 1)
-        tap(button("Let me skip this step"), "skip validation")
-        snap("backup-validate-skipped", settle: 0.8)
-
-        // Backup: DiceKey kit
-        tap(button("Back to the start"), "Back to start")
-        Thread.sleep(forTimeInterval: 0.6)
-        tap(button("Previous"), "Previous")
-        Thread.sleep(forTimeInterval: 1)
-        tap(app.staticTexts["Use a DiceKey Kit"], "DiceKey kit")
-        snap("backup-dicekey-intro", settle: 1)
-        tap(button("Next"), "Next")
-        snap("backup-dicekey-step-first-die", settle: 1)
-        tap(button("Skip to the end"), "Skip to end")
-        snap("backup-dicekey-validate", settle: 1)
-
-        // Home with a DiceKey in memory
-        selectTab("DiceKey")
-        Thread.sleep(forTimeInterval: 0.6)
-        back()
-        snap("home-with-dicekey", settle: 1)
-        let menu = app.buttons.matching(
-            NSPredicate(
-                format:
-                    "label CONTAINS 'ellipsis' OR label CONTAINS 'More' OR label CONTAINS 'in memory' OR label CONTAINS 'ing in' OR label CONTAINS 'until'"
-            )
-        ).firstMatch
-        if menu.waitForExistence(timeout: 2) {
-            menu.tap()
-            snap("home-dicekey-menu", settle: 1)
-            let lock = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Immediately'")).firstMatch
-            if lock.exists {
-                lock.tap()
-                snap("home-after-lock", settle: 1.5)
-            }
-        } else {
-            XCTFail("missing: home DiceKey menu")
-        }
-
-        // Assembly
-        let assemble = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Assemble'")).firstMatch
-        tap(assemble, "Assemble")
-        snap("assembly-1-randomize", settle: 1.2)
-        tap(button("Next"), "Next")
-        snap("assembly-2-drop-dice", settle: 0.8)
-        tap(button("Next"), "Next")
-        snap("assembly-3-fill-slots", settle: 0.8)
-        tap(button("Next"), "Next")
-        snap("assembly-4-scan", settle: 0.8)
-        tap(button("Let me skip this step"), "skip scan")
-        tap(button("Next"), "Next")
-        snap("assembly-5-backup-choose", settle: 0.8)
-        tap(button("Let me skip this step"), "skip backup")
-        snap("assembly-6-seal-box", settle: 0.8)
-        tap(button("Next"), "Next")
-        snap("assembly-7-done", settle: 0.8)
+        snap("home")
     }
 }

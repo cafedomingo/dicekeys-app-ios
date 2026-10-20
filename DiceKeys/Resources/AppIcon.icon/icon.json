@@ -1,11 +1,15 @@
 {
   "fill-specializations": [
     {
-      "value": "system-light"
+      "value": {
+        "solid": "extended-srgb:0.08627,0.09412,0.25098,1.00000"
+      }
     },
     {
       "appearance": "dark",
-      "value": "system-dark"
+      "value": {
+        "solid": "extended-srgb:0.02745,0.03137,0.10196,1.00000"
+      }
     }
   ],
   "groups": [
@@ -14,6 +18,29 @@
         {
           "fill": {
             "solid": "extended-srgb:1.00000,1.00000,1.00000,1.00000"
+          },
+          "glass": false,
+          "image-name": "bars.png",
+          "name": "bars"
+        }
+      ],
+      "lighting": "individual",
+      "name": "bars",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0
+      },
+      "specular": false,
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "layers": [
+        {
+          "fill": {
+            "solid": "extended-srgb:0.36863,0.36078,0.90196,1.00000"
           },
           "glass": true,
           "image-name": "dice.png",
@@ -25,39 +52,6 @@
       "shadow": {
         "kind": "neutral",
         "opacity": 0.35
-      },
-      "specular": true,
-      "translucency": {
-        "enabled": false,
-        "value": 0.5
-      }
-    },
-    {
-      "layers": [
-        {
-          "fill-specializations": [
-            {
-              "value": {
-                "solid": "extended-srgb:0.20392,0.25490,0.55294,1.00000"
-              }
-            },
-            {
-              "appearance": "dark",
-              "value": {
-                "solid": "extended-srgb:0.38824,0.45490,0.80000,1.00000"
-              }
-            }
-          ],
-          "glass": true,
-          "image-name": "frame.png",
-          "name": "frame"
-        }
-      ],
-      "lighting": "combined",
-      "name": "frame",
-      "shadow": {
-        "kind": "neutral",
-        "opacity": 0.5
       },
       "specular": true,
       "translucency": {

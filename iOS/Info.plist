@@ -23,9 +23,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires to access your camera to scan DiceKeys</string>
+	<string>The camera reads the dice of your DiceKey.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Use FaceID to unlock your stored DiceKey</string>
+	<string>Face ID unlocks a DiceKey kept on this device.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Inconsolata-Bold.otf</string>

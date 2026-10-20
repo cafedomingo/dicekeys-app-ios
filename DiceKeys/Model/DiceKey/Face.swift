@@ -1,130 +1,73 @@
 //
 //  Face.swift
+//  DiceKeys
 //
 
 import DiceKeySpecification
 
-extension FaceOrientationLetterTrbl {
-    func rotate90() -> FaceOrientationLetterTrbl {
-        switch self {
-        case FaceOrientationLetterTrbl.Top: return FaceOrientationLetterTrbl.Right
-        case FaceOrientationLetterTrbl.Right: return FaceOrientationLetterTrbl.Bottom
-        case FaceOrientationLetterTrbl.Bottom: return FaceOrientationLetterTrbl.Left
-        case FaceOrientationLetterTrbl.Left: return FaceOrientationLetterTrbl.Top
-        }
-    }
-
-    var asClockwiseDegrees: Double {
-        switch self {
-        case FaceOrientationLetterTrbl.Top: return 0
-        case FaceOrientationLetterTrbl.Right: return 90
-        case FaceOrientationLetterTrbl.Bottom: return 180
-        case FaceOrientationLetterTrbl.Left: return 270
-        }
-    }
-
-    var asFacingString: String {
-        switch self {
-        case .Top: return "upright"
-        case .Right: return "right"
-        case .Bottom: return "down"
-        case .Left: return "left"
-        }
-    }
-}
-
-struct Face: Equatable {
+/// The face of one die as it lies in the box: a letter, a digit, and which way it is turned.
+struct Face: Equatable, Sendable {
     let letter: FaceLetter
     let digit: FaceDigit
-    let orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl
+    let orientation: FaceOrientationLetterTrbl
 
-    var letterAndDigit: String {
-        letter.rawValue + digit.rawValue
-    }
+    /// Letter, digit and orientation, such as `A1t`: the reference's human-readable form.
+    var humanReadableForm: String { letter.rawValue + digit.rawValue + orientation.rawValue }
 
-    var humanReadableForm: String {
-        letter.rawValue + digit.rawValue + orientationAsLowercaseLetterTrbl.rawValue
-    }
-
-    func numberOfFieldsDifferent(fromOtherFace other: Face) -> Int {
-        var numberOfFields: Int = 0
-        if letter != other.letter {
-            numberOfFields += 1
-        }
-        if digit != other.digit {
-            numberOfFields += 1
-        }
-        if orientationAsLowercaseLetterTrbl != other.orientationAsLowercaseLetterTrbl {
-            numberOfFields += 1
-        }
-        return numberOfFields
-    }
-
-    private var faceWithUnderlineAndOverlineCode: FaceWithUnderlineAndOverlineCode {
-        letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes[
-            Int(faceLetterIndexes[letter]!) * 6 + Int(faceDigitIndexes[digit]!)
-        ]
-    }
-
-    var underlineCode8Bits: UInt8 { faceWithUnderlineAndOverlineCode.underlineCode }
-    var overlineCode8Bits: UInt8 { faceWithUnderlineAndOverlineCode.overlineCode }
-
-    var underlineCode11Bits: UInt16 {
-        // always set the high order bit (bit 11: 1 << 10) to 1 and low order bit to 0
-        // to signal order
-        (1 << 10)
-            // set the next high-order bit only on overlines
-            | 0
-            // shift the face code 1 to the left to leave the 0th bit empty
-            | (UInt16(underlineCode8Bits) << 1)
-    }
-
-    var overlineCode11Bits: UInt16 {
-        // always set the high order bit (bit 11: 1 << 10) to 1 and low order bit to 0
-        // to signal order
-        (1 << 10)
-            // set the next high-order bit on overlines
-            | (1 << 9)
-            // shift the face code 1 to the left to leave the 0th bit empty
-            | (UInt16(overlineCode8Bits) << 1)
-    }
-
-    init(
-        letter: FaceLetter,
-        digit: FaceDigit,
-        orientationAsLowercaseLetterTrbl: FaceOrientationLetterTrbl
-    ) {
+    init(letter: FaceLetter, digit: FaceDigit, orientation: FaceOrientationLetterTrbl) {
         self.letter = letter
         self.digit = digit
-        self.orientationAsLowercaseLetterTrbl = orientationAsLowercaseLetterTrbl
+        self.orientation = orientation
     }
 
-    init(fromHumanReadableForm humanReadableForm: String, offsetErrorIndxesBy: Int = 0) throws {
-        guard
-            let letter = FaceLetter(
-                rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 0)]))
-        else {
-            throw IllegalCharacterError.inLetter(position: offsetErrorIndxesBy + 0)
+    init(humanReadableForm text: some StringProtocol) throws(DiceKeyFormatError) {
+        let characters = Array(text)
+        guard characters.count == 3 else { throw .wrongLength(characters.count) }
+        guard let letter = FaceLetter(rawValue: String(characters[0])) else { throw .letter(characters[0]) }
+        guard let digit = FaceDigit(rawValue: String(characters[1])) else { throw .digit(characters[1]) }
+        guard let orientation = FaceOrientationLetterTrbl(rawValue: String(characters[2])) else {
+            throw .orientation(characters[2])
         }
-        guard
-            let digit = FaceDigit(
-                rawValue: String(humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 1)]))
-        else {
-            throw IllegalCharacterError.inDigit(position: offsetErrorIndxesBy + 1)
+        self.init(letter: letter, digit: digit, orientation: orientation)
+    }
+
+    /// The same die after a quarter turn of the whole box clockwise.
+    var turnedClockwise: Face { Face(letter: letter, digit: digit, orientation: orientation.right) }
+}
+
+enum DiceKeyFormatError: Error, Equatable {
+    case wrongLength(Int)
+    case letter(Character)
+    case digit(Character)
+    case orientation(Character)
+}
+
+extension FaceOrientationLetterTrbl {
+    var right: FaceOrientationLetterTrbl {
+        switch self {
+        case .Top: .Right
+        case .Right: .Bottom
+        case .Bottom: .Left
+        case .Left: .Top
         }
-        guard
-            let orientationAsLowercaseLetterTrbl = humanReadableForm.count > 2
-                ? FaceOrientationLetterTrbl(
-                    rawValue: String(
-                        humanReadableForm[humanReadableForm.index(humanReadableForm.startIndex, offsetBy: 2)]))
-                : FaceOrientationLetterTrbl.Top
-        else {
-            throw IllegalCharacterError.inOrientation(position: offsetErrorIndxesBy + 2)
+    }
+
+    var clockwiseDegrees: Double {
+        switch self {
+        case .Top: 0
+        case .Right: 90
+        case .Bottom: 180
+        case .Left: 270
         }
-        self.init(
-            letter: letter,
-            digit: digit,
-            orientationAsLowercaseLetterTrbl: orientationAsLowercaseLetterTrbl
-        )
+    }
+
+    /// How the face reads aloud: "upright", "right", "down" or "left".
+    var spokenDirection: String {
+        switch self {
+        case .Top: "upright"
+        case .Right: "right"
+        case .Bottom: "down"
+        case .Left: "left"
+        }
     }
 }

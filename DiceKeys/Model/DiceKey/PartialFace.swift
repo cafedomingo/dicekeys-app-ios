@@ -5,37 +5,20 @@
 
 import DiceKeySpecification
 
-/// A face being entered by hand: any of letter, digit, or orientation may
-/// still be missing.
-struct PartialFace: Identifiable, Equatable, Sendable {
+/// A die being typed in: its letter, digit and orientation, each nil until entered.
+struct PartialFace: Equatable, Sendable {
     var letter: FaceLetter?
     var digit: FaceDigit?
-    var orientation: FaceOrientationLetterTrbl = .Top
-
-    let index: Int
-    var id: String { String(describing: index) }
+    var orientation: FaceOrientationLetterTrbl?
 
     var face: Face? {
-        if let faceLetter = letter, let faceDigit = digit {
-            return Face(letter: faceLetter, digit: faceDigit, orientationAsLowercaseLetterTrbl: orientation)
-        }
-        return nil
+        guard let letter, let digit, let orientation else { return nil }
+        return Face(letter: letter, digit: digit, orientation: orientation)
     }
+}
 
-    init(_ face: Face, index: Int? = nil) {
-        self.letter = face.letter
-        self.digit = face.digit
-        self.orientation = face.orientationAsLowercaseLetterTrbl
-        self.index = index ?? 0
-    }
-
-    init(
-        letter: FaceLetter? = nil, digit: FaceDigit? = nil, orientation: FaceOrientationLetterTrbl = .Top,
-        index: Int? = nil
-    ) {
-        self.letter = letter
-        self.digit = digit
-        self.orientation = orientation
-        self.index = index ?? 0
+extension PartialFace {
+    init(_ face: Face) {
+        self.init(letter: face.letter, digit: face.digit, orientation: face.orientation)
     }
 }

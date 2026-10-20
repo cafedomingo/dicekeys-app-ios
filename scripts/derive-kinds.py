@@ -2,8 +2,8 @@
 """Derives every key kind independently of the Swift code, for Fixtures/kinds.json.
 
 It reimplements the construction from docs/derivation.md (keyed BLAKE2b HKDF over the seed,
-info = type || recipe), the kind templates and encodings from docs/SPEC.md, and the password
-formatter, reading only the word lists from the Swift sources. The Swift tests then check
+info = type || recipe), the kind templates, encodings and password formatter from docs/derivation.md,
+reading only the word lists from the Swift sources. The Swift tests then check
 that the app derives the same values, so the fixture never comes from the code it checks.
 
   python3 scripts/derive-kinds.py           check the fixture against this implementation
