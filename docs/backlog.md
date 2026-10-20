@@ -7,16 +7,16 @@ doing. Ideas, at the end, are questions rather than plans.
 
 1. **Run on a device.** The scanner, the keychain prompt, Reveal, Copy and Share have only
    run in the Simulator.
-2. **iCloud sync** of the catalog, as an option: the CloudKit entitlement and container, a
-   Settings switch, and a local store to fall back on if CloudKit can't open. `security.md`
-   says what syncs and why that is safe.
+2. **Check iCloud sync across two devices.** It is built (Settings, Sync with iCloud) and
+   signed for the container, but has only been opened, never synced between devices. Before
+   shipping, deploy the CloudKit schema to production in the CloudKit console.
 3. **The Mac.** The app runs on Apple silicon Macs as Designed for iPad, with no code of its
    own: put a team id in `Config/Signing.local.xcconfig` and run on My Mac (Designed for
    iPad) once from Xcode, which registers the Mac. Mac Catalyst, for a Mac-style app, can
    follow if the iPad look grates.
 4. **The paper copy.** A printable list of DiceKeys and key names, with the catalog as a QR
    code, kept in the box; import from it or a file, merged by DiceKey id, kind and name.
-5. **Settings and About**, and the app icon from `docs/design/` in Icon Composer.
+5. **The app icon** from `docs/design/` in Icon Composer.
 6. **A short written guide** to assembling and backing up a DiceKey, with photographs.
 
 Everything above the Ideas heading is wanted, whether or not it is scheduled. Everything

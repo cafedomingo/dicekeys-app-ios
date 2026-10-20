@@ -16,11 +16,44 @@ struct CatalogTests {
     private let context: ModelContext
 
     init() throws {
-        context = ModelContext(try Catalog.container(inMemory: true))
+        context = ModelContext(try Catalog.container(syncing: false, inMemory: true))
     }
 
     private func key(_ kind: KeyKind, _ name: String, style: PassphraseStyle = .standard) throws -> DerivedKey {
         DerivedKey.derive(seed: DiceKey.example.seed, recipe: try KeyRecipe(kind: kind, name: name, style: style))
+    }
+
+    /// Two devices that each scanned the DiceKey before syncing hold a record each.
+    private func syncedDuplicate(named name: String? = nil, created: Date) -> DiceKeyRecord {
+        let record = DiceKeyRecord(diceKey: DiceKey.example)
+        if let name { record.name = name }
+        record.created = created
+        context.insert(record)
+        return record
+    }
+
+    @Test("records a sync duplicated show as one DiceKey, the renamed one over the default")
+    func duplicateRecordsCollapse() throws {
+        _ = syncedDuplicate(created: .distantPast)
+        let renamed = syncedDuplicate(named: "Home box", created: .now)
+        let records = try context.fetch(FetchDescriptor<DiceKeyRecord>())
+        #expect(records.uniqueDiceKeys.map(\.persistentModelID) == [renamed.persistentModelID])
+        #expect(try context.record(for: DiceKey.example.id)?.name == "Home box")
+    }
+
+    @Test("with both renamed, the older record is the DiceKey")
+    func olderRenameWins() throws {
+        _ = syncedDuplicate(named: "Office", created: .now)
+        _ = syncedDuplicate(named: "Home box", created: .distantPast)
+        #expect(try context.record(for: DiceKey.example.id)?.name == "Home box")
+    }
+
+    @Test("Forget removes every copy of the record, so none is left behind")
+    func forgetRemovesDuplicates() throws {
+        let first = syncedDuplicate(created: .distantPast)
+        _ = syncedDuplicate(created: .now)
+        try context.forget(first)
+        #expect(try context.fetchCount(FetchDescriptor<DiceKeyRecord>()) == 0)
     }
 
     @Test("a DiceKey is recorded once, named by its center die")

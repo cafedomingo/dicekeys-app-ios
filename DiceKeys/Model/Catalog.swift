@@ -3,8 +3,9 @@
 //  DiceKeys
 //
 //  What the user has made, and nothing that unlocks it: DiceKeys by their one-way id, and
-//  the kind, name and style of each key, which is everything needed to derive it again.
-//  Every attribute has a default and none is unique, as CloudKit sync will require.
+//  the kind, name and style of each key, which is everything needed to derive it again. It
+//  can sync through the user's private CloudKit database, so every attribute has a default
+//  and none is unique, as CloudKit requires.
 //
 
 import Derivation
@@ -62,17 +63,28 @@ final class KeyEntry {
 }
 
 enum Catalog {
+    static let syncSettingKey = "syncsCatalogWithICloud"
+    /// The setting as the app launched. The store opens once per launch, because two
+    /// CloudKit mirrors on one store file aren't supported, so a change applies at the next.
+    static let syncsThisLaunch = UserDefaults.standard.bool(forKey: syncSettingKey)
     private static let storeName = "Catalog"
 
-    static func container(inMemory: Bool = false) throws -> ModelContainer {
-        let configuration = ModelConfiguration(storeName, isStoredInMemoryOnly: inMemory)
+    /// The same store file either way, so turning sync on or off keeps what is there.
+    /// `.automatic` syncs through the iCloud container in the entitlements.
+    static func container(syncing: Bool = syncsThisLaunch, inMemory: Bool = false) throws -> ModelContainer {
+        let configuration = ModelConfiguration(
+            storeName, isStoredInMemoryOnly: inMemory, cloudKitDatabase: syncing ? .automatic : .none)
         return try ModelContainer(for: DiceKeyRecord.self, KeyEntry.self, configurations: configuration)
     }
 }
 
 extension ModelContext {
     func record(for diceKeyID: String) throws -> DiceKeyRecord? {
-        try fetch(FetchDescriptor<DiceKeyRecord>(predicate: #Predicate { $0.diceKeyID == diceKeyID })).first
+        try records(for: diceKeyID).uniqueDiceKeys.first
+    }
+
+    private func records(for diceKeyID: String) throws -> [DiceKeyRecord] {
+        try fetch(FetchDescriptor<DiceKeyRecord>(predicate: #Predicate { $0.diceKeyID == diceKeyID }))
     }
 
     func entries(for diceKeyID: String) throws -> [KeyEntry] {
@@ -107,13 +119,29 @@ extension ModelContext {
         try save()
     }
 
-    /// The record and its entries; the keychain copy is the caller's.
+    /// The record, any copies a sync made, and its entries; the keychain copy is the caller's.
     func forget(_ record: DiceKeyRecord) throws {
         let diceKeyID = record.diceKeyID
         try delete(model: KeyEntry.self, where: #Predicate { $0.diceKeyID == diceKeyID })
-        delete(record)
+        for copy in try records(for: diceKeyID) { delete(copy) }
         try save()
     }
+}
+
+extension [DiceKeyRecord] {
+    /// Two devices that each scan a DiceKey before they sync make a record each. One stands
+    /// for the DiceKey: a renamed one over one still named for its center die, then the
+    /// oldest, so the choice is the same on every device. Order is kept.
+    var uniqueDiceKeys: [DiceKeyRecord] {
+        let chosen = Dictionary(grouping: self, by: \.diceKeyID).compactMapValues { copies in
+            copies.min { ($0.isRenamed ? 0 : 1, $0.created) < ($1.isRenamed ? 0 : 1, $1.created) }
+        }
+        return filter { chosen[$0.diceKeyID] === $0 }
+    }
+}
+
+extension DiceKeyRecord {
+    fileprivate var isRenamed: Bool { name != defaultName }
 }
 
 extension [KeyEntry] {
