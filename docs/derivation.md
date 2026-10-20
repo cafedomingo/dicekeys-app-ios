@@ -26,6 +26,11 @@ out  = the first L bytes of T(1) || T(2) || ...
 `L` is the length the recipe resolves to. It is at most 8160, so the one-byte counter never
 wraps.
 
+The recipe text is hashed exactly as written, so the app only writes it one way: the recipe's
+fields as RFC 8785 (JCS) canonical JSON, keys sorted by UTF-16 code unit, no whitespace,
+strings escaped minimally. The DiceKey id recipe alone is the reference's text, unchanged, so
+ids match the DiceKeys apps.
+
 ## Per type
 
 - **Password.** The derived bytes are read as 8-byte big-endian blocks; a block modulo the
@@ -71,13 +76,13 @@ byte arrays are lowercase hex without a prefix.
 
 `KeyFormats` encodes a `SigningKey` (OpenSSH, OpenPGP) and Secret bytes (BIP39).
 
-**OpenSSH.** The public line is `ssh-ed25519 <base64> DiceKeys`. The private key is an
-unencrypted `openssh-key-v1` block (cipher and KDF `none`, one key) in 64-column base64 with
-the `OPENSSH PRIVATE KEY` armor. Its private section holds the check value twice, the key
-type, the public key, the 64-byte signing key, the comment (empty by default) and padding
-bytes 1, 2, 3 and so on up to a multiple of 8. OpenSSH's check value exists to detect a wrong
-passphrase; here it is the first four bytes of SHA-256 of the public key, so the export is
-identical every time.
+**OpenSSH.** The public line is `ssh-ed25519 <base64> <comment>`: the reference ends it in
+`DiceKeys`, and the `ssh` kind in the key's name. The private key is an unencrypted
+`openssh-key-v1` block (cipher and KDF `none`, one key) in 64-column base64 with the `OPENSSH
+PRIVATE KEY` armor. Its private section holds the check value twice, the key type, the public
+key, the 64-byte signing key, the comment (empty by default) and padding bytes 1, 2, 3 and so
+on up to a multiple of 8. OpenSSH's check value exists to detect a wrong passphrase; here it is
+the first four bytes of SHA-256 of the public key, so the export is identical every time.
 
 **OpenPGP.** An armored transferable secret key: a v4 secret key packet (EdDSA, algorithm 22,
 Ed25519 OID, unprotected, with the 16-bit checksum), a user ID packet, and a positive
@@ -91,6 +96,32 @@ public key, fingerprint, secret key material and user ID are identical.
 
 **BIP39.** `BIP39.mnemonic(entropy:)` takes 16 to 32 bytes in steps of 4. The English list is
 `Wordlist.swift`.
+
+## Key kinds
+
+`KeyRecipe` (in `Derivation`) turns a kind, a name and, for a passphrase, a style into
+recipe text; `DerivedKey` (in `KeyFormats`) derives and encodes it. The templates are fixed,
+so every recipe the app writes is canonical and valid.
+
+| Kind | Type | Recipe | Encoded as |
+|---|---|---|---|
+| `ssh` | SigningKey | `{"purpose":"ssh:<name>"}` | OpenSSH, with the name as the comment of both halves |
+| `wireguard` | UnsealingKey | `{"purpose":"wireguard:<name>"}` | base64 scalar and public key |
+| `age` | UnsealingKey | `{"purpose":"age:<name>"}` | Bech32 `AGE-SECRET-KEY-1…` and `age1…` |
+| `passphrase` | Password | random: `{"lengthInChars":<n>,"purpose":"passphrase:<name>","wordList":"CHARS_57…" or "CHARS_67…"}`; memorable: `{["capitalize":true,]"lengthInWords":<n>,"purpose":"passphrase:<name>","separator":"-" or "digits","wordList":"EFF_large…"}` | the password |
+| `wallet` | Secret | `{"purpose":"wallet:<name>"}` | 24-word BIP39 from 32 bytes, Secret's default `lengthInBytes` |
+
+The name is trimmed of `White_Space` at both ends and normalized to NFC, and must be 1 to 64
+scalars with no `Cc` character, no `Cf` character but the zero-width joiner emoji sequences
+need, and no unassigned (`Cn`) code point. Invisible characters would let a name that prints
+the same derive a different key, and an unassigned code point could normalize differently once
+Unicode assigns it. In the recipe's JSON only `"` and `\` are ever escaped. WireGuard, age and
+CryptoKit each clamp the unclamped scalar before using it, so they agree on the public key.
+
+`Fixtures/kinds.json` is written by `scripts/derive-kinds.py`, an independent Python
+implementation that shares only the word lists with this package; `KindVectorTests` checks
+the package against it, and CI runs the script with `--tools` to confirm the public keys with
+`ssh-keygen`, `wg` and `age-keygen`. Regenerate it only to add cases.
 
 ## The seed string
 

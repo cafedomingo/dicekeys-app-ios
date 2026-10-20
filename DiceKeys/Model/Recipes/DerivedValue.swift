@@ -87,7 +87,7 @@ struct DerivedValueSigningKey: DerivedValue {
         self.signingKey = signingKey
         openPgpSecretKey = OpenPGP.secretKeyBlock(signingKey)
         openSshPrivateKey = OpenSSH.privateKeyPEM(signingKey)
-        openSshPublicKey = OpenSSH.publicKeyLine(signingKey)
+        openSshPublicKey = OpenSSH.publicKeyLine(signingKey, comment: "DiceKeys")
     }
 
     func valueForView(view: DerivedValueView) -> String {

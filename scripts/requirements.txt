@@ -1,2 +1,4 @@
 # Python dependencies of scripts/.
 pillow==12.3.0
+cryptography==46.0.3
+mnemonic==0.21

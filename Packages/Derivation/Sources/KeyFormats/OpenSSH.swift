@@ -19,10 +19,16 @@ public enum OpenSSH {
     /// The container could hold several keys; this writes one.
     private static let keyCount: UInt32 = 1
 
-    /// `ssh-ed25519 <base64> DiceKeys`. The comment is fixed so the line users paste into
-    /// servers stays the same.
-    public static func publicKeyLine(_ key: Derivation.SigningKey) -> String {
-        "\(keyType) " + Data(publicKeyBlob(key)).base64EncodedString() + " DiceKeys"
+    /// `ssh-ed25519 <base64> <comment>`. The comment is the key's name, so `authorized_keys`
+    /// says which key a line is.
+    public static func publicKeyLine(_ key: Derivation.SigningKey, comment: String) -> String {
+        "\(keyType) " + Data(publicKeyBlob(key)).base64EncodedString() + " " + comment
+    }
+
+    /// `SHA256:<base64>` without padding, as `ssh-keygen -l` prints it.
+    public static func fingerprint(_ key: Derivation.SigningKey) -> String {
+        let digest = Data(SHA256.hash(data: publicKeyBlob(key))).base64EncodedString()
+        return "SHA256:" + digest.trimmingCharacters(in: CharacterSet(charactersIn: "="))
     }
 
     /// An unencrypted `openssh-key-v1` block. The check value, random in OpenSSH, is derived
