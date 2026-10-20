@@ -7,14 +7,17 @@ import AVFoundation
 import SwiftUI
 
 /// The camera preview with the read-faces overlay and floating controls.
-/// Calls `onDiceKeyRead` once, when a complete DiceKey has been scanned.
+/// Calls `onDiceKeyRead` once, when a complete DiceKey has been scanned, and `onCodeRead`
+/// with each different code that comes into view.
 struct ScanDiceKeyView: View {
     let onDiceKeyRead: (_ diceKey: DiceKey) -> Void
+    let onCodeRead: (_ payload: String) -> Void
 
     @State private var scanModel = DiceKeyScanModel()
     @State private var cameraAuthorized: Bool?
     @State private var selectedCameraID: String?
     @State private var cameraError: PresentableError?
+    @Environment(\.scenePhase) private var scenePhase
 
     /// Discovered once and again when a camera connects or disconnects, not per render:
     /// the body re-evaluates on every scanned frame.
@@ -36,7 +39,7 @@ struct ScanDiceKeyView: View {
                 Text(
                     scanModel.hasRepeatedLetters
                         ? "Two dice share a letter, so these aren't one DiceKey. Check for a die from another set."
-                        : "Hold the box flat, lid off"
+                        : "Hold the box flat, lid off, or show a list card or recovery sheet"
                 )
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -71,6 +74,14 @@ struct ScanDiceKeyView: View {
                 onDiceKeyRead(diceKey)
             }
         }
+        .onChange(of: scanModel.code) { _, code in
+            if let code {
+                onCodeRead(code)
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background { scanModel.forgetCode() }
+        }
         .errorAlert($cameraError)
     }
 
@@ -103,5 +114,5 @@ struct ScanDiceKeyView: View {
 }
 
 #Preview {
-    ScanDiceKeyView(onDiceKeyRead: { _ in })
+    ScanDiceKeyView(onDiceKeyRead: { _ in }, onCodeRead: { _ in })
 }

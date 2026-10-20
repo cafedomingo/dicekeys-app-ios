@@ -29,6 +29,13 @@ swift run --package-path BuildTools xcodegen generate --quiet
 bundle_id="$(xcodebuild -showBuildSettings -project DiceKeys.xcodeproj -scheme DiceKeys 2>/dev/null |
   awk '/ PRODUCT_BUNDLE_IDENTIFIER =/ { print $3; exit }')"
 
+# Face ID enrolled and matched every couple of seconds, for the prompts the walk passes through.
+xcrun simctl spawn "$udid" notifyutil -s com.apple.BiometricKit.enrollmentChanged 1
+xcrun simctl spawn "$udid" notifyutil -p com.apple.BiometricKit.enrollmentChanged
+while sleep 2; do xcrun simctl spawn "$udid" notifyutil -p com.apple.BiometricKit_Sim.pearl.match; done &
+matcher=$!
+trap 'kill $matcher' EXIT
+
 for mode in light dark; do
   xcrun simctl uninstall "$udid" "$bundle_id" || true
   xcrun simctl keychain "$udid" reset

@@ -3,13 +3,20 @@
 //  DiceKeys
 //
 
+import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The iCloud switch, and what the app is and owes.
 struct SettingsView: View {
     @AppStorage(Catalog.syncSettingKey) private var syncsWithICloud = false
     @Environment(\.catalogSyncFailure) private var syncFailure
     @Environment(\.dismiss) private var dismiss
+    @Query private var records: [DiceKeyRecord]
+    @Query private var entries: [KeyEntry]
+    @State private var isImporting = false
+    @State private var catalogToImport: CatalogFile?
+    @State private var error: PresentableError?
 
     private var isSignedInToICloud: Bool { FileManager.default.ubiquityIdentityToken != nil }
 
@@ -23,6 +30,17 @@ struct SettingsView: View {
                 } footer: {
                     syncFooter
                 }
+                Section {
+                    let export = CatalogExport(file: CatalogFile(records: records, entries: entries))
+                    ShareLink(item: export, preview: SharePreview(CatalogExport.filename)) {
+                        Label("Export catalog", systemImage: "square.and.arrow.up")
+                    }
+                    Button("Import catalog", systemImage: "square.and.arrow.down") { isImporting = true }
+                } footer: {
+                    Text(
+                        "A readable file of your DiceKeys' names and the keys you made, to keep anywhere you like instead of, or as well as, iCloud. Like the catalog, it holds no secret."
+                    )
+                }
                 Section("About") {
                     LabeledContent("Version", value: AppInfo.version)
                     Text("An unofficial app for DiceKeys, the dice made by DiceKeys, LLC.")
@@ -34,6 +52,18 @@ struct SettingsView: View {
             }
             .appBackdrop()
             .navigationTitle("Settings")
+            .fileImporter(isPresented: $isImporting, allowedContentTypes: [.json]) { result in
+                do {
+                    let url = try result.get()
+                    let isAccessing = url.startAccessingSecurityScopedResource()
+                    defer { if isAccessing { url.stopAccessingSecurityScopedResource() } }
+                    catalogToImport = try CatalogFile(json: Data(contentsOf: url))
+                } catch {
+                    self.error = PresentableError(title: "Not a Catalog", error: error)
+                }
+            }
+            .importsCatalog($catalogToImport)
+            .errorAlert($error)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done", systemImage: "checkmark") { dismiss() }

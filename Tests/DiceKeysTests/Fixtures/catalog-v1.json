@@ -1,0 +1,63 @@
+{
+  "diceKeys" : [
+    {
+      "centerFace" : "M1t",
+      "id" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "name" : "Example"
+    }
+  ],
+  "keys" : [
+    {
+      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "kind" : "ssh",
+      "name" : "🧨 & 日本語",
+      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjdWRsDmtQO/n3yhwf6ujA3PiX6O4Zyx688UIqVdinz 🧨 & 日本語"
+    },
+    {
+      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "kind" : "age",
+      "name" : "backups",
+      "publicKey" : "age184zku2dtmkr2xxfhjjwxw9s2wygde64v4luyhd2znxltm5q835asfljptc"
+    },
+    {
+      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "kind" : "passphrase",
+      "name" : "bank",
+      "style" : {
+        "memorable" : {
+          "digitAndCapital" : true,
+          "words" : 6
+        }
+      }
+    },
+    {
+      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "kind" : "wallet",
+      "name" : "cold"
+    },
+    {
+      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "kind" : "ssh",
+      "name" : "github",
+      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC1tGk3wqxyFVT6ECwjTH1WBJmchczYlObgy+pvht0ac github"
+    },
+    {
+      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "kind" : "wireguard",
+      "name" : "home",
+      "publicKey" : "uCVMtzuWcONUL0vyZrWl+wVuA7pBfEePZhvQHLw/hjU="
+    },
+    {
+      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "kind" : "passphrase",
+      "name" : "nas",
+      "style" : {
+        "random" : {
+          "length" : 24,
+          "symbols" : false
+        }
+      }
+    }
+  ],
+  "v" : 1
+}

@@ -27,7 +27,28 @@ final class DiceKeyScanModel {
     /// Set once, when every face of the DiceKey has been read.
     private(set) var completedDiceKey: DiceKey?
 
+    /// About a second of frames without a code before the code in view counts as gone, so
+    /// showing it again reads it again. Codes are only looked for on some frames.
+    static let framesToForgetACode = 30
+
+    /// The code in view: set when one comes into view, cleared once it has been gone a while.
+    private(set) var code: String?
+    private var framesWithoutCode = 0
+
+    /// Drops the code at once, such as when the app leaves the foreground: a recovery code
+    /// holds the DiceKey.
+    func forgetCode() {
+        code = nil
+    }
+
     func apply(_ frame: ScannedFrame) {
+        if let code = frame.code {
+            framesWithoutCode = 0
+            if code != self.code { self.code = code }
+        } else if code != nil {
+            framesWithoutCode += 1
+            if framesWithoutCode >= Self.framesToForgetACode { code = nil }
+        }
         if imageFrameSize != frame.size {
             imageFrameSize = frame.size
         }

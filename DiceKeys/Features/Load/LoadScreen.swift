@@ -5,9 +5,11 @@
 
 import SwiftUI
 
-/// The camera, with typing the dice in as the fallback.
+/// The camera, with typing the dice in as the fallback. The camera also reads list cards'
+/// and recovery sheets' codes.
 struct LoadScreen: View {
     let onLoaded: (DiceKey) -> Void
+    let onCodeRead: (String) -> Void
 
     @State private var isTyping = false
     /// Kept across switching to the camera and back, and dropped once loaded or when the app
@@ -22,7 +24,7 @@ struct LoadScreen: View {
             if isTyping {
                 TypingView(typed: typed, onDone: load)
             } else {
-                ScanDiceKeyView(onDiceKeyRead: load)
+                ScanDiceKeyView(onDiceKeyRead: load, onCodeRead: onCodeRead)
             }
         }
         .padding()

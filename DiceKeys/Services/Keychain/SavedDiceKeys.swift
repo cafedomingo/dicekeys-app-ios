@@ -38,14 +38,7 @@ final class SavedDiceKeys {
 
     /// Asks for Face ID, Touch ID or the passcode, then reads the DiceKey.
     func load(id: String, name: String) async throws -> DiceKey {
-        let context = LAContext()
-        var policyError: NSError?
-        guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &policyError) else {
-            throw policyError ?? LAError(.passcodeNotSet)
-        }
-        guard try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock \(name)") else {
-            throw LAError(.authenticationFailed)
-        }
+        let context = try await DeviceOwner.authenticate(reason: "Unlock \(name)")
         let data = try Keychain.load(id: id, context: context)
         return try DiceKey(humanReadableForm: String(decoding: data, as: UTF8.self))
     }
@@ -138,17 +131,6 @@ private enum Keychain {
             throw KeychainError.notFound
         default:
             throw KeychainError.osError(status)
-        }
-    }
-}
-
-extension Error {
-    /// The user, or the system, canceled an authentication prompt: not worth reporting.
-    var isAuthenticationCancellation: Bool {
-        guard let laError = self as? LAError else { return false }
-        switch laError.code {
-        case .userCancel, .appCancel, .systemCancel, .userFallback: return true
-        default: return false
         }
     }
 }

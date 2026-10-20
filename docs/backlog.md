@@ -14,10 +14,8 @@ doing. Ideas, at the end, are questions rather than plans.
    own: put a team id in `Config/Signing.local.xcconfig` and run on My Mac (Designed for
    iPad) once from Xcode, which registers the Mac. Mac Catalyst, for a Mac-style app, can
    follow if the iPad look grates.
-4. **The paper copy.** A printable list of DiceKeys and key names, with the catalog as a QR
-   code, kept in the box; import from it or a file, merged by DiceKey id, kind and name.
-5. **The app icon** from `docs/design/` in Icon Composer.
-6. **A short written guide** to assembling and backing up a DiceKey, with photographs.
+4. **The app icon** from `docs/design/` in Icon Composer.
+5. **A short written guide** to assembling and backing up a DiceKey, with photographs.
 
 Everything above the Ideas heading is wanted, whether or not it is scheduled. Everything
 below it is a question rather than a plan, kept so the reasoning behind it survives, and it

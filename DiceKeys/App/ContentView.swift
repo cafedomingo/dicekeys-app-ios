@@ -32,6 +32,8 @@ struct ContentView: View {
     @State private var compactColumn = NavigationSplitViewColumn.sidebar
     @State private var error: PresentableError?
     @State private var diceKeyToKeep: DiceKey?
+    @State private var catalogToImport: CatalogFile?
+    @State private var codeToRestore: RecoveryCode?
     @Environment(UnlockedDiceKeys.self) private var unlocked
     @Environment(SavedDiceKeys.self) private var saved
     @Environment(\.modelContext) private var context
@@ -68,6 +70,15 @@ struct ContentView: View {
             }
         }
         .offersToKeep($diceKeyToKeep)
+        .onOpenURL { url in
+            do {
+                catalogToImport = try CatalogFile(importURL: url)
+            } catch {
+                self.error = PresentableError(title: "Not a Catalog", error: error)
+            }
+        }
+        .importsCatalog($catalogToImport)
+        .restoresDiceKey($codeToRestore, onRestored: open)
         .errorAlert($error)
     }
 
@@ -75,7 +86,7 @@ struct ContentView: View {
     private var detail: some View {
         switch sidebarSelection {
         case .scan:
-            LoadScreen(onLoaded: load)
+            LoadScreen(onLoaded: load, onCodeRead: read)
         case .diceKey(let id):
             if let record = records.uniqueDiceKeys.first(where: { $0.diceKeyID == id }) {
                 DiceKeyScreen(
@@ -141,6 +152,11 @@ struct ContentView: View {
     }
 
     private func load(_ diceKey: DiceKey) {
+        open(diceKey)
+        if !saved.contains(id: diceKey.id) { diceKeyToKeep = diceKey }
+    }
+
+    private func open(_ diceKey: DiceKey) {
         do {
             try context.recordIfNew(diceKey)
         } catch {
@@ -148,7 +164,18 @@ struct ContentView: View {
         }
         unlocked.unlock(diceKey)
         sidebarSelection = .diceKey(diceKey.id)
-        if !saved.contains(id: diceKey.id) { diceKeyToKeep = diceKey }
+    }
+
+    private func read(_ payload: String) {
+        do {
+            switch try ScannedCode(payload: payload) {
+            case .list(let file): catalogToImport = file
+            case .recovery(let code): codeToRestore = code
+            case nil: break
+            }
+        } catch {
+            self.error = PresentableError(title: "Can't Read This Code", error: error)
+        }
     }
 
     /// From the key's own screen, goes back first so the key is seen leaving the list.

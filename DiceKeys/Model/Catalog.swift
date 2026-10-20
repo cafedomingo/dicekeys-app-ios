@@ -22,10 +22,14 @@ final class DiceKeyRecord {
     var centerFace = ""
     var created = Date.now
 
-    init(diceKey: DiceKey) {
-        diceKeyID = diceKey.id
-        centerFace = diceKey.centerFace.humanReadableForm
-        name = diceKey.defaultName
+    init(diceKeyID: String, name: String, centerFace: String) {
+        self.diceKeyID = diceKeyID
+        self.name = name
+        self.centerFace = centerFace
+    }
+
+    convenience init(diceKey: DiceKey) {
+        self.init(diceKeyID: diceKey.id, name: diceKey.defaultName, centerFace: diceKey.centerFace.humanReadableForm)
     }
 
     /// What a cleared rename returns to.
@@ -110,6 +114,16 @@ extension ModelContext {
         insert(entry)
         try save()
         return entry
+    }
+
+    /// Fills in the public keys that imported entries arrive without, from the DiceKey itself.
+    func fillPublicKeys(for diceKey: DiceKey) throws {
+        let missing = try entries(for: diceKey.id).filter { $0.publicKey == nil }
+        for entry in missing {
+            guard let recipe = entry.recipe else { continue }
+            entry.publicKey = DerivedKey.derive(seed: diceKey.seed, recipe: recipe).publicKey
+        }
+        if !missing.isEmpty { try save() }
     }
 
     /// Every entry for this key, including copies two devices made before they synced.
