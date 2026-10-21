@@ -56,7 +56,7 @@ public enum OpenSSH {
         blob.uint32(keyCount)
         blob.sshString(publicKeyBlob(key))
         blob.sshString(section.bytes)
-        return Armor.pem("OPENSSH PRIVATE KEY", blob.bytes, crc: false)
+        return Armor.pem("OPENSSH PRIVATE KEY", blob.bytes)
     }
 
     private static func publicKeyBlob(_ key: Derivation.SigningKey) -> [UInt8] {

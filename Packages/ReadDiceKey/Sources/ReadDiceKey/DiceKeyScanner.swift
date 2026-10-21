@@ -4,7 +4,7 @@
 //
 //  Reads a DiceKey from successive camera frames. A face is read only when its underline
 //  and overline name the same face, and faces read in different frames are merged until
-//  all 25 are known. See docs/SCANNING.md.
+//  all 25 are known. See docs/scanning.md.
 //
 
 import CoreGraphics

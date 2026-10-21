@@ -5,7 +5,7 @@
 //   Derivation   recipe parsing and validation, the derived value types, and the engine
 //                that does the hashing and the key derivation
 //   BLAKE2       the hash the derivation is built on
-//   KeyFormats   OpenSSH, OpenPGP, WireGuard, age and BIP39 encodings of derived values, and
+//   KeyFormats   OpenSSH, WireGuard, age and BIP39 encodings of derived values, and
 //                the catalog's key kinds
 
 import PackageDescription

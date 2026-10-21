@@ -12,25 +12,21 @@ public enum WordList: String, CaseIterable, Sendable {
     case en512 = "EN_512_words_5_chars_max_ed_4_20200917"
     case en1024 = "EN_1024_words_6_chars_max_ed_4_20200917"
     case effLarge = "EFF_large_7776_words_9_chars_max_20160719"
-    case emoji = "EMOJI_512_single_code_point_20261002"
     case lettersDigitsSymbols = "CHARS_67_letters_digits_symbols_20261002"
     case lettersDigits = "CHARS_57_letters_digits_20261002"
-    case lettersSymbols = "CHARS_59_letters_symbols_20261002"
-    case letters = "CHARS_49_letters_20261002"
-    case digits = "CHARS_10_digits_20261002"
 
     /// What an entry is, which decides the unit of length and how entries are joined.
     public enum Kind: Sendable {
         /// English words: separators, capitalization, length in words.
         case words
-        /// One character each, emoji included: concatenated, length in characters.
+        /// One character each: concatenated, length in characters.
         case characters
     }
 
     public var kind: Kind {
         switch self {
         case .en512, .en1024, .effLarge: return .words
-        case .emoji, .lettersDigitsSymbols, .lettersDigits, .lettersSymbols, .letters, .digits: return .characters
+        case .lettersDigitsSymbols, .lettersDigits: return .characters
         }
     }
 
@@ -39,12 +35,8 @@ public enum WordList: String, CaseIterable, Sendable {
         case .en512: return en512Words
         case .en1024: return en1024Words
         case .effLarge: return effLargeWords
-        case .emoji: return emojiWords
         case .lettersDigitsSymbols: return CharacterSets.lettersDigitsSymbols
         case .lettersDigits: return CharacterSets.lettersDigits
-        case .lettersSymbols: return CharacterSets.lettersSymbols
-        case .letters: return CharacterSets.letters
-        case .digits: return CharacterSets.pinDigits
         }
     }
 

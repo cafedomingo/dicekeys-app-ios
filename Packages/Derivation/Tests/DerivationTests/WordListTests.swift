@@ -21,13 +21,9 @@ struct WordListTests {
         }
         #expect(WordList.effLarge.count == 7776 && WordList.effLarge.kind == .words)
         #expect(WordList.effLarge.longestWordLength == 9)
-        #expect(WordList.emoji.count == 512 && WordList.emoji.kind == .characters)
         #expect(WordList.lettersDigitsSymbols.count == 67)
         #expect(WordList.lettersDigits.count == 57)
-        #expect(WordList.lettersSymbols.count == 59)
-        #expect(WordList.letters.count == 49)
-        #expect(WordList.digits.count == 10)
-        for list in [WordList.emoji, .lettersDigitsSymbols, .lettersDigits, .lettersSymbols, .letters, .digits] {
+        for list in [WordList.lettersDigitsSymbols, .lettersDigits] {
             #expect(list.kind == .characters, "\(list)")
             #expect(list.longestWordLength == 1, "\(list)")
             #expect(list.words.allSatisfy { $0.count == 1 }, "\(list)")
@@ -50,22 +46,10 @@ struct WordListTests {
 
     @Test("the character sets are the literals the format fixes")
     func characterSets() {
-        #expect(WordList.letters.words.joined() == "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
         #expect(WordList.lettersDigits.words.joined() == "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789")
-        #expect(WordList.lettersSymbols.words.joined() == "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz!@#$%&*-_?")
         #expect(
             WordList.lettersDigitsSymbols.words.joined()
                 == "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*-_?")
-        #expect(WordList.digits.words.joined() == "0123456789")
-    }
-
-    @Test("the emoji are single code points with emoji presentation")
-    func emoji() {
-        let words = WordList.emoji.words
-        #expect(words.count == 512)
-        #expect(words.allSatisfy { $0.unicodeScalars.count == 1 })
-        #expect(words.allSatisfy { $0.unicodeScalars.first!.properties.isEmojiPresentation })
-        #expect(words.allSatisfy { !$0.unicodeScalars.first!.properties.isEmojiModifier })
     }
 
     // An entry is chosen by its position, so these digests pin every list's order.
@@ -74,7 +58,6 @@ struct WordListTests {
         #expect(digest(WordList.en512.words) == "773113b55c0a6adcf4df3b4b43187f37a2fe7a8a104ce4b2f898bb72d99aa07d")
         #expect(digest(WordList.en1024.words) == "dbf28ffbc01379ca990e2c49158383f4b33ba98c00e306b62033fc866caf7fec")
         #expect(digest(WordList.effLarge.words) == "abae49761b88f3f1ba31ef944bea1f61b795a3cd7e1cfb7d276ed45bf77967ba")
-        #expect(digest(WordList.emoji.words) == "2acc84de6b421f968108f2fefa328c2af9464e2f43a1969844ab120d2e954987")
         #expect(
             digest(WordList.lettersDigitsSymbols.words)
                 == "6ced8e1e5836dcde85405bde1a77f0d49834567aead5b3a3328b79ccf1b76d09")
@@ -115,7 +98,6 @@ struct WordListTests {
         #expect(abs(WordList.effLarge.bitsPerEntry - 12.925) < 0.001)
         #expect(Int(WordList.effLarge.bits(forWords: 6)) == 77)
         #expect(Int(WordList.lettersDigitsSymbols.bits(forWords: 20)) == 121)
-        #expect(Int(WordList.digits.bits(forWords: 6)) == 19)
         #expect(WordList.en512.maximumLengthInBits == 9180)
         #expect(WordList.en1024.maximumLengthInBits == 10200)
     }

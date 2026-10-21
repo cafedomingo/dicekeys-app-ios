@@ -123,21 +123,17 @@ struct PasswordFormatterTests {
         #expect(entries.map(\.quotient) == [17, 3, 9, 0])
     }
 
-    @Test("character sets concatenate, and emoji count one each when truncated")
+    @Test("character sets concatenate")
     func characters() {
         let secret = blocks([0, 1, 9, 66])  // A, B, j... on the 67 set: indices into the literal
         let password = PasswordFormatter.password(
             from: secret, wordList: .lettersDigitsSymbols, joining: .modern(separator: .empty, capitalize: false),
             lengthInChars: nil)
         #expect(password == "AB" + WordList.lettersDigitsSymbols.words[9] + "?")
-        let pin = PasswordFormatter.password(
-            from: blocks([0, 10, 29]), wordList: .digits, joining: .modern(separator: .empty, capitalize: false),
-            lengthInChars: nil)
-        #expect(pin == "009")
-        let emoji = PasswordFormatter.password(
-            from: blocks([0, 1, 2]), wordList: .emoji, joining: .modern(separator: .empty, capitalize: false),
+        let truncated = PasswordFormatter.password(
+            from: blocks([0, 1, 2]), wordList: .lettersDigits, joining: .modern(separator: .empty, capitalize: false),
             lengthInChars: 2)
-        #expect(emoji == WordList.emoji.words[0] + WordList.emoji.words[1])
+        #expect(truncated == "AB")
     }
 
     @Test("lengthInChars truncates a modern password after its words are joined")

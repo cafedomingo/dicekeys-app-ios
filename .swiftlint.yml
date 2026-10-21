@@ -39,7 +39,7 @@ unused_import:
   allowed_transitive_imports:
     - module: Foundation
       allowed_transitive_imports: [CoreFoundation, CoreGraphics, Darwin, Dispatch, ObjectiveC]
-# Colors come from Colors.xcassets (see docs/ARCHITECTURE.md, "Colors"). The package in
+# Colors are system styles, the accent, or the camera colors in Colors.xcassets. The package in
 # Packages/ is outside these rules: it cannot see the app's catalog, and its scanner overlay
 # writes bytes, not UI.
 custom_rules:

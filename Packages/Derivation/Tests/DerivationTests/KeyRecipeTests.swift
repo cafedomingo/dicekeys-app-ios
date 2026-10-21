@@ -87,7 +87,7 @@ func invisibleCharactersAreRejected(_ name: String) {
 /// RFC 8785 section 3.2.2.2 escaping and section 3.2.3 ordering by UTF-16 code units, under
 /// which U+1F600 (a surrogate pair starting 0xD83D) sorts before U+FB33.
 @Test func canonicalJSON() {
-    #expect(CanonicalJSON.string("a\"b\\c\u{1}\n\u{7F}é") == #""a\"b\\c\u0001\n\#u{7F}é""#)
+    #expect(quotedJsonString("a\"b\\c\u{1}\n\u{7F}é") == #""a\"b\\c\u0001\n\#u{7F}é""#)
     #expect(
         CanonicalJSON.object(["\u{FB33}": .integer(1), "\u{1F600}": .boolean(true), "a": .string("x")])
             == "{\"a\":\"x\",\"\u{1F600}\":true,\"\u{FB33}\":1}")

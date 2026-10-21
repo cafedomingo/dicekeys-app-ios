@@ -30,9 +30,6 @@ struct Vector: Decodable, Sendable, CustomTestStringConvertible {
     let openSshPublicKey: String?
     let sshComment: String?
     let openSshPemPrivateKey: String?
-    let pgpUserId: String?
-    let pgpTimestamp: UInt32?
-    let openPgpPemFormatSecretKey: String?
 
     var derivableType: DerivableType? { DerivableType(rawValue: type) }
 }

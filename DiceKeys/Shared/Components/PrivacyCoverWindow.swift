@@ -19,6 +19,8 @@ import UIKit
 /// posting thread, so the window is up before the notification returns.
 @MainActor
 final class PrivacyCoverWindowController {
+    private static let fadeDuration: TimeInterval = 0.25
+
     /// One cover per scene, keyed by scene identity: a window belongs to the scene it was
     /// made for, so it cannot stand in for another one, and iPadOS can show several scenes
     /// of this app at once. Dropped when the scene disconnects, which iOS can do to a
@@ -41,39 +43,37 @@ final class PrivacyCoverWindowController {
         observers.forEach(NotificationCenter.default.removeObserver)
     }
 
+    /// `assumeIsolated` is safe because `queue: nil` delivers on the posting thread, and UIKit
+    /// posts scene lifecycle notifications on the main thread.
     private func observe(_ name: Notification.Name, _ handler: @escaping @MainActor (UIWindowScene) -> Void) {
         observers.append(
             NotificationCenter.default.addObserver(forName: name, object: nil, queue: nil) { note in
                 guard let scene = note.object as? UIWindowScene else { return }
-                // Safe because `queue: nil` delivers on the posting thread, and UIKit posts
-                // scene lifecycle notifications on the main thread.
                 MainActor.assumeIsolated { handler(scene) }
             }
         )
     }
 
+    /// No animation, and any fade still running is cut short: the snapshot is taken as soon
+    /// as this returns and would otherwise catch a half-faded cover.
     private func show(over scene: UIWindowScene) {
         let key = ObjectIdentifier(scene)
         let window = coverWindows[key] ?? makeWindow(over: scene)
         coverWindows[key] = window
-        // No animation, and any fade still running is cut short rather than left to play
-        // out: the snapshot is taken as soon as this returns and would otherwise catch a
-        // half-faded cover.
         window.layer.removeAllAnimations()
         window.alpha = 1
         window.isHidden = false
     }
 
+    /// iOS can deliver foregrounding twice in quick succession, so a running fade is cut
+    /// first. The window is hidden only if the fade finished: going back to the background
+    /// mid-fade has `show` restore the alpha, and then the cover has to stay up.
     private func hide(over scene: UIWindowScene) {
         guard let window = coverWindows[ObjectIdentifier(scene)] else { return }
-        // iOS can deliver foregrounding twice in quick succession; a second fade layered on
-        // the first would leave the window at some middling alpha.
         window.layer.removeAllAnimations()
-        UIView.animate(withDuration: 0.25) {
+        UIView.animate(withDuration: Self.fadeDuration) {
             window.alpha = 0
         } completion: { _ in
-            // Unless the scene went back to the background mid-fade, in which case `show`
-            // has already restored the alpha and the cover has to stay up.
             if window.alpha == 0 { window.isHidden = true }
         }
     }
@@ -82,12 +82,11 @@ final class PrivacyCoverWindowController {
         coverWindows.removeValue(forKey: ObjectIdentifier(scene))
     }
 
+    /// Above every context the app can present into (sheets, alerts, the keyboard), and
+    /// never key: the app is on its way out when it appears.
     private func makeWindow(over scene: UIWindowScene) -> UIWindow {
         let window = UIWindow(windowScene: scene)
-        // Above every context the app can present into: sheets, alerts and the keyboard.
-        // Not above system chrome such as the screenshot flash, which does not matter.
         window.windowLevel = .alert + 1
-        // Never becomes key, and swallows nothing: the app is on its way out when it appears.
         window.isUserInteractionEnabled = false
         let host = UIHostingController(rootView: PrivacyCoverView())
         host.view.backgroundColor = .clear

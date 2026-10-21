@@ -267,34 +267,30 @@ struct RecipeTests {
 
     @Test("a character set joins one way and takes its length in characters")
     func characterSets() throws {
-        let pin = try Recipe(json: #"{"wordList":"CHARS_10_digits_20261002","lengthInChars":6}"#, type: .password)
-        #expect(pin.lengthInWords == 6)
-        #expect(pin.lengthInBytes == 48)
-        #expect(pin.lengthInChars == 6)
-        #expect(pin.joining == .modern(separator: .empty, capitalize: false))
-        let emoji = try Recipe(json: #"{"wordList":"EMOJI_512_single_code_point_20261002"}"#, type: .password)
-        #expect(emoji.lengthInWords == 15)
+        let chars = WordList.lettersDigits.rawValue
+        let short = try Recipe(json: #"{"wordList":"\#(chars)","lengthInChars":6}"#, type: .password)
+        #expect(short.lengthInWords == 6)
+        #expect(short.lengthInBytes == 48)
+        #expect(short.lengthInChars == 6)
+        #expect(short.joining == .modern(separator: .empty, capitalize: false))
         let words = try Recipe(
             json: #"{"wordList":"CHARS_67_letters_digits_symbols_20261002","lengthInWords":10,"lengthInChars":4}"#,
             type: .password)
         #expect(words.lengthInWords == 10)
         #expect(words.lengthInChars == 4)
         #expect(
-            try Recipe(json: #"{"wordList":"CHARS_49_letters_20261002","lengthInChars":1020}"#, type: .password)
-                .lengthInWords == 1020)
+            try Recipe(json: #"{"wordList":"\#(chars)","lengthInChars":1020}"#, type: .password).lengthInWords == 1020)
         #expect(throws: DerivationError.outOfRange(field: "lengthInChars", allowed: 1...1020)) {
-            try Recipe(json: #"{"wordList":"CHARS_10_digits_20261002","lengthInChars":1021}"#, type: .password)
+            try Recipe(json: #"{"wordList":"\#(chars)","lengthInChars":1021}"#, type: .password)
         }
         #expect(
-            try Recipe(
-                json: #"{"wordList":"CHARS_10_digits_20261002","separator":"","capitalize":false}"#, type: .password
-            )
-            .joining == .modern(separator: .empty, capitalize: false))
+            try Recipe(json: #"{"wordList":"\#(chars)","separator":"","capitalize":false}"#, type: .password)
+                .joining == .modern(separator: .empty, capitalize: false))
         #expect(throws: DerivationError.invalidJoining) {
-            try Recipe(json: #"{"wordList":"CHARS_10_digits_20261002","separator":"-"}"#, type: .password)
+            try Recipe(json: #"{"wordList":"\#(chars)","separator":"-"}"#, type: .password)
         }
         #expect(throws: DerivationError.invalidJoining) {
-            try Recipe(json: #"{"wordList":"EMOJI_512_single_code_point_20261002","capitalize":true}"#, type: .password)
+            try Recipe(json: #"{"wordList":"\#(chars)","capitalize":true}"#, type: .password)
         }
     }
 

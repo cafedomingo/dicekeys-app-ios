@@ -33,6 +33,18 @@ public enum PassphraseStyle: Hashable, Codable, Sendable {
     public static let randomLengths = 12...64
     public static let memorableWords = 4...10
     public static let standard = PassphraseStyle.random(length: 24, symbols: false)
+    public static let standardMemorable = PassphraseStyle.memorable(words: 6, digitAndCapital: false)
+
+    /// Exact, since every character or word is uniform; the separator digits and the
+    /// capital add a little that this leaves out.
+    public var bits: Double {
+        switch self {
+        case .random(let length, let symbols): Double(length) * Self.characterList(symbols: symbols).bitsPerEntry
+        case .memorable(let words, _): Double(words) * WordList.effLarge.bitsPerEntry
+        }
+    }
+
+    static func characterList(symbols: Bool) -> WordList { symbols ? .lettersDigitsSymbols : .lettersDigits }
 
     var isInRange: Bool {
         switch self {
@@ -107,7 +119,7 @@ public struct KeyRecipe: Hashable, Sendable {
             break
         case .random(let length, let symbols):
             fields[Recipe.lengthInCharsField] = .integer(length)
-            fields[Recipe.wordListField] = .string((symbols ? WordList.lettersDigitsSymbols : .lettersDigits).rawValue)
+            fields[Recipe.wordListField] = .string(PassphraseStyle.characterList(symbols: symbols).rawValue)
         case .memorable(let words, let digitAndCapital):
             fields[Recipe.lengthInWordsField] = .integer(words)
             fields[Recipe.separatorField] = .string(
@@ -128,34 +140,16 @@ enum CanonicalJSON {
         case boolean(Bool)
     }
 
-    private static let shortEscapes: [Unicode.Scalar: String] = [
-        "\"": "\\\"", "\\": "\\\\", "\u{08}": "\\b", "\u{0C}": "\\f", "\n": "\\n", "\r": "\\r", "\t": "\\t"
-    ]
-    private static let lastControlCharacter: UInt32 = 0x1F
-
+    /// JCS escapes strings as `JSON.stringify` does, which `quotedJsonString` implements.
     static func object(_ fields: [String: Value]) -> String {
         let members = fields.sorted { $0.key.utf16.lexicographicallyPrecedes($1.key.utf16) }
-            .map { string($0.key) + ":" + value($0.value) }
+            .map { quotedJsonString($0.key) + ":" + value($0.value) }
         return "{" + members.joined(separator: ",") + "}"
-    }
-
-    static func string(_ text: String) -> String {
-        var escaped = "\""
-        for scalar in text.unicodeScalars {
-            if let short = shortEscapes[scalar] {
-                escaped += short
-            } else if scalar.value <= lastControlCharacter {
-                escaped += String(format: "\\u%04x", scalar.value)
-            } else {
-                escaped.unicodeScalars.append(scalar)
-            }
-        }
-        return escaped + "\""
     }
 
     private static func value(_ value: Value) -> String {
         switch value {
-        case .string(let text): string(text)
+        case .string(let text): quotedJsonString(text)
         case .integer(let number): String(number)
         case .boolean(let flag): flag ? "true" : "false"
         }

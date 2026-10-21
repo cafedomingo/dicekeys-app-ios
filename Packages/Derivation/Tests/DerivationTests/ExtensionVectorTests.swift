@@ -44,7 +44,6 @@ let extensionFixture: ExtensionFixture = {
 /// Every case the fixture holds. Add here, regenerate, and never remove or edit a line.
 private let recipes: [(name: String, recipe: String)] = {
     let eff = WordList.effLarge.rawValue
-    let emoji = WordList.emoji.rawValue
     var list: [(String, String)] = [
         ("EFF default length", #"{"wordList":"\#(eff)"}"#),
         ("EFF 6 words hyphens", #"{"lengthInWords":6,"separator":"-","wordList":"\#(eff)"}"#),
@@ -55,9 +54,6 @@ private let recipes: [(name: String, recipe: String)] = {
         ("512 reference still", #"{"purpose":"x"}"#),
         ("512 modern one word", #"{"lengthInWords":1,"separator":"digits","capitalize":true}"#),
         ("1024 reference truncated", #"{"lengthInChars":20,"wordList":"EN_1024_words_6_chars_max_ed_4_20200917"}"#),
-        ("emoji default", #"{"wordList":"\#(emoji)"}"#),
-        ("emoji 6", #"{"lengthInChars":6,"wordList":"\#(emoji)"}"#),
-        ("emoji words then truncated", #"{"lengthInChars":4,"lengthInWords":10,"wordList":"\#(emoji)"}"#),
         (
             "chars 67 words and chars",
             #"{"lengthInChars":4,"lengthInWords":10,"wordList":"\#(WordList.lettersDigitsSymbols.rawValue)"}"#
@@ -67,11 +63,9 @@ private let recipes: [(name: String, recipe: String)] = {
         list.append(
             ("512 6 words separator \(separator)", #"{"lengthInWords":6,"separator":"\#(separator.rawValue)"}"#))
     }
-    for set in [WordList.lettersDigitsSymbols, .lettersDigits, .lettersSymbols, .letters] {
+    for set in [WordList.lettersDigitsSymbols, .lettersDigits] {
         list.append(("\(set) 20", #"{"lengthInChars":20,"wordList":"\#(set.rawValue)"}"#))
     }
-    list.append(("PIN 6", #"{"lengthInChars":6,"wordList":"\#(WordList.digits.rawValue)"}"#))
-    list.append(("PIN 12", #"{"lengthInChars":12,"wordList":"\#(WordList.digits.rawValue)"}"#))
     return list
 }()
 
