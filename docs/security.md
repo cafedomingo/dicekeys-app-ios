@@ -23,23 +23,36 @@ it can't.
 
 The catalog holds what is needed to derive each key again and nothing that unlocks one:
 
-- per DiceKey: its id, its name, and its center face;
-- per key: the DiceKey's id, the kind, the name, the passphrase style, the public key, the
+- per DiceKey: its id, its name, its center die (one face's letter, digit and turn) and the
+  date it was first seen;
+- per key: the DiceKey's id, the kind, the name, the passphrase style, the public key and the
   date.
 
-With iCloud sync (not yet built) this goes to the user's private CloudKit database. That is
-safe because:
+With Sync with iCloud on (Settings; off by default) this goes to the user's private CloudKit
+database, `iCloud.com.cafedomingo.dicekeys`, through SwiftData. That is safe because:
 
 - **The id is one-way.** It is a 16-byte HKDF output from the DiceKey's 196 bits; nothing
   about the dice can be recovered from it, and checking a guess needs the guess.
 - **Public keys are public.** They are made to be handed out, and a name says only what the
   key is for.
 - **Nothing derives without the dice.** Kind, name and style are inputs, not secrets; without
-  the physical DiceKey they open nothing.
+  the physical DiceKey they open nothing. The center die is one face of 25, about 8 of the
+  DiceKey's 196 bits, shown so the user can tell boxes apart.
 - The DiceKey itself never syncs. Each device scans it, or keeps its own keychain copy.
 
 What Apple could see is metadata: that a key named "wallet" exists, not the wallet. With
-Advanced Data Protection the catalog is end-to-end encrypted.
+Advanced Data Protection the catalog is end-to-end encrypted. Turning sync off stops syncing
+but leaves the iCloud copy; delete it under the device's iCloud storage settings.
+
+A change to the switch applies at the next launch: the store opens once per launch, since two
+CloudKit mirrors of one store file aren't supported. If the synced store won't open, the app
+opens the same store without sync and Settings says why, rather than failing every launch.
+Changes from other devices can arrive any time after the device's first unlock.
+
+Two devices that each scan a DiceKey before they sync make a record each. One stands for the
+DiceKey everywhere, the same one on every device: a renamed one over one still named for its
+center die, then the oldest. Forget removes them all. Keys need no such step: they are told
+apart by what they derive, so copies of one key show once.
 
 ## On screen
 

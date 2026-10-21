@@ -77,7 +77,7 @@ struct ContentView: View {
         case .scan:
             LoadScreen(onLoaded: load)
         case .diceKey(let id):
-            if let record = records.first(where: { $0.diceKeyID == id }) {
+            if let record = records.uniqueDiceKeys.first(where: { $0.diceKeyID == id }) {
                 DiceKeyScreen(
                     record: record, path: $path,
                     onScan: { sidebarSelection = .scan },

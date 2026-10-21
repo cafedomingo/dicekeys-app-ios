@@ -17,6 +17,7 @@ struct DiceKeyList: View {
     @Query(sort: [SortDescriptor(\KeyEntry.name), SortDescriptor(\KeyEntry.created)]) private var entries: [KeyEntry]
     @Environment(UnlockedDiceKeys.self) private var unlocked
     @State private var keyToDelete: KeyEntry?
+    @State private var isShowingSettings = false
 
     var body: some View {
         Group {
@@ -24,7 +25,7 @@ struct DiceKeyList: View {
                 FirstDiceKey(onScan: onScan)
             } else {
                 List(selection: $selection) {
-                    ForEach(records) { record in
+                    ForEach(records.uniqueDiceKeys) { record in
                         section(for: record)
                     }
                 }
@@ -39,7 +40,11 @@ struct DiceKeyList: View {
                     Button("Scan DiceKey", systemImage: "camera.viewfinder", action: onScan)
                 }
             }
+            ToolbarItem {
+                Button("Settings", systemImage: "gearshape") { isShowingSettings = true }
+            }
         }
+        .sheet(isPresented: $isShowingSettings) { SettingsView() }
     }
 
     private func section(for record: DiceKeyRecord) -> some View {
