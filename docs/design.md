@@ -40,7 +40,7 @@ The icon is a layered Icon Composer icon: a navy ground, with the DiceKey grid a
 - The neutrals are iOS's own: `ink` and `ink-muted` text, `bg-raised` rows and `line` separators come from stock components, so dark mode and Increase Contrast work without a custom palette. The one custom neutral is the ground, `bg`, washed with `bg-tint` at the top so grouped rows read as raised.
 - `accent` (indigo) is the one hue. It marks the moment the machine reads something: a die just read, the selected die, and the primary action. Use it as a fill only, and put `on-accent` text on it. When the accent needs to be text or a mark, use `accent-ink`, which is also the app's tint; `accent-soft` is the ground of a key's kind icon.
 - The primary action is `accent` with an `on-accent` label: the glass-prominent tint, in both themes. Allow one per screen.
-- `danger` means only destruction. A misread die is told in words under the camera, in `ink-muted`. Success has no color of its own; a passphrase's strength bar is the one graded scale (`strength-weak` to `strength-strong`).
+- `danger` means only destruction, and the recovery sheet's warning that the page is the DiceKey. A misread die is told in words under the camera, in `ink-muted`. Success has no color of its own; a passphrase's strength bar is the one graded scale (`strength-weak` to `strength-strong`).
 - The camera image sits on `camera` black, whatever the theme, with `camera-dim` over everything but the dice being read.
 - A die is drawn as the real one looks: a light `die-face` with an `on-die` glyph, set in the dark `die-box`.
 
@@ -68,7 +68,7 @@ Motion is limited to state changes, and the system's own: lists animate rows in 
 
 ## Iconography
 
-Use SF Symbols on Apple platforms, at the text's weight, colored `ink` or `ink-muted`. Use `accent-ink` for a plain-button icon and `danger` for a destructive one. On other desktops, use the closest outline equivalent at a 1.5px stroke. The kinds are: SSH `terminal`, WireGuard `network`, age `lock.doc`, Passphrase `key`, Wallet `list.number`. The actions are `camera.viewfinder`, `keyboard`, `eye`, `doc.on.doc`, `square.and.arrow.up`, `printer`, `trash`. The app icon stands in for a logo. Where the app shows it, as on the cover the app switcher sees, `AppMark` draws its grid from the tokens, without the ground: `accent` dice with `on-accent` bars. Wherever a wordmark would go, set the name in `title` type.
+Use SF Symbols on Apple platforms, at the text's weight, colored `ink` or `ink-muted`. Use `accent-ink` for a plain-button icon and `danger` for a destructive one. On other desktops, use the closest outline equivalent at a 1.5px stroke. The kinds are: SSH `terminal`, WireGuard `network`, age `lock.doc`, Passphrase `key`, Wallet `list.number`. The actions are `camera.viewfinder`, `keyboard`, `eye`, `doc.on.doc`, `square.and.arrow.up`, `printer`, `exclamationmark.lock` (the recovery sheet), `trash`. The app icon stands in for a logo. Where the app shows it, as on the cover the app switcher sees, `AppMark` draws its grid from the tokens, without the ground: `accent` dice with `on-accent` bars. Wherever a wordmark would go, set the name in `title` type.
 
 ## Tokens
 
@@ -86,8 +86,8 @@ In code a token keeps its name in lower camel case: the color sets in `DiceKeys/
 | `on-accent` | `#ffffff` | `#ffffff` | Text and icons on `accent` (5:1 or better). |
 | `accent-ink` | `#3f3fb5` | `#8f8cff` | The app's tint: accent as text and marks, such as links, plain buttons, a kind's icon and the lock countdown. 5.6:1 or better on `bg` and `bg-raised` in both themes. |
 | `accent-soft` | `#e4e4f7` | `#33317a` | Ground of a key's kind icon, under `accent-ink`. |
-| `danger` | `#b81d16` | `#ff7b6b` | Destructive actions. Always with a word or an icon. 5.4:1 or better on `bg` and `bg-raised` in both themes. |
-| `die-face` | `#fbfbf7` | `#e8eae2` | A die's face, and a concealed die. |
+| `danger` | `#b81d16` | `#ff7b6b` | Destructive actions and the recovery sheet's warning band. Always with a word or an icon. 5.4:1 or better on `bg` and `bg-raised` in both themes. |
+| `die-face` | `#fbfbf7` | `#e8eae2` | A die's face, a concealed die, and the recovery sheet's concealed code. |
 | `on-die` | `#121411` | `#121411` | A die's glyph and bar, and its faint shadow. |
 | `die-box` | `#24244a` | `#16162e` | The ground the 25 dice sit in. |
 | `camera` | `#000000` | `#000000` | Behind the live camera image, in every theme. |
@@ -129,7 +129,7 @@ Sheets, rows and buttons take their corners from the system; buttons are capsule
 
 ## In the app
 
-- **Home** gives each DiceKey a section: its center die, name and status ("Locked · 4 keys", "Locks in 0:42"), then its keys, then New key while it is unlocked, so a key is one tap away. A DiceKey kept on this device unlocks from its row with Face ID. Scan DiceKey sits in the toolbar, since scanning is rare once DiceKeys are kept. Before the first DiceKey, home is the app mark, one line and Scan your DiceKey as the primary action.
+- **Home** gives each DiceKey a section: its center die, name and status ("Locked · 4 keys", "Locks in 0:42"), then its keys, then New key while it is unlocked, so a key is one tap away. A DiceKey kept on this device unlocks from its row with Face ID. Scan DiceKey sits in the toolbar, since scanning is rare once DiceKeys are kept. Before the first DiceKey, home is the app mark, one line and Scan your DiceKey as the primary action, with a footnote that paper restores the same way.
 - **The DiceKey grid** (`DiceKeyGrid`, `DieView`) is the only way a DiceKey is drawn. The center die alone (`DiceAvatar`) identifies a DiceKey in lists, whatever it is named.
 - **A DiceKey's screen** opens with its avatar, name and status ("2 keys · unlocked", or "New DiceKey · no keys yet" with "Used this DiceKey before? A die may be misread" and Scan again), then the concealed grid, then its keys. A new DiceKey is also the normal first run, so the notice is plain, not an error.
 - **Keeping a DiceKey on this device** is offered whenever a DiceKey that isn't kept is scanned or typed, in an alert as its screen opens: Keep on this device or Not now. Kept, it unlocks with Face ID or the passcode; not kept, it is read again each time it locks. The DiceKey's menu changes the choice later.
@@ -138,4 +138,5 @@ Sheets, rows and buttons take their corners from the system; buttons are capsule
 - **Key rows** show the name and the kind, never a status or any part of a secret. Kinds aren't color-coded; spell them as their tools do ("age", "WireGuard").
 - **New key** is a live draft in the detail column, never a sheet: kind, name, and the public key and fingerprint updating as you type. Save is the one primary action.
 - **A key** opens with a centered header, not a table: its kind's icon tile, its name in `title` type in place of the navigation title, and its kind and date. It shows its public half in full, always, and its secret only after Reveal, never as dots or a length hint. Reveal is the primary action and sits where the secret will show, whether the DiceKey is unlocked or Face ID unlocks it first. Each value has the same two actions, Copy and Share, side by side under it; copying a secret is local only and says when it clears, and SSH and age identities share as the file their tool reads. A wallet's recovery phrase is the one exception: it is written down, never copied or shared. A key is deleted by swiping its row or from its screen, after a confirmation that says how to make it again.
+- **Paper** comes in two pieces, each previewed in a sheet that shows the page exactly as it prints, with Print as the primary action and Save as PDF second. The list card, sized for the box, holds the keys and a QR code that restores them, and nothing secret. The recovery sheet is the DiceKey on paper: it asks for Face ID first, stays concealed until Show, warns before saving a file, and can't be printed while the screen is shared. The camera reads both codes and asks before loading either. Printed pages are laid out in points on the page, not with the screen's spacing tokens, and print in the light appearance.
 - **Buttons**: one glass-prominent primary action per screen; Forget is destructive and always confirmed.

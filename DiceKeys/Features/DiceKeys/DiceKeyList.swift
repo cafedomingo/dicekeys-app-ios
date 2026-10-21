@@ -174,6 +174,10 @@ private struct FirstDiceKey: View {
             }
             .primaryAction()
             .controlSize(.extraLarge)
+            Text("Restoring from a list card or recovery sheet? Scan its code the same way.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
         .padding()
     }

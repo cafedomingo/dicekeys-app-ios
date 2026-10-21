@@ -18,12 +18,15 @@ struct DiceKeyScreen: View {
 
     @Environment(UnlockedDiceKeys.self) private var unlocked
     @Environment(SavedDiceKeys.self) private var saved
+    @Environment(\.modelContext) private var context
     @Environment(\.isSceneCaptured) private var isSceneCaptured
     @Query private var entries: [KeyEntry]
     @State private var isGridShown = false
     @State private var isRenaming = false
     @State private var isConfirmingForget = false
     @State private var keyToDelete: KeyEntry?
+    @State private var isShowingListCard = false
+    @State private var isShowingRecoverySheet = false
     @State private var error: PresentableError?
 
     init(
@@ -83,6 +86,9 @@ struct DiceKeyScreen: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbar { toolbar }
         .concealsWhenExposed($isGridShown)
+        .task(id: diceKey?.id) {
+            if let diceKey { try? context.fillPublicKeys(for: diceKey) }
+        }
         .alert("Rename DiceKey", isPresented: $isRenaming) {
             RenameField(record: record)
         }
@@ -92,7 +98,36 @@ struct DiceKeyScreen: View {
             Text("The keys can be made again from the dice, if you remember their names.")
         }
         .confirmsKeyDeletion($keyToDelete, onDelete: onDelete)
+        .sheet(isPresented: $isShowingListCard) {
+            PaperPreview(title: "List card", filename: "\(record.name) list card", isSecret: false) { _ in
+                ListCardPage(file: CatalogFile(records: [record], entries: entries))
+            }
+        }
+        .sheet(isPresented: $isShowingRecoverySheet) {
+            if let diceKey {
+                PaperPreview(title: "Recovery sheet", filename: "\(record.name) recovery sheet", isSecret: true) {
+                    RecoverySheet(
+                        code: RecoveryCode(diceKey: diceKey, record: record, entries: entries), entries: entries,
+                        concealed: $0)
+                }
+            }
+        }
+        .onChange(of: diceKey == nil) { _, isLocked in
+            if isLocked { isShowingRecoverySheet = false }
+        }
         .errorAlert($error)
+    }
+
+    /// Asks for Face ID or the passcode again first: the sheet is the DiceKey itself.
+    private func makeRecoverySheet() {
+        Task {
+            do {
+                _ = try await DeviceOwner.authenticate(reason: "Make a recovery sheet for \(record.name)")
+                isShowingRecoverySheet = true
+            } catch  where !error.isAuthenticationCancellation {
+                self.error = PresentableError(title: "Couldn't Make the Recovery Sheet", error: error)
+            } catch {}
+        }
     }
 
     @ViewBuilder
@@ -118,15 +153,17 @@ struct DiceKeyScreen: View {
             Button("New key", systemImage: "plus") { path.append(.new) }
                 .disabled(diceKey == nil)
         }
-        ToolbarItem(placement: .secondaryAction) {
-            Menu("More", systemImage: "ellipsis") {
-                if let diceKey {
-                    Toggle("Keep on this device", systemImage: "faceid", isOn: keepsOnDevice(diceKey))
-                    Button("Lock", systemImage: "lock") { unlocked.lock(id: record.diceKeyID) }
-                }
-                Button("Rename", systemImage: "pencil") { isRenaming = true }
-                Button("Forget", systemImage: "trash", role: .destructive) { isConfirmingForget = true }
+        ToolbarItemGroup(placement: .secondaryAction) {
+            if let diceKey {
+                Toggle("Keep on this device", systemImage: "faceid", isOn: keepsOnDevice(diceKey))
+                Button("Lock", systemImage: "lock") { unlocked.lock(id: record.diceKeyID) }
             }
+            Button("List card", systemImage: "printer") { isShowingListCard = true }
+            if diceKey != nil {
+                Button("Recovery sheet", systemImage: "exclamationmark.lock", action: makeRecoverySheet)
+            }
+            Button("Rename", systemImage: "pencil") { isRenaming = true }
+            Button("Forget", systemImage: "trash", role: .destructive) { isConfirmingForget = true }
         }
     }
 

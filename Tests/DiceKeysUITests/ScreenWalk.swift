@@ -72,6 +72,11 @@ final class ScreenWalk: XCTestCase {
         Thread.sleep(forTimeInterval: 0.8)
     }
 
+    /// The toolbar's overflow menu, where secondary actions go on a phone.
+    private func openMenu() {
+        tap(app.navigationBars.buttons["More"].firstMatch, "More")
+    }
+
     private func makeKey(name: String, kind: String? = nil) {
         tap(button("New key"), "New key")
         if let kind {
@@ -131,6 +136,26 @@ final class ScreenWalk: XCTestCase {
         makeKey(name: "nas", kind: "Passphrase")
         makeKey(name: "cold", kind: "Wallet")
         snap("dicekey-with-keys")
+
+        openMenu()
+        snap("dicekey-menu")
+        tap(button("List card"), "List card")
+        snap("list-card-preview", settle: 1.5)
+        tap(button("Print"), "Print")
+        snap("list-card-print", settle: 2)
+        tap(button("Cancel"), "Cancel print")
+        tap(button("Done"), "Done list card")
+        openMenu()
+        tap(button("Recovery sheet"), "Recovery sheet")
+        if app.navigationBars["Recovery sheet"].waitForExistence(timeout: 10) {
+            snap("recovery-sheet-concealed", settle: 1.5)
+            openMenu()
+            tap(button("Show"), "Show sheet")
+            snap("recovery-sheet-shown", settle: 1.5)
+            tap(button("Done"), "Done recovery sheet")
+        } else {
+            XCTFail("no recovery sheet: scripts/screen-walk.sh enrolls Face ID and matches it")
+        }
 
         app.cells.containing(.staticText, identifier: "nas").firstMatch.swipeLeft()
         snap("key-swiped")

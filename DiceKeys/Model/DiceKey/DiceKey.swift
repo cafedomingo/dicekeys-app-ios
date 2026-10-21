@@ -89,7 +89,7 @@ final class DiceKey: Equatable, Sendable {
     var id: String {
         idCache.withLock { cached in
             if let cached { return cached }
-            let id = Self.base64URL(idBytes)
+            let id = idBytes.base64URLEncodedString
             cached = id
             return id
         }
@@ -101,12 +101,5 @@ final class DiceKey: Equatable, Sendable {
         } catch {
             preconditionFailure("The id recipe failed to derive: \(error)")
         }
-    }
-
-    private static func base64URL(_ data: Data) -> String {
-        data.base64EncodedString()
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "=", with: "")
     }
 }

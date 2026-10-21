@@ -10,6 +10,8 @@ public.
 | Derived keys | Memory: while New key shows its draft, which derives the whole key even when only the public half shows, and while revealed on screen | Dropped on Hide, leaving New key, lock, background, screen capture or screenshot |
 | The catalog | SwiftData store, with iOS's default file protection (complete until the first unlock after a restart), so iOS can launch the app before then; it holds nothing secret | Until Forget |
 | A copied secret | Pasteboard, local only (no Universal Clipboard) | 60 seconds, enforced by the system |
+| A list card | Paper, kept in the box | No secret: the same fields as the catalog, without public keys |
+| A recovery sheet | Paper, and a PDF only if saved, or saved from the print dialog | The DiceKey itself, until the paper or file is destroyed |
 | A shared secret | Wherever it is sent from the share sheet, including the sheet's own Copy, which neither stays local nor expires | Up to the destination |
 
 ## The keychain copy
@@ -43,6 +45,23 @@ database, `iCloud.com.cafedomingo.dicekeys`, through SwiftData. That is safe bec
 What Apple could see is metadata: that a key named "wallet" exists, not the wallet. With
 Advanced Data Protection the catalog is end-to-end encrypted. Turning sync off stops syncing
 but leaves the iCloud copy; delete it under the device's iCloud storage settings.
+
+The same catalog can be exported from Settings as a readable JSON file, to keep anywhere
+instead of iCloud, and each DiceKey prints a list card for its box whose QR code restores its
+list. Both hold the same non-secret fields; importing only adds what is missing.
+
+## The recovery sheet
+
+The recovery sheet is the one place the app puts the DiceKey on paper: the grid, the faces
+written out, and a code holding the faces and the list. The owner accepts that risk for some
+uses, so the app makes it deliberate: it asks for Face ID or the passcode first, the preview
+stays concealed until Show and again on background, capture or a screenshot, and it can't be
+printed or saved while the screen is captured. Print goes straight to AirPrint and leaves no
+file, though the system's print dialog can still share the page as a PDF; Save as PDF warns
+first. The preview on screen is an image of the page, so its text can't be selected or
+copied. The code is text with its own prefix, not a link, so the faces
+never pass through iOS link handling, and it is an Aztec code rather than a QR code so the
+Camera app doesn't offer to search its text. Restoring asks first, and asks in the same alert whether to keep the DiceKey on this device.
 
 A change to the switch applies at the next launch: the store opens once per launch, since two
 CloudKit mirrors of one store file aren't supported. If the synced store won't open, the app
