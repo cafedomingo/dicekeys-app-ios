@@ -26,6 +26,10 @@
 #
 # Internal testers (people on your team) get the build once Apple finishes processing
 # it. External testers additionally need App Review.
+#
+# With an API key, the script then keeps the App Store version waiting for submission in
+# step: it renames it to this upload's version and attaches the build once Apple has
+# processed it (scripts/app-store-version.py). Without one, do that by hand.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -97,3 +101,10 @@ xcodebuild -exportArchive \
     ${AUTH[@]+"${AUTH[@]}"}
 
 echo "Uploaded $MARKETING_VERSION ($BUILD_NUMBER); it reaches TestFlight when Apple finishes processing."
+
+if [[ -n "${ASC_KEY_PATH:-}" ]]; then
+    BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleIdentifier' "$ARCHIVE/Info.plist")"
+    python3 scripts/app-store-version.py "$BUNDLE_ID" "$MARKETING_VERSION" "$BUILD_NUMBER"
+else
+    echo "In App Store Connect, rename the App Store version to $MARKETING_VERSION and attach this build."
+fi
