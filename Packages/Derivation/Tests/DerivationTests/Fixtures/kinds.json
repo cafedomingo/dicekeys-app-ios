@@ -1,0 +1,1889 @@
+{
+ "origin": "scripts/derive-kinds.py",
+ "cases": [
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"ssh:github\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC1tGk3wqxyFVT6ECwjTH1WBJmchczYlObgy+pvht0ac github",
+   "fingerprint": "SHA256:Ur+UJLmQJKNZAjuo8LsCwL+4AJCCQRa+jkdNwUQA4v8",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAtbRpN8KschVU+hAsI0x9VgSZnIXM2JTm4Mvqb4bdGnAAA\nAJBS/6pzUv+qcwAAAAtzc2gtZWQyNTUxOQAAACAtbRpN8KschVU+hAsI0x9VgSZn\nIXM2JTm4Mvqb4bdGnAAAAEBv4ycnC4O/MD6dODfxBL86EJMDrrTx7dqScpuTFCTo\n/S1tGk3wqxyFVT6ECwjTH1WBJmchczYlObgy+pvht0acAAAABmdpdGh1YgECAwQF\nBgc=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"ssh:homelab host\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA9XoY/kTj/SfoAoN4h9J7/tfpTv2CgTmp63KANcfItA homelab host",
+   "fingerprint": "SHA256:8KO00zk9AEbz8RdEYLgrnw7Kl8zr++OkE/0S17vHIu0",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAPV6GP5E4/0n6AKDeIfSe/7X6U79goE5qetygDXHyLQAAA\nAJBmFupOZhbqTgAAAAtzc2gtZWQyNTUxOQAAACAPV6GP5E4/0n6AKDeIfSe/7X6U\n79goE5qetygDXHyLQAAAAEBcJjGg+0gSxu3EgX3SG2JZWr1lqvMER3mvaDqBO3bZ\nwg9XoY/kTj/SfoAoN4h9J7/tfpTv2CgTmp63KANcfItAAAAADGhvbWVsYWIgaG9z\ndAE=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"ssh:Ünïcode café\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFMaLIfTLVvc730Zosvwwa+osmol9NPrZEtJCB8R44s0 Ünïcode café",
+   "fingerprint": "SHA256:apTgSChtEjQjwZ80edDQoPSxUUtPGzyM2Zi6f3UWLtw",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACBTGiyH0y1b3O99GaLL8MGvqLJqJfTT62RLSQgfEeOLNAAA\nAJhrHBo8axwaPAAAAAtzc2gtZWQyNTUxOQAAACBTGiyH0y1b3O99GaLL8MGvqLJq\nJfTT62RLSQgfEeOLNAAAAED8ZJpBhTVBR3o1zcsE3b2EzKQQea85jLOL2nXQc/TY\n5FMaLIfTLVvc730Zosvwwa+osmol9NPrZEtJCB8R44s0AAAAD8OcbsOvY29kZSBj\nYWbDqQECAwQFBg==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"ssh:quote \\\" and \\\\ backslash\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBDDsU8hLUJOgmhaVVrW/vbHJFu6nhfmU5phH7ZYnPnV quote \" and \\ backslash",
+   "fingerprint": "SHA256:wrV0GU7XAEJDvcAcRCY7mr35MHySMCBLnth9OQ34fgY",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAQw7FPIS1CToJoWlVa1v72xyRbup4X5lOaYR+2WJz51QAA\nAKAJbDD9CWww/QAAAAtzc2gtZWQyNTUxOQAAACAQw7FPIS1CToJoWlVa1v72xyRb\nup4X5lOaYR+2WJz51QAAAEC9pHB5w8XlBNtGByt8m4nPbss1RjUOIGECf/EtY4w2\n9xDDsU8hLUJOgmhaVVrW/vbHJFu6nhfmU5phH7ZYnPnVAAAAF3F1b3RlICIgYW5k\nIFwgYmFja3NsYXNoAQIDBAUG\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"ssh:trimmed\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINC7MGJ6hyT08uqBSS95MyQ/jgNUg07lMXw4mzvhI5YA trimmed",
+   "fingerprint": "SHA256:fLGJMELNxFk+SztPHsREaZfvZJWSTqHLALGjX9LfSd4",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACDQuzBieock9PLqgUkveTMkP44DVINO5TF8OJs74SOWAAAA\nAJCYTUcjmE1HIwAAAAtzc2gtZWQyNTUxOQAAACDQuzBieock9PLqgUkveTMkP44D\nVINO5TF8OJs74SOWAAAAAEDl4VfEBzR+9YCl24ViNWFimdnXmP+NNFWTRg6Yk7Y6\nitC7MGJ6hyT08uqBSS95MyQ/jgNUg07lMXw4mzvhI5YAAAAAB3RyaW1tZWQBAgME\nBQY=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"ssh:café\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAEoFAhCPzWHap3qXibhI4B/iV43l9YYMVgNXHDTpX91 café",
+   "fingerprint": "SHA256:ELfai8Eie1rZ0utvevMjH6mAbNGsvxyKlHjoj0h0Cec",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACABKBQIQj81h2qd6l4m4SOAf4leN5fWGDFYDVxw06V/dQAA\nAIiaqez5mqns+QAAAAtzc2gtZWQyNTUxOQAAACABKBQIQj81h2qd6l4m4SOAf4le\nN5fWGDFYDVxw06V/dQAAAECCLP73qiOgtaqbWVi8yd+8AUlpKSBWYWIQI3F8le6r\nyQEoFAhCPzWHap3qXibhI4B/iV43l9YYMVgNXHDTpX91AAAABWNhZsOp\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"ssh:́x\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPXNVL80HT9JkSXVyPU2Dz+HR8pUhaHYciFI7O2qiqQw ́x",
+   "fingerprint": "SHA256:0GYDjWPgnkRDNalwuW7II+xmyKvabfaZXwiTTN3vIdM",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACD1zVS/NB0/SZEl1cj1Ng8/h0fKVIWh2HIhSOztqoqkMAAA\nAIiz3N9Us9zfVAAAAAtzc2gtZWQyNTUxOQAAACD1zVS/NB0/SZEl1cj1Ng8/h0fK\nVIWh2HIhSOztqoqkMAAAAEA2Nz7RkPSCZn35rYBqj2axg9iC2NNQ09KwKPnqZLLp\nCfXNVL80HT9JkSXVyPU2Dz+HR8pUhaHYciFI7O2qiqQwAAAAA8yBeAEC\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"ssh:line separator\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILLQqk+gvv2TwgGH3xNIY5+f6n/K0gr6Ys/i/lpSiEgF line separator",
+   "fingerprint": "SHA256:E8M7xMjey/OkEqZiAt+lHhx8rbXBGGF+gIBVWzKFegA",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACCy0KpPoL79k8IBh98TSGOfn+p/ytIK+mLP4v5aUohIBQAA\nAJjzZ8au82fGrgAAAAtzc2gtZWQyNTUxOQAAACCy0KpPoL79k8IBh98TSGOfn+p/\nytIK+mLP4v5aUohIBQAAAEBKOpE04H6QNElym4qjZgB0gQHaUoBEiCSmzrfsMkpK\nFrLQqk+gvv2TwgGH3xNIY5+f6n/K0gr6Ys/i/lpSiEgFAAAAEGxpbmXigKhzZXBh\ncmF0b3IBAgMEBQ==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"ssh:👩‍💻 laptop\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKBYIDmZoLzWTY9eQK5hhkC4eN1n88uF/e7dwz9Lg84J 👩‍💻 laptop",
+   "fingerprint": "SHA256:QQ1p1hYqAS8hZila2GJ+JIKVwlWT3XWtCUs8KjBibDs",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACCgWCA5maC81k2PXkCuYYZAuHjdZ/PLhf3u3cM/S4POCQAA\nAJgW2/coFtv3KAAAAAtzc2gtZWQyNTUxOQAAACCgWCA5maC81k2PXkCuYYZAuHjd\nZ/PLhf3u3cM/S4POCQAAAEAxT7ZZUX7PfFw4fG40T/36IMsE8DwDIxGVcccGHKBK\nFKBYIDmZoLzWTY9eQK5hhkC4eN1n88uF/e7dwz9Lg84JAAAAEvCfkanigI3wn5K7\nIGxhcHRvcAECAw==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"ssh:🧨\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIESo1nXKvZKsijnSGkIAnnGk4pni5LmqrDpgWcK4UUiu 🧨",
+   "fingerprint": "SHA256:2fza5sl9mRkSZLmGPVpSydqiL+Qale24Z0Xv0ZMZfzk",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACBEqNZ1yr2SrIo50hpCAJ5xpOKZ4uS5qqw6YFnCuFFIrgAA\nAIgRoIwBEaCMAQAAAAtzc2gtZWQyNTUxOQAAACBEqNZ1yr2SrIo50hpCAJ5xpOKZ\n4uS5qqw6YFnCuFFIrgAAAEDHZrypGkhjNIta6h9MpgjEwemEqUjOnLdVmSYsTSgQ\nlkSo1nXKvZKsijnSGkIAnnGk4pni5LmqrDpgWcK4UUiuAAAABPCfp6gB\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"ssh:🇺🇸 & 👍🏽\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII7jxGb6R7QY0+KptiVzceU5fSuaYqrRgxgvs2KoHAw8 🇺🇸 & 👍🏽",
+   "fingerprint": "SHA256:/613nFc/+I1Al2cRfKH2nIVZdAYNl0KqKPPMQN+RGZo",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACCO48Rm+ke0GNPiqbYlc3HlOX0rmmKq0YMYL7NiqBwMPAAA\nAJgrWf3vK1n97wAAAAtzc2gtZWQyNTUxOQAAACCO48Rm+ke0GNPiqbYlc3HlOX0r\nmmKq0YMYL7NiqBwMPAAAAED5ztfhVi+DiFtBm/8FJdfM6O9rT2I7m7LcP1wjFzP4\nkI7jxGb6R7QY0+KptiVzceU5fSuaYqrRgxgvs2KoHAw8AAAAE/Cfh7rwn4e4ICYg\n8J+RjfCfj70BAg==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"ssh:مفتاح الخادم\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2GYAgHTCuogbsYJcqUcxRZNCpAvuG7/a90gZn/zl3x مفتاح الخادم",
+   "fingerprint": "SHA256:jFd7WcMAc0dFhhfmzaP9wCUAS+yWIwro8yTJzd9l05Y",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACCNhmAIB0wrqIG7GCXKlHMUWTQqQL7hu/2vdIGZ/85d8QAA\nAKDIORkoyDkZKAAAAAtzc2gtZWQyNTUxOQAAACCNhmAIB0wrqIG7GCXKlHMUWTQq\nQL7hu/2vdIGZ/85d8QAAAEDp2YWjCwNfWE/5wsYxuIopMXyeIzYhdNu/RwwxH/8N\noI2GYAgHTCuogbsYJcqUcxRZNCpAvuG7/a90gZn/zl3xAAAAF9mF2YHYqtin2K0g\n2KfZhNiu2KfYr9mFAQIDBAUG\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"ssh:日本語の鍵\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGayrTJ7W5e6S7my/i1K+C9oL3e21pS+7jP5D1Gc05NP 日本語の鍵",
+   "fingerprint": "SHA256:VrAb2hVPPoY5IdPQg37h4b/n7NAFDAzevfdKUYw7wqE",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACBmsq0ye1uXuku5sv4tSvgvaC93ttaUvu4z+Q9RnNOTTwAA\nAJjNk2kazZNpGgAAAAtzc2gtZWQyNTUxOQAAACBmsq0ye1uXuku5sv4tSvgvaC93\nttaUvu4z+Q9RnNOTTwAAAED+4IhWFCVI1fmC9uoOPMUBnzJ66zm/tszHRve6oMYR\nS2ayrTJ7W5e6S7my/i1K+C9oL3e21pS+7jP5D1Gc05NPAAAAD+aXpeacrOiqnuOB\nrumNtQECAwQFBg==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"ssh:no break / <tag> 'single'\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPyf4TZVnoLOMIkiz3Lah1N8f6d2XpdbwfeadaAcJdnC no break / <tag> 'single'",
+   "fingerprint": "SHA256:3nNc5qH0fhjVdj3yvb2Oxu4WEK1Lg229bqXX95LNGWQ",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACD8n+E2VZ6CzjCJIs9y2odTfH+ndl6XW8H3mnWgHCXZwgAA\nAKAxbBuDMWwbgwAAAAtzc2gtZWQyNTUxOQAAACD8n+E2VZ6CzjCJIs9y2odTfH+n\ndl6XW8H3mnWgHCXZwgAAAEAnJfwql+3jewFDiLTLX8x/iuym+b6s9G+miWjKy+Z2\nSvyf4TZVnoLOMIkiz3Lah1N8f6d2XpdbwfeadaAcJdnCAAAAGm5vwqBicmVhayAv\nIDx0YWc+ICdzaW5nbGUnAQID\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"ssh:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICrQxqaKq6McHP6qlPbnr6+46aHLRseWVXVZ0cC0G6Z9 éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "fingerprint": "SHA256:QR7ygtVxBpxrrNqVBsurB1NHrPwEHSzWzF6JYQxKHYI",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAq0MamiqujHBz+qpT256+vuOmhy0bHllV1WdHAtBumfQAA\nAQjCT15Twk9eUwAAAAtzc2gtZWQyNTUxOQAAACAq0MamiqujHBz+qpT256+vuOmh\ny0bHllV1WdHAtBumfQAAAEAHyNv5hv+EAc3gL1s4lVrNdEfWZ2n5WRgZkC4tmwmL\nSCrQxqaKq6McHP6qlPbnr6+46aHLRseWVXVZ0cC0G6Z9AAAAgMOpw6nDqcOpw6nD\nqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nD\nqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nD\nqcOpw6nDqcOpw6nDqcOpw6nDqcOpAQIDBAU=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "ssh",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"ssh:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrJXDIXtXo5JKe8g6GtTEi5SkvtmFcxRJYLOK2Bl5ct xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "fingerprint": "SHA256:VSoBDjHuTKmrhcO7HI/bkCrPIY+3x1HLalz9I902Tf8",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACA6yVwyF7V6OSSnvIOhrUxIuUpL7ZhXMUSWCzitgZeXLQAA\nAMhpPadeaT2nXgAAAAtzc2gtZWQyNTUxOQAAACA6yVwyF7V6OSSnvIOhrUxIuUpL\n7ZhXMUSWCzitgZeXLQAAAEC1Vw3H4Hg0AuJki6p/t+j1NcdOg2BdVcj5pOBocapl\ntjrJXDIXtXo5JKe8g6GtTEi5SkvtmFcxRJYLOK2Bl5ctAAAAQHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHgBAgMEBQ==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"wireguard:github\"}",
+   "type": "UnsealingKey",
+   "publicKey": "wh9blZONOnDHYaGvkOCoazRrfvQ5/XKgF3r7iT7lj2E=",
+   "fingerprint": "wh9blZONOnDHYaGvkOCoazRrfvQ5/XKgF3r7iT7lj2E=",
+   "secret": "eLmGhhLP6zgNoK0XnHjNvIRJrQzFS/1uxW9muO+yGwE="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"wireguard:homelab host\"}",
+   "type": "UnsealingKey",
+   "publicKey": "lFm9l1vvVboB5nQqYaqrUfsxd240wJ+rbtkR7hL0wV0=",
+   "fingerprint": "lFm9l1vvVboB5nQqYaqrUfsxd240wJ+rbtkR7hL0wV0=",
+   "secret": "9pDDj/eZRB+z92F7U0HIUQdVV4eWyIjBPmntKoiHApY="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"wireguard:Ünïcode café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "zcuy6lkL6DmACcoiRGh/SZwMngme12ZMAtlx46IoZCI=",
+   "fingerprint": "zcuy6lkL6DmACcoiRGh/SZwMngme12ZMAtlx46IoZCI=",
+   "secret": "4UyMEeVs+G/eGwoBAIeB8mTFfHQoO9iaJwI9aplOYr4="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"wireguard:quote \\\" and \\\\ backslash\"}",
+   "type": "UnsealingKey",
+   "publicKey": "TpeVBHjK9+Jvh3v6me7rp8hWO3LnUsLJxA5hcPZ4c1U=",
+   "fingerprint": "TpeVBHjK9+Jvh3v6me7rp8hWO3LnUsLJxA5hcPZ4c1U=",
+   "secret": "6h9VSmtjRvvnoP4OYsBJgSHV2Fs1+2CnRBOlTL23ONM="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"wireguard:trimmed\"}",
+   "type": "UnsealingKey",
+   "publicKey": "Tj5M30B3OZn0cR9MWe/itNnvKnAD1vhueX3iEJKslCM=",
+   "fingerprint": "Tj5M30B3OZn0cR9MWe/itNnvKnAD1vhueX3iEJKslCM=",
+   "secret": "K1miTnZdgUQsdUBmjbIM1GwQGcyDkS0q/C9N0xBiDDo="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"wireguard:café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "Hf8y8pWY76xgz//Ewc/8FjG9d+mu76Eug70bk1YfPiw=",
+   "fingerprint": "Hf8y8pWY76xgz//Ewc/8FjG9d+mu76Eug70bk1YfPiw=",
+   "secret": "9In60CCJoYEyXam8CbuINSW/AkGPxLPMf2iKxOGRE7A="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"wireguard:́x\"}",
+   "type": "UnsealingKey",
+   "publicKey": "o7UkCPMoTcyFA6lYTZc/Jg/yxhRhwvnFrGSWRjQZOUo=",
+   "fingerprint": "o7UkCPMoTcyFA6lYTZc/Jg/yxhRhwvnFrGSWRjQZOUo=",
+   "secret": "PweVqOIUl1d1Er+U5Li3hjO4M1rdYbuHcreHOMnpmVI="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"wireguard:line separator\"}",
+   "type": "UnsealingKey",
+   "publicKey": "3IZMpMQ+eXUI2egLsJcogE9U6+D30JKEgPLpHZm22AI=",
+   "fingerprint": "3IZMpMQ+eXUI2egLsJcogE9U6+D30JKEgPLpHZm22AI=",
+   "secret": "gZJ40NvzdkKtb4PGqVVEB0Qsz7iMvOmclpy34R1cDBE="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"wireguard:👩‍💻 laptop\"}",
+   "type": "UnsealingKey",
+   "publicKey": "nEefqDLjFXfF+p0VltkE03cWcSiljtjV+2Vp9UBBVAQ=",
+   "fingerprint": "nEefqDLjFXfF+p0VltkE03cWcSiljtjV+2Vp9UBBVAQ=",
+   "secret": "IqMynN1yWzMwP1ebj4Jn6DplYa+KmWcgxsuPmbLq5GE="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"wireguard:🧨\"}",
+   "type": "UnsealingKey",
+   "publicKey": "x+aKGGypxlrBGRyOXx1y9l+TZ5th+eHfV5sirOWKkT4=",
+   "fingerprint": "x+aKGGypxlrBGRyOXx1y9l+TZ5th+eHfV5sirOWKkT4=",
+   "secret": "KaIENxobKXOXE2DGkUuKcamKUbLsUjmu9N8FnK3YKWY="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"wireguard:🇺🇸 & 👍🏽\"}",
+   "type": "UnsealingKey",
+   "publicKey": "YgcZA2cRzDOs1eZaOonIOSnKjdBWmXkK6PtlLpmMgwk=",
+   "fingerprint": "YgcZA2cRzDOs1eZaOonIOSnKjdBWmXkK6PtlLpmMgwk=",
+   "secret": "ZrdwJ8D7pKpiLtFANB1B33VXE8YIjtaQ4d5WWo2FsGw="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"wireguard:مفتاح الخادم\"}",
+   "type": "UnsealingKey",
+   "publicKey": "ZrWm96ZMeRelWuQfLW5yEngtdGrf13jbPtNGNQtSjg0=",
+   "fingerprint": "ZrWm96ZMeRelWuQfLW5yEngtdGrf13jbPtNGNQtSjg0=",
+   "secret": "KJ/vjkcP8xavWHk5eEzYRJNeLZkUTvEO6QwXZmTiwTU="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"wireguard:日本語の鍵\"}",
+   "type": "UnsealingKey",
+   "publicKey": "8yM2JWKYylxF76aMEi4g/GVlF/c7JdMyWSg4jQStez0=",
+   "fingerprint": "8yM2JWKYylxF76aMEi4g/GVlF/c7JdMyWSg4jQStez0=",
+   "secret": "uUmjHtkilQRuZeuHxESvnwcmKTd4tuJefN6qFSOWlkY="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"wireguard:no break / <tag> 'single'\"}",
+   "type": "UnsealingKey",
+   "publicKey": "F5047Dpr7DNIY9Uj5gcIRjQGRwguA2/miE1k6pUMTQg=",
+   "fingerprint": "F5047Dpr7DNIY9Uj5gcIRjQGRwguA2/miE1k6pUMTQg=",
+   "secret": "ryPMxctf+Wi9Nzj9B/r29XMFw1FdeTFmQ2geL1PM1eQ="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"wireguard:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "UnsealingKey",
+   "publicKey": "sGsTKEciuCVEm0tnYI7VjxvC5SxtIm1QouSZBXjlI3Y=",
+   "fingerprint": "sGsTKEciuCVEm0tnYI7VjxvC5SxtIm1QouSZBXjlI3Y=",
+   "secret": "++Y7OA7lpsjyNmLX46IK93ii/Kul5JLt7FBTlAhOfxQ="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wireguard",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"wireguard:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "UnsealingKey",
+   "publicKey": "IBRXTngso56cT1wdohEC+OVMLvrE/mNWU2gzpsKDBSE=",
+   "fingerprint": "IBRXTngso56cT1wdohEC+OVMLvrE/mNWU2gzpsKDBSE=",
+   "secret": "QyScs+9uFF00+96RdFmOtQO7JxA9zeWrFso0TYNu5Dw="
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"age:github\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1yaengemunqzey3s67w4y0enjpzht42zlu56d7mvduyqw85qyxd0s2r9pwv",
+   "fingerprint": "age1yaengemunqzey3s67w4y0enjpzht42zlu56d7mvduyqw85qyxd0s2r9pwv",
+   "secret": "AGE-SECRET-KEY-17YE5NXURYULLS00ZUYAGKXRQ59TL7L4HAMPGX6HUJN7PW9ZG23QSRJ2JHZ"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"age:homelab host\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age14zr6qp0yf895ckshlclvfq4gkhqu452mudx2fgnvaejhz4k6448q782zem",
+   "fingerprint": "age14zr6qp0yf895ckshlclvfq4gkhqu452mudx2fgnvaejhz4k6448q782zem",
+   "secret": "AGE-SECRET-KEY-1U35WD0GEAXCRKW4DRG8HD6DV29VRN2EXPRNVZXH5P23SSD4DA38QMMW2F8"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"age:Ünïcode café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age19twkek9rry5zmn39ywfjm8686h0ql4utsndsvhrvvcyklhkrz4wqx4slf2",
+   "fingerprint": "age19twkek9rry5zmn39ywfjm8686h0ql4utsndsvhrvvcyklhkrz4wqx4slf2",
+   "secret": "AGE-SECRET-KEY-1VM0SUJF03KSKDXYZR29HYET34G8Z0FLSYD2TFXPVRY0MJHH78KCQSAXX4D"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"age:quote \\\" and \\\\ backslash\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1tp9mpkacx395dk9clt8m3hksfctl43kevj5uvd8vrpl7lkdmaawq8mym2m",
+   "fingerprint": "age1tp9mpkacx395dk9clt8m3hksfctl43kevj5uvd8vrpl7lkdmaawq8mym2m",
+   "secret": "AGE-SECRET-KEY-17TW9A8F4P7JZDFWRW6QHL92ZSK00JHXE9Q98GRGTXFL3NPDWUEWQYSCACC"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"age:trimmed\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1trf9f60d6l7ge80qergr52p756lacdlclv254ntqdmmpn48ej49s3rkyw6",
+   "fingerprint": "age1trf9f60d6l7ge80qergr52p756lacdlclv254ntqdmmpn48ej49s3rkyw6",
+   "secret": "AGE-SECRET-KEY-1RZZY5QC773MSRAZVTVAEQ2VJF4LNS4F7LD6TWVQUZCZMSGYCWP4QE7R9SF"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"age:café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1nj7a77zjeq0j4m69qglj7qpdj7nm45dw3gqnpyw9nqecy6460ayqf85wxz",
+   "fingerprint": "age1nj7a77zjeq0j4m69qglj7qpdj7nm45dw3gqnpyw9nqecy6460ayqf85wxz",
+   "secret": "AGE-SECRET-KEY-1WQGLDGDVKASDYGVF47RJ8GXFKDQZPDYCZ8XVGQRE6WGQ4K2QSAUQGF28WK"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"age:́x\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age12ctjtp079ymd6fapg9z08trvnj3a48d2ud2r00zp55ssxxzpnaqqmaugvg",
+   "fingerprint": "age12ctjtp079ymd6fapg9z08trvnj3a48d2ud2r00zp55ssxxzpnaqqmaugvg",
+   "secret": "AGE-SECRET-KEY-1WHXK9Z26YUFL35XGX3LL8MWSHR2VEYCNUCYNA55TYGYJUV6ZFKUQ87ZG44"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"age:line separator\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1drg00lrr9lskcj4ch4hrufcskhf74sal02tx9wgzu745we4cpqwsmh7lnt",
+   "fingerprint": "age1drg00lrr9lskcj4ch4hrufcskhf74sal02tx9wgzu745we4cpqwsmh7lnt",
+   "secret": "AGE-SECRET-KEY-1RWMFLA8ERLZXHSPJRS69S0LLRE3TSMGTH7R0JCVWE40DPK24ET0QCWVGCN"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"age:👩‍💻 laptop\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1ga3uy0qlrfwm9nl5qaq3adst4plrftzc7upgfwrxj5pcsdr4wg4seqk496",
+   "fingerprint": "age1ga3uy0qlrfwm9nl5qaq3adst4plrftzc7upgfwrxj5pcsdr4wg4seqk496",
+   "secret": "AGE-SECRET-KEY-1DDT924XH0UN40ZHPDPKNV0YFWMC23S4HTDPF2NCTQ37X8QGC6NMSTRM8VU"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"age:🧨\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1l5kws699cvkl0fkkqm9773zjywy8vlp87lzww28kp37xhwr7ra4qu255cs",
+   "fingerprint": "age1l5kws699cvkl0fkkqm9773zjywy8vlp87lzww28kp37xhwr7ra4qu255cs",
+   "secret": "AGE-SECRET-KEY-1Y9FZJ2V006L34P2Y0RUGFNW78GCVU02GN9M0QKARTCHS6A9SF0AQEMM3MZ"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"age:🇺🇸 & 👍🏽\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1axu229m7wn39hmn38v4htzxa3zs3st97ctyee0ugqp4z78erj9kqd6x64j",
+   "fingerprint": "age1axu229m7wn39hmn38v4htzxa3zs3st97ctyee0ugqp4z78erj9kqd6x64j",
+   "secret": "AGE-SECRET-KEY-1ME03E7AY930UEMQFYTSSLP6C9P08WKRRRCMHXJ0Y7QLW4GD6Y30QGV4H8L"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"age:مفتاح الخادم\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age19y8pv9x4ctthckhj386qv8mvgsaztlk9mnpegcmgg0k4kfx263dsu6pgtj",
+   "fingerprint": "age19y8pv9x4ctthckhj386qv8mvgsaztlk9mnpegcmgg0k4kfx263dsu6pgtj",
+   "secret": "AGE-SECRET-KEY-1UGWS7WYZ9CAEZRZUUH72S65QVP93XDD7KJYSL9PNPU6NXW8P68ZSECWUP0"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"age:日本語の鍵\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age176uecxyj40kk6qj5g9u7xxef7l04rwm3xp3u5k7eanav47lzvdjsnz4jy4",
+   "fingerprint": "age176uecxyj40kk6qj5g9u7xxef7l04rwm3xp3u5k7eanav47lzvdjsnz4jy4",
+   "secret": "AGE-SECRET-KEY-1QHCXX2AJ90GA69CKVYC4A5QP369JG7HCPXS82MN6KYLE2G7EMUMQQ5SL8V"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"age:no break / <tag> 'single'\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1kqe40rtvez8e0rwh8mu4cj8fma5w75h43fnqfh7axvxanplkpyzsshzt6a",
+   "fingerprint": "age1kqe40rtvez8e0rwh8mu4cj8fma5w75h43fnqfh7axvxanplkpyzsshzt6a",
+   "secret": "AGE-SECRET-KEY-1SKXUF3P7V88TG60H99CHGEQMQLQMKC7EXP9RU7F5E6KFFYR0YRUQUUQA3S"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"age:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1vnz2udzdmwu2ysmejdte84nqv3pa4qs83w5kcvyp8emayljykfgqfqxd64",
+   "fingerprint": "age1vnz2udzdmwu2ysmejdte84nqv3pa4qs83w5kcvyp8emayljykfgqfqxd64",
+   "secret": "AGE-SECRET-KEY-14G6JRTMNCREWRN0Z5XCHNJ4TYKD0RTLSCH8U227NU0D4TV2UQ9HQ363HQF"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "age",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"age:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1ayhhue0rc3d4dxrfkadlxaqx5yk6q9yz9lpx7hms683meadfa95shc4grt",
+   "fingerprint": "age1ayhhue0rc3d4dxrfkadlxaqx5yk6q9yz9lpx7hms683meadfa95shc4grt",
+   "secret": "AGE-SECRET-KEY-18R5V25QPKRAPYD6QJNXDWNRG28CF7GAZYTE7EUTD0L5YZY7AEDGQA2PQNW"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"wallet:github\"}",
+   "type": "Secret",
+   "secret": "hair cake snake level flame survey divorce toilet earn leaf defense bottom silver oblige middle inhale trend disease future skill clever divert logic travel"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"wallet:homelab host\"}",
+   "type": "Secret",
+   "secret": "dentist tuition hip scene athlete select extra test innocent below rapid pigeon boss enact soup cover dizzy quit climb chuckle title provide drill swim"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"wallet:Ünïcode café\"}",
+   "type": "Secret",
+   "secret": "spray board measure buffalo oven cliff elegant clown undo shrug actor you pet jacket charge mercy finger similar bar nut mail danger clown large"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"wallet:quote \\\" and \\\\ backslash\"}",
+   "type": "Secret",
+   "secret": "ask frown sphere meat embody meat fault weird fatal unaware report muscle flash fox start few slender major summer gift april enroll child window"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"wallet:trimmed\"}",
+   "type": "Secret",
+   "secret": "dwarf pigeon acoustic lift maid buzz turn member cage nose tragic chalk phrase bid sorry arena muffin mail swallow ready alpha end stumble park"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"wallet:café\"}",
+   "type": "Secret",
+   "secret": "crumble sense devote poet unfold virtual okay walnut actress wash tree tooth dumb caution angle purpose fitness spike wise glass hen ability apple umbrella"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"wallet:́x\"}",
+   "type": "Secret",
+   "secret": "clog ordinary ill aisle satisfy stone start matrix alone trial scare target consider trouble bone sudden claim broccoli adult sugar position liquid unknown lottery"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"wallet:line separator\"}",
+   "type": "Secret",
+   "secret": "size use car nasty motor among bounce camp trust vintage typical few narrow stem flock staff actress pig supply remember first book click breeze"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"wallet:👩‍💻 laptop\"}",
+   "type": "Secret",
+   "secret": "sample remove truck interest brand make busy multiply lucky drink trust police avocado hedgehog author used candy core soap island skull bamboo sphere tortoise"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"wallet:🧨\"}",
+   "type": "Secret",
+   "secret": "vacuum diamond ill hood pipe sign kit federal undo toilet empty void diet hill aspect dice daring sudden movie brave luxury hollow thought trim"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"wallet:🇺🇸 & 👍🏽\"}",
+   "type": "Secret",
+   "secret": "eagle brother layer license bachelor reason huge confirm save perfect valve oven wrap smart demise expand hamster love wire coconut shove forward team cream"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"wallet:مفتاح الخادم\"}",
+   "type": "Secret",
+   "secret": "know marriage appear noble index title edge slim east ketchup quality dignity merry winner layer brand electric weasel globe tiger view electric antique sorry"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"wallet:日本語の鍵\"}",
+   "type": "Secret",
+   "secret": "lunch fire travel fiscal when animal rotate milk illegal nature absorb dish field shine second lyrics banner deal about face eternal tackle toddler mobile"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"wallet:no break / <tag> 'single'\"}",
+   "type": "Secret",
+   "secret": "occur proof speak wise ten lake symbol attract cactus omit present buyer goat bicycle orbit invest kit satoshi envelope time elbow damage want process"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"wallet:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "Secret",
+   "secret": "polar token scrap glare gravity obey april path labor claw mechanic car bleak imitate sausage feature photo grief rich town travel horror bronze seek"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "wallet",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"wallet:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "Secret",
+   "secret": "title casino guess marble case pattern initial urban hour there chat wisdom soft salad exhibit document economy lamp property room mule cram until seek"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInChars\":24,\"purpose\":\"passphrase:github\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 24,
+     "symbols": false
+    }
+   },
+   "secret": "HwUvtKKHmbTCN3EPsYLBYa9L"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInChars\":24,\"purpose\":\"passphrase:homelab host\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 24,
+     "symbols": false
+    }
+   },
+   "secret": "kHj7SnNyPmcjGBfZBujoZC2p"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInChars\":24,\"purpose\":\"passphrase:Ünïcode café\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 24,
+     "symbols": false
+    }
+   },
+   "secret": "TMbtJDVcuMYtRoQzjKdqQRdM"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInChars\":12,\"purpose\":\"passphrase:github\",\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 12,
+     "symbols": true
+    }
+   },
+   "secret": "x8eh9UP4gZq&"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInChars\":12,\"purpose\":\"passphrase:homelab host\",\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 12,
+     "symbols": true
+    }
+   },
+   "secret": "JTk&3nz%D9N2"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInChars\":12,\"purpose\":\"passphrase:Ünïcode café\",\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 12,
+     "symbols": true
+    }
+   },
+   "secret": "eKfy8#&&iJY@"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInChars\":64,\"purpose\":\"passphrase:github\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 64,
+     "symbols": false
+    }
+   },
+   "secret": "CDDaW9hQ4mMLM6rqvHz2eC3MVPZ6eLeLFBxHuKuGCdCSmorHZsqw3SyUnQQ88vEA"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInChars\":64,\"purpose\":\"passphrase:homelab host\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 64,
+     "symbols": false
+    }
+   },
+   "secret": "mUFj4LSjjskLxDXp8sU42GqsSHqKHxrTURMqFASEWsMUSBkqcqZyxuctRLg4qjTp"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInChars\":64,\"purpose\":\"passphrase:Ünïcode café\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 64,
+     "symbols": false
+    }
+   },
+   "secret": "bfJBFTxCU7U3Jzbdi2R628fyEf8fhQfKdCj5iKa9W7XpsQPTAeToXhdBX8J49jG7"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInWords\":6,\"purpose\":\"passphrase:github\",\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 6,
+     "digitAndCapital": false
+    }
+   },
+   "secret": "landing-wildcard-passing-tiara-simile-drove"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInWords\":6,\"purpose\":\"passphrase:homelab host\",\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 6,
+     "digitAndCapital": false
+    }
+   },
+   "secret": "opossum-hurdle-verdict-overgrown-puppy-expanse"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInWords\":6,\"purpose\":\"passphrase:Ünïcode café\",\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 6,
+     "digitAndCapital": false
+    }
+   },
+   "secret": "brook-sulphate-snugness-upbeat-ungraded-daffodil"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":4,\"purpose\":\"passphrase:github\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 4,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "constable2SIXTYFOLD7depict2awoke"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":4,\"purpose\":\"passphrase:homelab host\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 4,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "UNISSUED1tabasco6anguished0duplex"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":4,\"purpose\":\"passphrase:Ünïcode café\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 4,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "BLUSH7thriving1veteran3caramel"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":10,\"purpose\":\"passphrase:github\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 10,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "babbling2capitol4outcast6playback1spender5dugout9prison4candy5easel7UNSOILED"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":10,\"purpose\":\"passphrase:homelab host\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 10,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "IMPLOSIVE9slimy7precinct3deck8fraction8economy8either8blabber8unexpired0irritant"
+  },
+  {
+   "seed": "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":10,\"purpose\":\"passphrase:Ünïcode café\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 10,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "grouped9ablaze8floral7extenuate0tighten2aluminum5moonlight1mummify3unexposed5EXPLORE"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"ssh:github\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN9gvT4znnI4k8FHn0UIHQdSPJGh4fDkQV4u/+n7q2JQ github",
+   "fingerprint": "SHA256:3Y5mEeHOiHbpEPGZjeWMEBsCF6EmLStJ8O148CPVTsQ",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACDfYL0+M55yOJPBR59FCB0HUjyRoeHw5EFeLv/p+6tiUAAA\nAJDxVoSw8VaEsAAAAAtzc2gtZWQyNTUxOQAAACDfYL0+M55yOJPBR59FCB0HUjyR\noeHw5EFeLv/p+6tiUAAAAEBJEFMoGl3z6Yl+7J4rBKbN9pqGliIHaWPbK43AX3Nh\nV99gvT4znnI4k8FHn0UIHQdSPJGh4fDkQV4u/+n7q2JQAAAABmdpdGh1YgECAwQF\nBgc=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"ssh:homelab host\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJZX+5xCCHJPfk8zScznvmd2ET/6b7nFnBCexTn512v1 homelab host",
+   "fingerprint": "SHA256:kpLWZeumv1bjXwSIKvXh95S8FQzQM1M2tD5r5bKwZRA",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACCWV/ucQghyT35PM0nM575ndhE/+m+5xZwQnsU5+ddr9QAA\nAJDpFXI06RVyNAAAAAtzc2gtZWQyNTUxOQAAACCWV/ucQghyT35PM0nM575ndhE/\n+m+5xZwQnsU5+ddr9QAAAEAZHO7ufYD7TcwC8ox7E5sAaYU1SCp0hvuI4xSCD4jv\nZpZX+5xCCHJPfk8zScznvmd2ET/6b7nFnBCexTn512v1AAAADGhvbWVsYWIgaG9z\ndAE=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"ssh:Ünïcode café\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICcXyVlIUJwFvTHH/GLHHqB/tuTS4vgz1hBhxv5Ps3D4 Ünïcode café",
+   "fingerprint": "SHA256:GeCLwEcrnFl7HndhQ/oo3Yui6DcAg5B6dWOkNeMioTc",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAnF8lZSFCcBb0xx/xixx6gf7bk0uL4M9YQYcb+T7Nw+AAA\nAJjLFJQ3yxSUNwAAAAtzc2gtZWQyNTUxOQAAACAnF8lZSFCcBb0xx/xixx6gf7bk\n0uL4M9YQYcb+T7Nw+AAAAEAlBnWs82O2OaUPg7c4AJFg1HQBGWN2FY6t5XuyckXz\nbycXyVlIUJwFvTHH/GLHHqB/tuTS4vgz1hBhxv5Ps3D4AAAAD8OcbsOvY29kZSBj\nYWbDqQECAwQFBg==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"ssh:quote \\\" and \\\\ backslash\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHOswBhX0VHvjnnPAZCkC9LY9RE61kS/9gI0jFOfyd+D quote \" and \\ backslash",
+   "fingerprint": "SHA256:C7VhTy9nd/LjVvZxSvAcmH688MwQUavgnRk+jaW4jXY",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACBzrMAYV9FR7455zwGQpAvS2PUROtZEv/YCNIxTn8nfgwAA\nAKADZoQbA2aEGwAAAAtzc2gtZWQyNTUxOQAAACBzrMAYV9FR7455zwGQpAvS2PUR\nOtZEv/YCNIxTn8nfgwAAAEAH3hfiCkKEBEZSYYPNBf77qA/yO6CMaZb8KRPM0zs0\nKnOswBhX0VHvjnnPAZCkC9LY9RE61kS/9gI0jFOfyd+DAAAAF3F1b3RlICIgYW5k\nIFwgYmFja3NsYXNoAQIDBAUG\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"ssh:trimmed\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDPGVSHtlDRZY5FX3yJwwSVc9ZCqdKsm5Wrw19Io+fQ2 trimmed",
+   "fingerprint": "SHA256:xaE08XXt4Pg0dngmR+yzSZhwcbhD+FGw6BaFhZVb5Ho",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAzxlUh7ZQ0WWORV98icMElXPWQqnSrJuVq8NfSKPn0NgAA\nAJCVIyYZlSMmGQAAAAtzc2gtZWQyNTUxOQAAACAzxlUh7ZQ0WWORV98icMElXPWQ\nqnSrJuVq8NfSKPn0NgAAAEAP03yahlMaucodN9rTpmIu1OPjlfsHYOa9qkKlyYVE\njTPGVSHtlDRZY5FX3yJwwSVc9ZCqdKsm5Wrw19Io+fQ2AAAAB3RyaW1tZWQBAgME\nBQY=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"ssh:café\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjjLtXs8se5HCtw58KTDkHraMZg0X/aCBtpF1r3mg0f café",
+   "fingerprint": "SHA256:BylhTrAUULM/OLOBC8SAdUiCQlShAODIru6BpABtYZs",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACB44y7V7PLHuRwrcOfCkw5B62jGYNF/2ggbaRda95oNHwAA\nAIjF0IN/xdCDfwAAAAtzc2gtZWQyNTUxOQAAACB44y7V7PLHuRwrcOfCkw5B62jG\nYNF/2ggbaRda95oNHwAAAEDn2zrWE6La/v+WOM2TU0JPybAAV6l730+fCXtLgl4A\nRXjjLtXs8se5HCtw58KTDkHraMZg0X/aCBtpF1r3mg0fAAAABWNhZsOp\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"ssh:́x\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9rxg5cPv2TVL8RM+gaInDSXVqA7szcAQqDewj0br6P ́x",
+   "fingerprint": "SHA256:8JiihDl1v/YrK3r8LCgAKcnGtMBTYZMQRdFHPU7w00c",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACDva8YOXD79k1S/ETPoGiJw0l1agO7M3AEKg3sI9G6+jwAA\nAIhfoO6VX6DulQAAAAtzc2gtZWQyNTUxOQAAACDva8YOXD79k1S/ETPoGiJw0l1a\ngO7M3AEKg3sI9G6+jwAAAED9aiouS033/wdcE/XnXDAQnjfmfD5sTbM4JK2Z+e6U\nz+9rxg5cPv2TVL8RM+gaInDSXVqA7szcAQqDewj0br6PAAAAA8yBeAEC\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"ssh:line separator\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE/IqSGslIs37uRw6aklMc5R0w327fvCnlvc10lzBinE line separator",
+   "fingerprint": "SHA256:SYerp50RZuXs+CM7Jb0Se34lvtPQjes4AiGgRUvmJ58",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACBPyKkhrJSLN+7kcOmpJTHOUdMN9u37wp5b3NdJcwYpxAAA\nAJjk3s8C5N7PAgAAAAtzc2gtZWQyNTUxOQAAACBPyKkhrJSLN+7kcOmpJTHOUdMN\n9u37wp5b3NdJcwYpxAAAAECQqJwiJuWWUWc21wJEAZsH2ljFY7yXJF0L4jatyrxY\nPk/IqSGslIs37uRw6aklMc5R0w327fvCnlvc10lzBinEAAAAEGxpbmXigKhzZXBh\ncmF0b3IBAgMEBQ==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"ssh:👩‍💻 laptop\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID1ezDadrLdlZcnYuI1bdW2wzRVdu/MaOi2uwLr4waMp 👩‍💻 laptop",
+   "fingerprint": "SHA256:y/k7R3mJxox2rMhaAqN5kKxGLGEiCl0YzCn9JzFhjL4",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACA9Xsw2nay3ZWXJ2LiNW3VtsM0VXbvzGjotrsC6+MGjKQAA\nAJizOmj2szpo9gAAAAtzc2gtZWQyNTUxOQAAACA9Xsw2nay3ZWXJ2LiNW3VtsM0V\nXbvzGjotrsC6+MGjKQAAAEAVLyyu2P+bCS5VUup2HJSXeLdMrdv+R3BQYXXZc35q\nLz1ezDadrLdlZcnYuI1bdW2wzRVdu/MaOi2uwLr4waMpAAAAEvCfkanigI3wn5K7\nIGxhcHRvcAECAw==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"ssh:🧨\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDrGH/Wv0o40+LK/oz8pS00hAIyLum7PQsXLMlxwmzII 🧨",
+   "fingerprint": "SHA256:59HwUtMGndcFtUpZF9rmsafil+lJ8EOQCFA159ej0es",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACA6xh/1r9KONPiyv6M/KUtNIQCMi7puz0LFyzJccJsyCAAA\nAIicOoTvnDqE7wAAAAtzc2gtZWQyNTUxOQAAACA6xh/1r9KONPiyv6M/KUtNIQCM\ni7puz0LFyzJccJsyCAAAAEDyjE3Pvm4N3zJSsWOyE0ySHPR81EhDp6g1A7Uw8HIL\n+jrGH/Wv0o40+LK/oz8pS00hAIyLum7PQsXLMlxwmzIIAAAABPCfp6gB\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"ssh:🇺🇸 & 👍🏽\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA0aV23fNXk9xUJuq6RRWsFRKUVLPbzovhmiLoX6+gaH 🇺🇸 & 👍🏽",
+   "fingerprint": "SHA256:zt3q41fwTJmThdzuluAQRSW+FB+P4i2C/LHqxfNKW5Y",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACANGldt3zV5PcVCbqukUVrBUSlFSz286L4Zoi6F+voGhwAA\nAJhQeqdJUHqnSQAAAAtzc2gtZWQyNTUxOQAAACANGldt3zV5PcVCbqukUVrBUSlF\nSz286L4Zoi6F+voGhwAAAECRmO/zD83UXx9Ye1F7p+h6bmGwa1qP9kEveEPZ0VRQ\nqA0aV23fNXk9xUJuq6RRWsFRKUVLPbzovhmiLoX6+gaHAAAAE/Cfh7rwn4e4ICYg\n8J+RjfCfj70BAg==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"ssh:مفتاح الخادم\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN+bVBLriIMxeQi2bdY6fpcwuMBJ38O7ozpg8UXeBzJj مفتاح الخادم",
+   "fingerprint": "SHA256:+GJTz8O3goxz/j8MPL7yB7nmRcoMjvMpXES0BgnpaAI",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACDfm1QS64iDMXkItm3WOn6XMLjASd/Du6M6YPFF3gcyYwAA\nAKB9aEa8fWhGvAAAAAtzc2gtZWQyNTUxOQAAACDfm1QS64iDMXkItm3WOn6XMLjA\nSd/Du6M6YPFF3gcyYwAAAEAt+jfXeW0veWbWe3AsH44A+3FK0Ayx1h26I9QsJLbe\nxd+bVBLriIMxeQi2bdY6fpcwuMBJ38O7ozpg8UXeBzJjAAAAF9mF2YHYqtin2K0g\n2KfZhNiu2KfYr9mFAQIDBAUG\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"ssh:日本語の鍵\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGOeSU4rAJv9AJtGswHn37IHyWRsrGSeyVI8rRyzW3Jy 日本語の鍵",
+   "fingerprint": "SHA256:uK+dfQPsc88euEmkrXTxKDZsNKkfcKYHNXohQQl1AL0",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACBjnklOKwCb/QCbRrMB59+yB8lkbKxknslSPK0cs1tycgAA\nAJhdDbasXQ22rAAAAAtzc2gtZWQyNTUxOQAAACBjnklOKwCb/QCbRrMB59+yB8lk\nbKxknslSPK0cs1tycgAAAEDF11J4Io35AcC2Eqy9xgX63V7Kf64qd1Ga8XEGKmy3\nO2OeSU4rAJv9AJtGswHn37IHyWRsrGSeyVI8rRyzW3JyAAAAD+aXpeacrOiqnuOB\nrumNtQECAwQFBg==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"ssh:no break / <tag> 'single'\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjVJRvPM7AU+SxIwCyiKYzwXiht39gAyZNR6hOU8BDG no break / <tag> 'single'",
+   "fingerprint": "SHA256:06Z1iPANsslcz0eQd87qq7aCC+FJphaOMiBRxLntbJU",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACB41SUbzzOwFPksSMAsoimM8F4obd/YAMmTUeoTlPAQxgAA\nAKDJIAe1ySAHtQAAAAtzc2gtZWQyNTUxOQAAACB41SUbzzOwFPksSMAsoimM8F4o\nbd/YAMmTUeoTlPAQxgAAAECtlp2/MSgKaDboyMl+LJLqSG824PhFCdPGaZsN8PIC\nQ3jVJRvPM7AU+SxIwCyiKYzwXiht39gAyZNR6hOU8BDGAAAAGm5vwqBicmVhayAv\nIDx0YWc+ICdzaW5nbGUnAQID\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"ssh:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBeDTXv1ckPP+WmKfU64HSZev3Iaf5GLq/QHmVOqXHvV éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "fingerprint": "SHA256:JQUbUzD2bE7q57O/at9ItwQzEpb+cK78nAXdeJRNhbY",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAXg0179XJDz/lpin1OuB0mXr9yGn+Ri6v0B5lTqlx71QAA\nAQipD0PHqQ9DxwAAAAtzc2gtZWQyNTUxOQAAACAXg0179XJDz/lpin1OuB0mXr9y\nGn+Ri6v0B5lTqlx71QAAAEBmU3/H+xi2QaDvf3mqPr2QMFv1TfmSDIxkAUEjENom\ndheDTXv1ckPP+WmKfU64HSZev3Iaf5GLq/QHmVOqXHvVAAAAgMOpw6nDqcOpw6nD\nqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nD\nqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nD\nqcOpw6nDqcOpw6nDqcOpw6nDqcOpAQIDBAU=\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "ssh",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"ssh:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "SigningKey",
+   "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3BK1+Br6MEh2wg2e2yEtawlTXOJvRdkRvUSbhOJwd2 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "fingerprint": "SHA256:6iv3AKB1xjn3tUzDHnYrZw0CQHlUTTQM9W9+B30xwYY",
+   "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtz\nc2gtZWQyNTUxOQAAACAdwStfga+jBIdsINntshLWsJU1zib0XZEb1Em4TicHdgAA\nAMjZmosn2ZqLJwAAAAtzc2gtZWQyNTUxOQAAACAdwStfga+jBIdsINntshLWsJU1\nzib0XZEb1Em4TicHdgAAAEBRxW86upaZiANk2ZVYIXCjtHZR6+GJOj8sSTBC8mi6\nsh3BK1+Br6MEh2wg2e2yEtawlTXOJvRdkRvUSbhOJwd2AAAAQHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHgBAgMEBQ==\n-----END OPENSSH PRIVATE KEY-----\n"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"wireguard:github\"}",
+   "type": "UnsealingKey",
+   "publicKey": "k7VrkkNLZC1EtUwuHZwhHpNqhRkHhSSwzxB8bufJ40Y=",
+   "fingerprint": "k7VrkkNLZC1EtUwuHZwhHpNqhRkHhSSwzxB8bufJ40Y=",
+   "secret": "M2Hk8oGfQOoRNR6yQsvliwYVSPsBtn5OqdZLLaZ7/kQ="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"wireguard:homelab host\"}",
+   "type": "UnsealingKey",
+   "publicKey": "22dy91lc7SFZTqL2yuu6PT923EY0ObTGPrONzd/1IlU=",
+   "fingerprint": "22dy91lc7SFZTqL2yuu6PT923EY0ObTGPrONzd/1IlU=",
+   "secret": "Q/3GdI12yRVFnDeHucDygfDdWzzVOUfabDKheUgTgxI="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"wireguard:Ünïcode café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "YYfyTmoeBkZ9S9mzIPJNM8JTDqG0Svjke8mts0cCUxM=",
+   "fingerprint": "YYfyTmoeBkZ9S9mzIPJNM8JTDqG0Svjke8mts0cCUxM=",
+   "secret": "KVW7LPlX8FUV8PrJqFZ/FeUNtJxtQbo9QB2qdxLfju8="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"wireguard:quote \\\" and \\\\ backslash\"}",
+   "type": "UnsealingKey",
+   "publicKey": "/IUsKqOGof2h2J012nyNfw4IkTkWyW78vUXTS4VuMQI=",
+   "fingerprint": "/IUsKqOGof2h2J012nyNfw4IkTkWyW78vUXTS4VuMQI=",
+   "secret": "st6d1hSrq+rkIrX8XtAPBtH/gfi7Btxrz1khXlYM2P4="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"wireguard:trimmed\"}",
+   "type": "UnsealingKey",
+   "publicKey": "gsDN3OrlWdT5LVVpmMdzB1fTmS7Wa7Qmx2rdF7aIPlc=",
+   "fingerprint": "gsDN3OrlWdT5LVVpmMdzB1fTmS7Wa7Qmx2rdF7aIPlc=",
+   "secret": "gql/dCw3TOGfrWOIRcA+MbwdxTY9SFXLBFvybvfND1A="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"wireguard:café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "33EVHZQ8yCofkzHHudwtF3gFwvQ8Z6jwO3ylAWG67nQ=",
+   "fingerprint": "33EVHZQ8yCofkzHHudwtF3gFwvQ8Z6jwO3ylAWG67nQ=",
+   "secret": "25xrOTvhzBzX4Ttny531CCxfjDzWPSeiL90BjIREJhY="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"wireguard:́x\"}",
+   "type": "UnsealingKey",
+   "publicKey": "XYoIQgFHmjxJNvbfKi/Vlrvr+HwP0tVL6bzCsjK9eBI=",
+   "fingerprint": "XYoIQgFHmjxJNvbfKi/Vlrvr+HwP0tVL6bzCsjK9eBI=",
+   "secret": "S/oeDIWoBogdTrgSlGz3ZgGeUp+O0NzeXhwtpg8QmX4="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"wireguard:line separator\"}",
+   "type": "UnsealingKey",
+   "publicKey": "+GLrhA39K8V1XFa/Trf0O+uPbbRngCDpvne5T4VSvk0=",
+   "fingerprint": "+GLrhA39K8V1XFa/Trf0O+uPbbRngCDpvne5T4VSvk0=",
+   "secret": "Tx7fRBP79Z7HQZp8U9NPrSE7R5B2eIvK176OV6PEtN8="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"wireguard:👩‍💻 laptop\"}",
+   "type": "UnsealingKey",
+   "publicKey": "ZmIy6NyBtLZY73VVrB/XWb6JKUjGkYszSauMJ5QLgzk=",
+   "fingerprint": "ZmIy6NyBtLZY73VVrB/XWb6JKUjGkYszSauMJ5QLgzk=",
+   "secret": "mRE+zt4Gt+0eic8wqZJtGaAMOII9mjnfbL1AmIifIOI="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"wireguard:🧨\"}",
+   "type": "UnsealingKey",
+   "publicKey": "c3pjegGJwmz8XCzGMM5TA92pboSPC7Kw31DMIM4CPg4=",
+   "fingerprint": "c3pjegGJwmz8XCzGMM5TA92pboSPC7Kw31DMIM4CPg4=",
+   "secret": "u9PFBoekY/hAa5tN/yXoEeqpU8XS7t9HqIN4lvFUwMk="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"wireguard:🇺🇸 & 👍🏽\"}",
+   "type": "UnsealingKey",
+   "publicKey": "ZKBSaQwmUWzI5jrGlTFVuHb+yCZ17JcT+jeSfaHLkk4=",
+   "fingerprint": "ZKBSaQwmUWzI5jrGlTFVuHb+yCZ17JcT+jeSfaHLkk4=",
+   "secret": "ldb9KuhK1nKMASYPw33SZEWNxN49/81O88jt1FsZnJ0="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"wireguard:مفتاح الخادم\"}",
+   "type": "UnsealingKey",
+   "publicKey": "BKFmFysHV45tAcUDfKgrF6t4zXDt2jRFwxnvEGQTuzc=",
+   "fingerprint": "BKFmFysHV45tAcUDfKgrF6t4zXDt2jRFwxnvEGQTuzc=",
+   "secret": "id09+hjRvlfw8M2bdq/GxG83b0cgpiLlJE4dEOof034="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"wireguard:日本語の鍵\"}",
+   "type": "UnsealingKey",
+   "publicKey": "Ke9ayYpFnZ3TfRoWi+StDuuNtSmz2F4p7FD4sUUPNnE=",
+   "fingerprint": "Ke9ayYpFnZ3TfRoWi+StDuuNtSmz2F4p7FD4sUUPNnE=",
+   "secret": "S4joQtJyJM2gY+SLJXp81QZ/4Vktcl96e80/wXaLoys="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"wireguard:no break / <tag> 'single'\"}",
+   "type": "UnsealingKey",
+   "publicKey": "+IkKfERaHZpnF3fTb2P+0FOlNYMuFVa0AE0RKdKcLV0=",
+   "fingerprint": "+IkKfERaHZpnF3fTb2P+0FOlNYMuFVa0AE0RKdKcLV0=",
+   "secret": "mnO0rVKFbJnYCJdPACz301PhiNgMGxkdKEJOtMEl2E0="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"wireguard:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "UnsealingKey",
+   "publicKey": "dy8Sj//DfrIlld8gbtaHch6tMT97WWBnJbmHSEAApxA=",
+   "fingerprint": "dy8Sj//DfrIlld8gbtaHch6tMT97WWBnJbmHSEAApxA=",
+   "secret": "uB6U4ZC0rMvDhHtc1HH4TCicI/t56sGlxHXUfHdYVvI="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wireguard",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"wireguard:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "UnsealingKey",
+   "publicKey": "q7va4m5ZvBhZX25FiRd9QhgOORD0YVAB8fAFT4p6nnw=",
+   "fingerprint": "q7va4m5ZvBhZX25FiRd9QhgOORD0YVAB8fAFT4p6nnw=",
+   "secret": "uEBt/ce7cabbTrSJqLOSkKgKJTH6mbDy+KnegZOj2GI="
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"age:github\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1av4er249u8klhpz9nulu9lr05n8cvdtuclw5hz99vcjajwzkmsaspd3p9d",
+   "fingerprint": "age1av4er249u8klhpz9nulu9lr05n8cvdtuclw5hz99vcjajwzkmsaspd3p9d",
+   "secret": "AGE-SECRET-KEY-1RVP33FZU937EPQQ5QDV9DXH80RAKCS78707FR6973RZVKJYQD6LS62MF6Z"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"age:homelab host\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1l729seezl3gmmg7hyq3vc0u9y5utz2c66uvzjzgf0jgqn6xytesqc82yz3",
+   "fingerprint": "age1l729seezl3gmmg7hyq3vc0u9y5utz2c66uvzjzgf0jgqn6xytesqc82yz3",
+   "secret": "AGE-SECRET-KEY-1H3NRLM7PATMKLLHJCZFGQVYG0KMJKQTUNQ5HZ8LCY9JP7GSGZSTSEYPTXQ"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"age:Ünïcode café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1v3n536sw45nlaz6r5hpu8vqsju9ek00uncfhsnuqnq097yy5uuksv4n7at",
+   "fingerprint": "age1v3n536sw45nlaz6r5hpu8vqsju9ek00uncfhsnuqnq097yy5uuksv4n7at",
+   "secret": "AGE-SECRET-KEY-1QGA6W6D76KV8NEEJ4YYUPM7JA3TNHALPP4QDR50MTSTKH50D605QGTMP33"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"age:quote \\\" and \\\\ backslash\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1pln3zcuxf9dcexw3ra0usgx8lely9ut3neu2w9txhput6fgzxakqrz7l4g",
+   "fingerprint": "age1pln3zcuxf9dcexw3ra0usgx8lely9ut3neu2w9txhput6fgzxakqrz7l4g",
+   "secret": "AGE-SECRET-KEY-19GQ04TZX8DKM0UJ5YRDY78M6KYVPY7AUVFJDA93S4TEPYRUCVZXSAZU243"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"age:trimmed\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1f4x4ywhqxg07fl7a6vjk3dut4zakqq2maytz64j7r0gz9re665ds9nhrrz",
+   "fingerprint": "age1f4x4ywhqxg07fl7a6vjk3dut4zakqq2maytz64j7r0gz9re665ds9nhrrz",
+   "secret": "AGE-SECRET-KEY-1LTHKEUK4KPAQRF838M0DDVJETSLF69UZ69WYMZZ7T6TSRHCT239QHENFN4"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"age:café\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age174a8pl38gchaush8twfv7n9s7zpfxxp5ee5r68rxhajhs98yrccqaxflr9",
+   "fingerprint": "age174a8pl38gchaush8twfv7n9s7zpfxxp5ee5r68rxhajhs98yrccqaxflr9",
+   "secret": "AGE-SECRET-KEY-1V9W6UQMY2UNJZHX9EKX2FDDFD6EMRVEPRN5Q32NVZYHRPUMK93WQZXSMGL"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"age:́x\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1s4wuqf78vhfjw2quxdgf6uz6sf6kley6pa3qdv6wel35h6xe639qe9wp0h",
+   "fingerprint": "age1s4wuqf78vhfjw2quxdgf6uz6sf6kley6pa3qdv6wel35h6xe639qe9wp0h",
+   "secret": "AGE-SECRET-KEY-1MXPLG8PHQW3347XVNCMEZ3VEVVDXR52ZGWQQGY0476QGP9C046FQRQGKS3"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"age:line separator\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1jhrkftkwqp8wszt0rv06v38u552s40ml0n0ewqcrxp0ve3sw058spve8sw",
+   "fingerprint": "age1jhrkftkwqp8wszt0rv06v38u552s40ml0n0ewqcrxp0ve3sw058spve8sw",
+   "secret": "AGE-SECRET-KEY-1CTQCNUC6RXQX4KFHY3CTAM94VQ2XQR5C6TEARX0WFYRSSN6RATJSW40PH8"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"age:👩‍💻 laptop\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1880af6ay4upsp33s7hcxc4h84wxckxa6rf882lep3d5mt3sleylqp8maqk",
+   "fingerprint": "age1880af6ay4upsp33s7hcxc4h84wxckxa6rf882lep3d5mt3sleylqp8maqk",
+   "secret": "AGE-SECRET-KEY-1L25K7DNK44PK47J3ANTVT2MDW7QFKTCL0NUQVADDHSKU3XLFLZKQ60RRER"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"age:🧨\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age16qghx7a0argclcc7lxdl8zvyupxh8724256ux8zh62wlzj4auu3se597st",
+   "fingerprint": "age16qghx7a0argclcc7lxdl8zvyupxh8724256ux8zh62wlzj4auu3se597st",
+   "secret": "AGE-SECRET-KEY-182KWXGPXDE4D0WUFMSVL88DL3K5H5DKDV9C50QQXJ3PSK0G80ZWSWE8T8H"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"age:🇺🇸 & 👍🏽\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1h7nmcr5j8prp8shh2s0rgkrx3ypcammvng2h93mjl62vn4v4lfssxlf4pw",
+   "fingerprint": "age1h7nmcr5j8prp8shh2s0rgkrx3ypcammvng2h93mjl62vn4v4lfssxlf4pw",
+   "secret": "AGE-SECRET-KEY-1XEKWYJGMWPA72YYWL9H00C65CHRU6WHTZQKLQ6XGJ7SLSYQGRMNSFX6QV9"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"age:مفتاح الخادم\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age15p9cjgtrcmgwpl7r03ma50fc4ugwwel39qpqp9k504hqry7mg9es07tn2n",
+   "fingerprint": "age15p9cjgtrcmgwpl7r03ma50fc4ugwwel39qpqp9k504hqry7mg9es07tn2n",
+   "secret": "AGE-SECRET-KEY-1J4MKTL83W3897MRQ8SNU0CSJAP9H3NSC0QZ24EN9KE7H89Y9CGPSESD3GS"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"age:日本語の鍵\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1vg7eu0mh8rjy8eq6dqw0umgq2yc8v6mlgrq747hjfr08yp6zzalsl55p6y",
+   "fingerprint": "age1vg7eu0mh8rjy8eq6dqw0umgq2yc8v6mlgrq747hjfr08yp6zzalsl55p6y",
+   "secret": "AGE-SECRET-KEY-12S6HYVKNWZSKQP9AX3TKKV8QKVKCS7PH6FQVKDD4H9MQ3A2QMYQQ02KXY4"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"age:no break / <tag> 'single'\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age14469s6nvn7w3gve6hlwv3spr2mmrvq27mrm9y7kp62jvyprvxd7qf74m8e",
+   "fingerprint": "age14469s6nvn7w3gve6hlwv3spr2mmrvq27mrm9y7kp62jvyprvxd7qf74m8e",
+   "secret": "AGE-SECRET-KEY-19RQ7GZ9FJ6Y4FF9XS99GLD4JSZQF8E8WAD8UDDXMGDUV0RHX440QPG6S8Z"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"age:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1zv0kesatljfl34lrg6jwnzmp044pu3j3xz2w4ee9f76qcp5src3srwdf2q",
+   "fingerprint": "age1zv0kesatljfl34lrg6jwnzmp044pu3j3xz2w4ee9f76qcp5src3srwdf2q",
+   "secret": "AGE-SECRET-KEY-1U3CPGVF65FMKSD2LRCJ2PZNVX6JFYQMRC9DYXZFGNMVPNWS8D08SWFS469"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "age",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"age:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "UnsealingKey",
+   "publicKey": "age1kwtqjkkqprttuss4vsj7xkgv7v6gp4m2v25szhumsjcfyxe0ycgq5hv7gu",
+   "fingerprint": "age1kwtqjkkqprttuss4vsj7xkgv7v6gp4m2v25szhumsjcfyxe0ycgq5hv7gu",
+   "secret": "AGE-SECRET-KEY-1DY3664S7N9DFRVVHV08FY4V3ZENDUMSTU40XP3ZMDHWQJ3NEZ60QNVERHX"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"purpose\":\"wallet:github\"}",
+   "type": "Secret",
+   "secret": "vehicle dentist limit acid use manual elegant sentence violin notice drill super coyote spoil skull verify visa town brass scrub light auction armor matter"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"purpose\":\"wallet:homelab host\"}",
+   "type": "Secret",
+   "secret": "open valley rifle alarm pumpkin depart thing gym position rural phone draw apology slogan empty alcohol weasel prize cute gallery width approve truth solution"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"purpose\":\"wallet:Ünïcode café\"}",
+   "type": "Secret",
+   "secret": "laptop network file erase december mimic bid crouch crawl language monitor govern borrow skill onion juice salmon helmet mention shift oblige uniform crazy enable"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "quote \" and \\ backslash",
+   "name": "quote \" and \\ backslash",
+   "recipe": "{\"purpose\":\"wallet:quote \\\" and \\\\ backslash\"}",
+   "type": "Secret",
+   "secret": "already dish foster predict atom aerobic carry banana blood nature host prefer reason hope inmate teach guess collect gain physical amazing smile update invite"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "  trimmed　",
+   "name": "trimmed",
+   "recipe": "{\"purpose\":\"wallet:trimmed\"}",
+   "type": "Secret",
+   "secret": "soft submit tobacco cross marine letter stool elder hedgehog lobster wrestle anxiety grant any tank atom flat foot fat tuna scissors barely book panda"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "café",
+   "name": "café",
+   "recipe": "{\"purpose\":\"wallet:café\"}",
+   "type": "Secret",
+   "secret": "shed version fitness kitten weekend report mimic comic fiscal borrow cabin ancient infant potato gift honey view manage alone unique addict whale fold arm"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": " ́x",
+   "name": "́x",
+   "recipe": "{\"purpose\":\"wallet:́x\"}",
+   "type": "Secret",
+   "secret": "like twist stomach swarm simple salmon remain fiber movie crawl fade skill citizen dash jar region regular month rookie drip payment nut rabbit slot"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "line separator",
+   "name": "line separator",
+   "recipe": "{\"purpose\":\"wallet:line separator\"}",
+   "type": "Secret",
+   "secret": "remove carbon mixed party comic decline trap swing govern person category victory success absurd parade affair child truck girl caught jealous girl pilot reveal"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "👩‍💻 laptop",
+   "name": "👩‍💻 laptop",
+   "recipe": "{\"purpose\":\"wallet:👩‍💻 laptop\"}",
+   "type": "Secret",
+   "secret": "twin thought assault barrel square limb strong ancient atom icon ignore panic purse fix dignity viable high stairs crucial decide fish twist isolate agree"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "🧨",
+   "name": "🧨",
+   "recipe": "{\"purpose\":\"wallet:🧨\"}",
+   "type": "Secret",
+   "secret": "fly consider clutch baby economy dwarf chef trash dolphin lyrics burst mobile mother crystal liquid bounce bar bronze math twelve between brisk seven situate"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "🇺🇸 & 👍🏽",
+   "name": "🇺🇸 & 👍🏽",
+   "recipe": "{\"purpose\":\"wallet:🇺🇸 & 👍🏽\"}",
+   "type": "Secret",
+   "secret": "powder reflect crowd boy office slush make odor abandon security deny test calm alter relax sad eternal core despair axis salt movie confirm attend"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "مفتاح الخادم",
+   "name": "مفتاح الخادم",
+   "recipe": "{\"purpose\":\"wallet:مفتاح الخادم\"}",
+   "type": "Secret",
+   "secret": "cloth warrior code squeeze pilot fringe relief smoke umbrella glow artwork fancy title entire gloom write boy catch shoe hat tray foam motion extra"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "日本語の鍵",
+   "name": "日本語の鍵",
+   "recipe": "{\"purpose\":\"wallet:日本語の鍵\"}",
+   "type": "Secret",
+   "secret": "clap position history wage acid pattern current pitch obvious carpet either fancy flight motion dumb eyebrow silly senior giant apology rabbit immune symbol fluid"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "no break / <tag> 'single'",
+   "name": "no break / <tag> 'single'",
+   "recipe": "{\"purpose\":\"wallet:no break / <tag> 'single'\"}",
+   "type": "Secret",
+   "secret": "task occur asthma swamp doll access fix glue giggle heavy inhale leaf spirit awkward brief feature near mansion wonder arrive tiger hurdle motor subway"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "name": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+   "recipe": "{\"purpose\":\"wallet:éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé\"}",
+   "type": "Secret",
+   "secret": "elegant flip suspect wife host summer tennis network village deposit side day develop noodle cherry income student ignore denial patch patrol enable swallow float"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "wallet",
+   "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "recipe": "{\"purpose\":\"wallet:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "type": "Secret",
+   "secret": "alter rifle midnight tomorrow casual there boring fruit base fortune blouse wage breeze civil economy tonight around energy assist ticket someone pelican initial angle"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInChars\":24,\"purpose\":\"passphrase:github\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 24,
+     "symbols": false
+    }
+   },
+   "secret": "i7Kka4FsMYJyDC2ffxqNbyJR"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInChars\":24,\"purpose\":\"passphrase:homelab host\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 24,
+     "symbols": false
+    }
+   },
+   "secret": "XVdkpRDEYjoDzBMTdgHNxSmz"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInChars\":24,\"purpose\":\"passphrase:Ünïcode café\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 24,
+     "symbols": false
+    }
+   },
+   "secret": "zgjKvEcsAgq4HfvkiVqhX8DW"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInChars\":12,\"purpose\":\"passphrase:github\",\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 12,
+     "symbols": true
+    }
+   },
+   "secret": "fKLJVXCwmvrT"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInChars\":12,\"purpose\":\"passphrase:homelab host\",\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 12,
+     "symbols": true
+    }
+   },
+   "secret": "kkdUyKuWHTcz"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInChars\":12,\"purpose\":\"passphrase:Ünïcode café\",\"wordList\":\"CHARS_67_letters_digits_symbols_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 12,
+     "symbols": true
+    }
+   },
+   "secret": "P$v87_-CjQMW"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInChars\":64,\"purpose\":\"passphrase:github\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 64,
+     "symbols": false
+    }
+   },
+   "secret": "5sfdDnqAkjxf737X7WKtoRAeXK5C6EtqrxRUqGwQv3kSbDkD6jwm4ovWpnBSo54C"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInChars\":64,\"purpose\":\"passphrase:homelab host\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 64,
+     "symbols": false
+    }
+   },
+   "secret": "QBxmFt3LwLCwCmAo8tbemb3rqG9VZf2SgZAEYHc9x9bGBxTtuPXYPcBwTPAAFshG"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInChars\":64,\"purpose\":\"passphrase:Ünïcode café\",\"wordList\":\"CHARS_57_letters_digits_20261002\"}",
+   "type": "Password",
+   "style": {
+    "random": {
+     "length": 64,
+     "symbols": false
+    }
+   },
+   "secret": "AbZV9pMn63ZD3UqmKM2vvEB6wQidENKU4j2adYDiV5kDS8Ed62jVH7ZXRNPmyGRs"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"lengthInWords\":6,\"purpose\":\"passphrase:github\",\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 6,
+     "digitAndCapital": false
+    }
+   },
+   "secret": "deed-vendetta-relocate-onion-flock-rubbed"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"lengthInWords\":6,\"purpose\":\"passphrase:homelab host\",\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 6,
+     "digitAndCapital": false
+    }
+   },
+   "secret": "swinging-cotton-playset-balancing-fragment-strongbox"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"lengthInWords\":6,\"purpose\":\"passphrase:Ünïcode café\",\"separator\":\"-\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 6,
+     "digitAndCapital": false
+    }
+   },
+   "secret": "starless-steadily-racism-waged-sternum-roster"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":4,\"purpose\":\"passphrase:github\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 4,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "dreamily4retold9tidbit7ACROBAT"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":4,\"purpose\":\"passphrase:homelab host\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 4,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "stagnant1candle0STABILITY2deacon"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":4,\"purpose\":\"passphrase:Ünïcode café\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 4,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "savage4GRANULAR1contempt0cartoon"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "github",
+   "name": "github",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":10,\"purpose\":\"passphrase:github\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 10,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "arise3snowdrift0grafted1lagging0detest3geologist0unplowed2BRILLIANT1overhung4backpedal"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "homelab host",
+   "name": "homelab host",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":10,\"purpose\":\"passphrase:homelab host\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 10,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "shrubbery9narrow0sadness8VELCRO0thee4getup0wildcard3boastful6sensually9mashed"
+  },
+  {
+   "seed": "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+   "kind": "passphrase",
+   "input": "Ünïcode café",
+   "name": "Ünïcode café",
+   "recipe": "{\"capitalize\":true,\"lengthInWords\":10,\"purpose\":\"passphrase:Ünïcode café\",\"separator\":\"digits\",\"wordList\":\"EFF_large_7776_words_9_chars_max_20160719\"}",
+   "type": "Password",
+   "style": {
+    "memorable": {
+     "words": 10,
+     "digitAndCapital": true
+    }
+   },
+   "secret": "crumb8crumpet9scrounger8renovator4overhaul1certified6impromptu3john0ritalin6MOM"
+  }
+ ]
+}

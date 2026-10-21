@@ -13,11 +13,13 @@ import Testing
 @Suite("OpenSSH against the C++")
 struct OpenSSHComparisonTests {
     static let signingCases = fixture.cases.filter { $0.type == "SigningKey" }
+    /// What the reference implementation's public lines end in.
+    static let referenceComment = "DiceKeys"
 
     @Test("public lines and masked private keys are identical", arguments: signingCases)
     func matchesFixture(vector: Vector) throws {
         let key = try SigningKey.derive(seed: vector.seed, recipe: vector.recipe)
-        #expect(OpenSSH.publicKeyLine(key) == vector.openSshPublicKey)
+        #expect(OpenSSH.publicKeyLine(key, comment: Self.referenceComment) == vector.openSshPublicKey)
         let recorded = try #require(vector.openSshPemPrivateKey)
         let ours = OpenSSH.privateKeyPEM(key, comment: vector.sshComment ?? "")
         #expect(ours.count == recorded.count)
@@ -44,7 +46,8 @@ struct OpenSSHComparisonTests {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: directory) }
             let file = directory.appendingPathComponent("key")
-            try OpenSSH.privateKeyPEM(key, comment: "alice@laptop").write(to: file, atomically: true, encoding: .utf8)
+            let comment = "alice@laptop"
+            try OpenSSH.privateKeyPEM(key, comment: comment).write(to: file, atomically: true, encoding: .utf8)
             try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: file.path)
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/ssh-keygen")
@@ -56,8 +59,7 @@ struct OpenSSHComparisonTests {
             let output = String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             #expect(process.terminationStatus == 0)
-            // ssh-keygen prints the key's own comment instead of the fixed "DiceKeys".
-            #expect(output == OpenSSH.publicKeyLine(key).replacingOccurrences(of: " DiceKeys", with: " alice@laptop"))
+            #expect(output == OpenSSH.publicKeyLine(key, comment: comment))
         #endif
     }
 }

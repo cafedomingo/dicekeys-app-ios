@@ -44,6 +44,15 @@ jobs:
         run: ruff format --check scripts
       - name: shellcheck
         run: shellcheck scripts/*.sh
+      # kinds.json comes from the independent Python implementation; the real tools and the
+      # BIP39 reference read every key back, and the Swift tests then match it on macOS.
+      - name: Key kinds
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends age wireguard-tools
+          python3 -m venv "$RUNNER_TEMP/kinds"
+          "$RUNNER_TEMP/kinds/bin/pip" install -r scripts/requirements.txt
+          "$RUNNER_TEMP/kinds/bin/python" scripts/derive-kinds.py --tools
       # actionlint also runs shellcheck over each workflow `run:` block.
       - name: actionlint
         run: actionlint
