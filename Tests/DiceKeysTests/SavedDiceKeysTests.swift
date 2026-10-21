@@ -48,6 +48,23 @@ struct SavedDiceKeysTests {
         #expect(SavedDiceKeys().contains(id: diceKey.id))
     }
 
+    /// Saved items outlive app versions: an item is the DiceKey's 75-character text, named
+    /// by its id, and both are pinned here as literals.
+    @Test("a saved item reads back as the DiceKey its name says")
+    func savedItemFormat() throws {
+        let text = "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t"
+        let read = try SavedDiceKeys.diceKey(from: Data(text.utf8), id: "FDWCWOqOuLX6kRVI9K31_A")
+        #expect(read.humanReadableForm == diceKey.humanReadableForm)
+    }
+
+    @Test("an item holding a different DiceKey than its name says is refused, not unlocked")
+    func mismatchedItemIsRefused() throws {
+        let other = try DiceKey(humanReadableForm: "B2rA1t" + diceKey.humanReadableForm.dropFirst(6))
+        #expect(throws: SavedDiceKeys.Mismatch.self) {
+            try SavedDiceKeys.diceKey(from: Data(other.humanReadableForm.utf8), id: diceKey.id)
+        }
+    }
+
     @Test("the saved DiceKey is stored behind an access control")
     func savedKeyCarriesAnAccessControl() throws {
         defer { try? saved.delete(id: diceKey.id) }

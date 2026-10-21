@@ -95,7 +95,7 @@ struct PassphraseStyleSection: View {
             .pickerStyle(.segmented)
             if style.isMemorable {
                 CountSlider(unit: "words", count: $style.wordCount, range: PassphraseStyle.memorableWords)
-                Toggle("Add a digit and a capital", isOn: $style.addsDigitAndCapital)
+                Toggle("Add digits and an uppercase word", isOn: $style.addsDigitsAndUppercase)
             } else {
                 CountSlider(unit: "characters", count: $style.characterCount, range: PassphraseStyle.randomLengths)
                 Toggle("Include symbols", isOn: $style.includesSymbols)
@@ -153,11 +153,15 @@ extension PassphraseStyle {
 
     var wordCount: Int {
         get { if case .memorable(let words, _) = self { words } else { 0 } }
-        set { if case .memorable(_, let extra) = self { self = .memorable(words: newValue, digitAndCapital: extra) } }
+        set {
+            if case .memorable(_, let extra) = self { self = .memorable(words: newValue, digitsAndUppercase: extra) }
+        }
     }
 
-    var addsDigitAndCapital: Bool {
+    var addsDigitsAndUppercase: Bool {
         get { if case .memorable(_, let extra) = self { extra } else { false } }
-        set { if case .memorable(let words, _) = self { self = .memorable(words: words, digitAndCapital: newValue) } }
+        set {
+            if case .memorable(let words, _) = self { self = .memorable(words: words, digitsAndUppercase: newValue) }
+        }
     }
 }

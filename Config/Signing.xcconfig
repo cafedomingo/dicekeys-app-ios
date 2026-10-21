@@ -6,8 +6,10 @@
 //     DEVELOPMENT_TEAM = ABCDE12345   // Xcode > Settings > Accounts
 //
 // APP_BUNDLE_ID is this fork's own identifier: `com.dicekeys` belongs to DiceKeys, LLC,
-// and identifiers are globally unique, so no other team can sign or upload with it.
-// Override it here too if you build this under a different account.
+// and identifiers are globally unique, so no other team can sign or upload with it. It
+// names where the app's data lives (keychain items, settings, the iCloud container), so it
+// is fixed: CompatibilityTests fails for a build under another identifier, which then
+// starts with none of this one's data.
 
 DEVELOPMENT_TEAM =
 APP_BUNDLE_ID = com.cafedomingo.dicekeys

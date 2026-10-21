@@ -3,7 +3,7 @@
 //  DiceKeys
 //
 //  What the user has made, and nothing that unlocks it: DiceKeys by their one-way id, and
-//  the kind, name and style of each key, which is everything needed to derive it again. It
+//  each key's recipe, which is everything needed to derive it again. It
 //  can sync through the user's private CloudKit database, so every attribute has a default
 //  and none is unique, as CloudKit requires.
 //
@@ -40,30 +40,22 @@ final class DiceKeyRecord {
 @Model
 final class KeyEntry {
     var diceKeyID = ""
-    var kind = KeyKind.ssh.rawValue
-    var name = ""
-    /// A passphrase's `PassphraseStyle`, JSON-encoded; nil for other kinds.
-    var style: Data?
+    /// The recipe's canonical text, the bytes its key was derived from, so no Swift type
+    /// shapes what is stored or synced.
+    var recipeJSON = ""
     /// Recorded to show and compare by eye, never checked.
     var publicKey: String?
     var created = Date.now
 
     init(diceKeyID: String, recipe: KeyRecipe, publicKey: String?) {
         self.diceKeyID = diceKeyID
-        kind = recipe.kind.rawValue
-        name = recipe.name
-        style = recipe.style.flatMap { try? JSONEncoder().encode($0) }
+        recipeJSON = recipe.json
         self.publicKey = publicKey
     }
 
-    /// Nil for an entry a later version wrote, with a kind or a passphrase style this one
-    /// can't read: guessing would show a different key as if it were this one.
-    var recipe: KeyRecipe? {
-        guard let kind = KeyKind(rawValue: kind) else { return nil }
-        guard kind == .passphrase else { return try? KeyRecipe(kind: kind, name: name) }
-        guard let style, let decoded = try? JSONDecoder().decode(PassphraseStyle.self, from: style) else { return nil }
-        return try? KeyRecipe(kind: kind, name: name, style: decoded)
-    }
+    /// Nil for an entry a later version wrote, with a kind or field this one can't read:
+    /// guessing would show a different key as if it were this one.
+    var recipe: KeyRecipe? { try? KeyRecipe(json: recipeJSON) }
 }
 
 enum Catalog {
@@ -71,7 +63,7 @@ enum Catalog {
     /// The setting as the app launched. The store opens once per launch, because two
     /// CloudKit mirrors on one store file aren't supported, so a change applies at the next.
     static let syncsThisLaunch = UserDefaults.standard.bool(forKey: syncSettingKey)
-    private static let storeName = "Catalog"
+    static let storeName = "Catalog"
 
     /// The same store file either way, so turning sync on or off keeps what is there.
     /// `.automatic` syncs through the iCloud container in the entitlements.
@@ -93,9 +85,7 @@ extension ModelContext {
 
     func entries(for diceKeyID: String) throws -> [KeyEntry] {
         try fetch(
-            FetchDescriptor<KeyEntry>(
-                predicate: #Predicate { $0.diceKeyID == diceKeyID },
-                sortBy: [SortDescriptor(\.name), SortDescriptor(\.created)])
+            FetchDescriptor<KeyEntry>(predicate: #Predicate { $0.diceKeyID == diceKeyID })
         ).uniqueKeys
     }
 
@@ -160,9 +150,20 @@ extension DiceKeyRecord {
 
 extension [KeyEntry] {
     /// Two devices can make the same key before they sync, so entries are told apart by
-    /// what they derive, not by row. Entries this version can't read are left out.
+    /// what they derive, not by row, and the oldest copy stands for the key. Entries this
+    /// version can't read are left out. Sorted by name, then age: the name is only in the
+    /// recipe text, which the store can't sort by.
     var uniqueKeys: [KeyEntry] {
         var seen = Set<KeyRecipe>()
-        return filter { entry in entry.recipe.map { seen.insert($0).inserted } ?? false }
+        return compactMap { entry in entry.recipe.map { (entry: entry, recipe: $0) } }
+            .sorted { lhs, rhs in
+                switch lhs.recipe.name.localizedStandardCompare(rhs.recipe.name) {
+                case .orderedAscending: true
+                case .orderedDescending: false
+                case .orderedSame: lhs.entry.created < rhs.entry.created
+                }
+            }
+            .filter { seen.insert($0.recipe).inserted }
+            .map(\.entry)
     }
 }

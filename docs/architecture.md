@@ -11,16 +11,15 @@ wallet phrases) from a DiceKey, and stores no secret. It is one SwiftUI target (
 later, macOS to follow) on Observation, async/await and Swift 6 strict concurrency, with
 Liquid Glass chrome, and no external dependencies. A DiceKey is scanned with the camera or
 typed by hand. Two local Swift packages supply the rest: `Derivation` (targets `Derivation`,
-for recipes and derived values, `KeyFormats`, for key encodings and BIP39, and `BLAKE2`, the
-hash the derivation is built on) and `ReadDiceKey` (the generated face specification and the
-DiceKey scanner). There is no Objective-C or C++ in the tree.
+for recipes and derived values, and `KeyFormats`, for key encodings and BIP39) and
+`ReadDiceKey` (the generated face specification and the DiceKey scanner). There is no Objective-C or C++ in the tree.
 
 ## Goals, in priority order
 
 1. **Always be able to read a DiceKey and re-derive the same secrets.** The derivation and
-   the scanner are Swift, built from sources in this repository. Vectors recorded from the
-   reference implementation and from an independent Python script guard the derivation
-   output; a corpus of photos of real keys guards the scanner. Any change that alters
+   the scanner are Swift, built from sources in this repository. An independent Python
+   implementation and RFC 5869's HKDF vectors guard the derivation output; a corpus of
+   photos of real keys guards the scanner. Any change that alters
    derived output is a bug.
 2. Build with current Xcode against the current SDKs, Swift 6 language mode, strict
    concurrency, no deprecated APIs. GitHub Actions macOS runners are the compiler for this
@@ -42,11 +41,11 @@ opened from a `DiceKeyScreen` pushed over it. A phone shows the same columns as 
 - **The keychain service** (`SavedDiceKeys`) can keep a DiceKey on this device behind user
   presence (Face ID, Touch ID or the passcode). It is never synced or restored elsewhere.
 - **The catalog** (SwiftData, `Model/Catalog.swift`: `DiceKeyRecord`, `KeyEntry`) holds only
-  non-secret metadata: a DiceKey's one-way id, name and center face, and each key's kind,
-  name, passphrase style and public key. A DiceKey and a kind and a name derive the same key
-  every time, so that is everything needed to make it again.
-- **`Derivation`**: `KeyRecipe` turns a kind and a name into recipe text from a fixed
-  template, and `DerivedKey` derives and encodes it. `Fixtures/kinds.json` is written by
+  non-secret metadata: a DiceKey's one-way id, name and center face, and each key's recipe
+  text and public key. The recipe text is the exact bytes the key was derived from, stored
+  rather than any Swift type, so the same DiceKey derives the same key from it every time.
+- **`Derivation`**: `KeyRecipe` turns a kind and a name into canonical recipe JSON, and
+  reads it back only in that form; `DerivedKey` derives and encodes it. `Fixtures/kinds.json` is written by
   `scripts/derive-kinds.py`, an independent implementation.
 - **`ReadDiceKey`** is the scanner.
 
@@ -68,6 +67,21 @@ Packages/
 Tests/DiceKeysTests/    Swift Testing
 Tests/DiceKeysUITests/  ScreenWalk, run by scripts/screen-walk.sh, not by CI
 ```
+
+## Compatibility
+
+Everything the app writes outside itself must read the same in every later version, and a
+test pins each part. If one fails, the change breaks data already written: fix the change,
+never the test. Formats grow only by adding; anything else needs a migration, decided on
+purpose.
+
+| What | Pinned by |
+|---|---|
+| Derived keys, seeds and the DiceKey id (`derivation.md`) | `kinds.json`: `KindVectorTests`, `DiceKeySeedTests` |
+| Paper and exported files (`catalog-format.md`) | the v1 fixtures: `CatalogFormatV1Tests` |
+| The store, synced to devices on other versions: attributes may be added, never renamed, removed or retyped | `CompatibilityTests` |
+| The bundle identifier, store name, sync setting, URL scheme and recovery prefix | `CompatibilityTests` |
+| A saved DiceKey: its text, named by its id | `SavedDiceKeysTests` |
 
 ## Patterns
 
@@ -119,8 +133,8 @@ permissions error until it is accepted.
 
 GitHub-hosted macOS runners, currently Xcode 26.6:
 
-- `swift test -c release` for each package: in `Packages/Derivation` the recorded vectors,
-  recipe validation, the key formats and the BLAKE2b known answers, and in
+- `swift test -c release` for each package: in `Packages/Derivation` the kinds fixture,
+  recipe validation, the key formats and RFC 5869's HKDF vectors, and in
   `Packages/ReadDiceKey` the scanner over upstream's photos, the owner's photos and video,
   and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
@@ -142,11 +156,12 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## How the safety nets work
 
-- `Packages/Derivation/Tests/DerivationTests/Fixtures/vectors.json` was recorded from the
-  reference C++ and cannot be regenerated. If `VectorTests` fails, derived secrets have
-  changed; fix the code, not the fixture.
-- `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to the
-  same fixture, and proves every rotation of a key derives the same seed. That last test is
+- `Packages/Derivation/Tests/DerivationTests/Fixtures/kinds.json` comes from the independent
+  `scripts/derive-kinds.py`. If `KindVectorTests` fails, derived secrets have changed; fix
+  the code, not the fixture.
+- `Tests/DiceKeysTests/DiceKeySeedTests.swift` ties the app's DiceKey canonicalization to
+  seeds recorded from the reference C++, and proves every rotation of a key derives the same
+  seed. That last test is
   why the rotation bugs were display problems rather than security ones.
 - `Packages/ReadDiceKey/Tests/ReadDiceKeyTests/` runs the scanner over upstream's photos and
   the owner's photos and video (the file names are the expected reads): it must never read a
@@ -156,8 +171,8 @@ Never run on hardware: this Mac as Designed for iPad, and any iPad at all.
 
 ## Licensing, before this goes anywhere public
 
-seeded-crypto (the origin of the derivation port) and the BIP-39 word list are MIT,
-Inconsolata is OFL, the BLAKE2 test vectors are CC0, and `THIRD_PARTY_LICENSES` records
+seeded-crypto (whose design the derivation follows) and the BIP-39 word list are MIT,
+Inconsolata is OFL, the EFF word list is CC BY 4.0, and `THIRD_PARTY_LICENSES` records
 each one with its origin and commit. The DiceKeys-derived parts, meaning the scanner and
 the photo corpus, still carry only upstream's "all rights reserved while we choose a
 license" placeholder. That is why the README says personal use and TestFlight only, and why

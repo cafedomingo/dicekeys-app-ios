@@ -2,61 +2,55 @@
   "diceKeys" : [
     {
       "centerFace" : "M1t",
-      "id" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "id" : "FDWCWOqOuLX6kRVI9K31_A",
       "name" : "Example"
     }
   ],
   "keys" : [
     {
-      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "ssh",
       "name" : "🧨 & 日本語",
-      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjdWRsDmtQO/n3yhwf6ujA3PiX6O4Zyx688UIqVdinz 🧨 & 日本語"
+      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKOKw5/SUzspex/7iPIdgTo5b3gfo1jJj3mSyNgEsAsZ 🧨 & 日本語"
     },
     {
-      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "age",
       "name" : "backups",
-      "publicKey" : "age184zku2dtmkr2xxfhjjwxw9s2wygde64v4luyhd2znxltm5q835asfljptc"
+      "publicKey" : "age16euqqdmzqq68xpnvjz20tup3hgx88psq8gm6hkcsc9n8g9resf7s3e7ech"
     },
     {
-      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "passphrase",
+      "length" : 6,
+      "list" : "eff_large_wordlist",
       "name" : "bank",
-      "style" : {
-        "memorable" : {
-          "digitAndCapital" : true,
-          "words" : 6
-        }
-      }
+      "separator" : "digits",
+      "uppercase" : true
     },
     {
-      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "wallet",
       "name" : "cold"
     },
     {
-      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "ssh",
       "name" : "github",
-      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC1tGk3wqxyFVT6ECwjTH1WBJmchczYlObgy+pvht0ac github"
+      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPV+xcT+JMIYJNO8WksFA0Pg4CmPSvmupDIVVyGbj4nR github"
     },
     {
-      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "wireguard",
       "name" : "home",
-      "publicKey" : "uCVMtzuWcONUL0vyZrWl+wVuA7pBfEePZhvQHLw/hjU="
+      "publicKey" : "D8h1BtgAMqzRmUNrIjiA5nYWhkAlXgNUUztjJQrhems="
     },
     {
-      "diceKey" : "MfaXmmKOSAB4ARil3EZhKQ",
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "passphrase",
-      "name" : "nas",
-      "style" : {
-        "random" : {
-          "length" : 24,
-          "symbols" : false
-        }
-      }
+      "length" : 24,
+      "list" : "letters-digits",
+      "name" : "nas"
     }
   ],
   "v" : 1

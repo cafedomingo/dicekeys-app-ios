@@ -22,45 +22,19 @@ struct CatalogFile: Codable, Equatable {
         let centerFace: String
     }
 
+    /// A key is its recipe's own fields, the same as the hashed text, plus which DiceKey it
+    /// belongs to.
     struct KeyItem: Codable, Hashable {
         let diceKey: String
-        let kind: KeyKind
-        let name: String
-        let style: PassphraseStyle?
+        let recipe: KeyRecipe
         /// For reading in the file. Never imported: a file could carry anyone's key, so an
         /// entry's public key only ever comes from deriving it here.
         var publicKey: String?
 
-        init(diceKey: String, kind: KeyKind, name: String, style: PassphraseStyle?, publicKey: String? = nil) {
+        init(diceKey: String, recipe: KeyRecipe, publicKey: String? = nil) {
             self.diceKey = diceKey
-            self.kind = kind
-            self.name = name
-            self.style = style
+            self.recipe = recipe
             self.publicKey = publicKey
-        }
-    }
-
-    /// The passphrase style as the file writes it, kept here rather than taken from
-    /// `PassphraseStyle`'s own coding, so renaming a case or label there can't change paper
-    /// already printed.
-    fileprivate enum Style: Codable {
-        case random(length: Int, symbols: Bool)
-        case memorable(words: Int, digitAndCapital: Bool)
-
-        init(_ style: PassphraseStyle) {
-            switch style {
-            case .random(let length, let symbols): self = .random(length: length, symbols: symbols)
-            case .memorable(let words, let digitAndCapital):
-                self = .memorable(words: words, digitAndCapital: digitAndCapital)
-            }
-        }
-
-        var passphraseStyle: PassphraseStyle {
-            switch self {
-            case .random(let length, let symbols): .random(length: length, symbols: symbols)
-            case .memorable(let words, let digitAndCapital):
-                .memorable(words: words, digitAndCapital: digitAndCapital)
-            }
         }
     }
 
@@ -116,10 +90,7 @@ struct CatalogFile: Codable, Equatable {
     init(records: [DiceKeyRecord], entries: [KeyEntry]) {
         diceKeys = records.map { DiceKeyItem(id: $0.diceKeyID, name: $0.name, centerFace: $0.centerFace) }
         keys = entries.uniqueKeys.compactMap { entry in
-            entry.recipe.map {
-                KeyItem(
-                    diceKey: entry.diceKeyID, kind: $0.kind, name: $0.name, style: $0.style, publicKey: entry.publicKey)
-            }
+            entry.recipe.map { KeyItem(diceKey: entry.diceKeyID, recipe: $0, publicKey: entry.publicKey) }
         }
     }
 
@@ -171,9 +142,8 @@ struct CatalogFile: Codable, Equatable {
     }
 
     /// Adds what the catalog doesn't have yet, matching DiceKeys by id and keys by what they
-    /// derive. Names are held to the same rules as names typed in. Keys that can't be made
-    /// again here (no DiceKey for them, a name or style these rules refuse, or one this version
-    /// can't read) are counted as unreadable, never dropped silently.
+    /// derive. Keys that can't be made again here (no DiceKey for them, or a recipe this version
+    /// refuses or can't read) are counted as unreadable, never dropped silently.
     @discardableResult
     func merge(into context: ModelContext) throws -> (diceKeys: Int, keys: Int, unreadable: Int) {
         var added = (diceKeys: 0, keys: 0, unreadable: unreadableKeys)
@@ -183,15 +153,14 @@ struct CatalogFile: Codable, Equatable {
             added.diceKeys += 1
         }
         for item in keys {
-            guard try context.record(for: item.diceKey) != nil,
-                let recipe = try? KeyRecipe(kind: item.kind, name: item.name, style: item.style ?? .standard),
-                item.kind != .passphrase || item.style != nil
-            else {
+            guard try context.record(for: item.diceKey) != nil else {
                 added.unreadable += 1
                 continue
             }
-            guard try !context.entries(for: item.diceKey).contains(where: { $0.recipe == recipe }) else { continue }
-            context.insert(KeyEntry(diceKeyID: item.diceKey, recipe: recipe, publicKey: nil))
+            guard try !context.entries(for: item.diceKey).contains(where: { $0.recipe == item.recipe }) else {
+                continue
+            }
+            context.insert(KeyEntry(diceKeyID: item.diceKey, recipe: item.recipe, publicKey: nil))
             added.keys += 1
         }
         try context.save()
@@ -200,25 +169,35 @@ struct CatalogFile: Codable, Equatable {
 }
 
 extension CatalogFile.KeyItem {
-    private enum CodingKeys: CodingKey {
-        case diceKey, kind, name, style, publicKey
+    private enum CodingKeys: String, CodingKey {
+        case diceKey, publicKey
+    }
+
+    /// Any field that is neither the catalog's nor the recipe's, such as one a later version
+    /// adds to recipes, makes the key unreadable rather than read as a different recipe.
+    private struct AnyKey: CodingKey {
+        let stringValue: String
+        var intValue: Int? { nil }
+        init(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { nil }
     }
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         diceKey = try container.decode(String.self, forKey: .diceKey)
-        kind = try container.decode(KeyKind.self, forKey: .kind)
-        name = try container.decode(String.self, forKey: .name)
-        style = try container.decodeIfPresent(CatalogFile.Style.self, forKey: .style)?.passphraseStyle
         publicKey = try container.decodeIfPresent(String.self, forKey: .publicKey)
+        recipe = try KeyRecipe(from: decoder)
+        let catalogKeys = Set([CodingKeys.diceKey, .publicKey].map(\.stringValue))
+        let fields = try decoder.container(keyedBy: AnyKey.self).allKeys.map(\.stringValue)
+        guard Set(fields).subtracting(catalogKeys) == Set(recipe.fieldNames) else {
+            throw CatalogFile.Failure.notACatalog
+        }
     }
 
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(diceKey, forKey: .diceKey)
-        try container.encode(kind, forKey: .kind)
-        try container.encode(name, forKey: .name)
-        try container.encodeIfPresent(style.map(CatalogFile.Style.init), forKey: .style)
         try container.encodeIfPresent(publicKey, forKey: .publicKey)
+        try recipe.encode(to: encoder)
     }
 }

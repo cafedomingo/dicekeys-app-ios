@@ -45,13 +45,14 @@ Where in this repo:
     test photographs alongside the owner's; its README.md says which are which.
 
 
-3. dicekeys/seeded-crypto  (lib-seeded, the origin of the derivation port)
+3. dicekeys/seeded-crypto  (lib-seeded, whose design the derivation follows)
 --------------------------------------------------------------------------
 Origin:    https://github.com/dicekeys/seeded-crypto, branch primary, commit c9c7740
 Owner:     DiceKeys, LLC
 License:   MIT. Copyright (c) 2020 DiceKeys, LLC.
-Where:     the derivation construction, JSON layouts, key formats and word lists in
-           Packages/Derivation are ported from lib-seeded; no seeded-crypto source
+Where:     the derivation's design (a seed from the DiceKey, HKDF keyed by a type and a
+           recipe, passphrase entries as 8-byte blocks) and its key formats follow
+           lib-seeded; no seeded-crypto source, recipe format, word list or hash
            remains.
 
     MIT License
@@ -95,15 +96,7 @@ License:   MIT (BIP-39 is published under "License: MIT" in the BIPs repository)
 Where:     Packages/Derivation/Sources/KeyFormats/Wordlist.swift (the 2048 words, verbatim).
 
 
-6. BLAKE2 known-answer test vectors
------------------------------------
-Origin:    https://github.com/BLAKE2/BLAKE2/blob/master/testvectors/blake2-kat.json, commit ed1974e
-Owner:     The BLAKE2 authors
-License:   CC0 1.0 Universal (the repository's COPYING).
-Where:     Packages/Derivation/Tests/BLAKE2Tests/Fixtures/blake2b-kat.json (the blake2b entries only).
-
-
-7. EFF large wordlist
+6. EFF large wordlist
 ---------------------
 Origin:    https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt
 Owner:     Electronic Frontier Foundation

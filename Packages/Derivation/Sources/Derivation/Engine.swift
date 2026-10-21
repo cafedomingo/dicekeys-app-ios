@@ -4,23 +4,25 @@
 //
 
 import CryptoKit
+import Foundation
 
-/// HKDF over BLAKE2b for the bytes, CryptoKit for the curves.
+/// HKDF-SHA256 for the bytes, CryptoKit for the curves.
 enum Engine {
-    /// The recipe's text, not its parsed form, salts the derivation, so a byte of whitespace
-    /// or a reordered key yields a different secret.
-    static func secret(seed: String, type: DerivableType, recipe: Recipe) -> [UInt8] {
-        let info = Array(type.rawValue.utf8) + Array(recipe.json.utf8)
-        return recipe.hashFunction.derive(seed: Array(seed.utf8), info: info, outputLength: recipe.lengthInBytes)
+    static let keyLength = 32
+
+    /// RFC 5869 HKDF with SHA-256 and no salt. `info` is the type's name followed by the
+    /// recipe's text: the text itself, not what it means, so a changed byte is a different key.
+    static func bytes(seed: String, type: DerivableType, recipe: String, length: Int) -> [UInt8] {
+        let key = HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: SymmetricKey(data: Data(seed.utf8)), info: Data((type.rawValue + recipe).utf8),
+            outputByteCount: length)
+        return key.withUnsafeBytes { Array($0) }
     }
 
-    /// As crypto_box_seed_keypair does: the first 32 bytes of SHA-512 of the seed, unclamped.
-    /// The curve multiplication clamps.
-    static func x25519(secret: [UInt8]) -> (scalar: [UInt8], publicKey: [UInt8]) {
-        let scalar = Array(SHA512.hash(data: secret).prefix(32))
+    /// The public key of a scalar, which the curve multiplication clamps.
+    static func x25519PublicKey(scalar: [UInt8]) -> [UInt8] {
         do {
-            let key = try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: scalar)
-            return (scalar, Array(key.publicKey.rawRepresentation))
+            return Array(try Curve25519.KeyAgreement.PrivateKey(rawRepresentation: scalar).publicKey.rawRepresentation)
         } catch {
             preconditionFailure("X25519 rejected a 32-byte scalar: \(error)")
         }

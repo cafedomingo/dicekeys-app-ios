@@ -15,28 +15,14 @@ import Testing
 /// fixtures.
 @MainActor
 struct CatalogFormatV1Tests {
-    private static let id = "MfaXmmKOSAB4ARil3EZhKQ"
-
-    static let expected = CatalogFile(
-        diceKeys: [CatalogFile.DiceKeyItem(id: id, name: "Example", centerFace: "M1t")],
-        keys: [
-            CatalogFile.KeyItem(diceKey: id, kind: .ssh, name: "🧨 & 日本語", style: nil),
-            CatalogFile.KeyItem(diceKey: id, kind: .age, name: "backups", style: nil),
-            CatalogFile.KeyItem(
-                diceKey: id, kind: .passphrase, name: "bank", style: .memorable(words: 6, digitAndCapital: true)),
-            CatalogFile.KeyItem(diceKey: id, kind: .wallet, name: "cold", style: nil),
-            CatalogFile.KeyItem(diceKey: id, kind: .ssh, name: "github", style: nil),
-            CatalogFile.KeyItem(diceKey: id, kind: .wireguard, name: "home", style: nil),
-            CatalogFile.KeyItem(
-                diceKey: id, kind: .passphrase, name: "nas", style: .random(length: 24, symbols: false))
-        ])
+    private static let id = "FDWCWOqOuLX6kRVI9K31_A"
 
     private static var expectedRecipes: [KeyRecipe] {
         get throws {
             [
                 try KeyRecipe(kind: .ssh, name: "🧨 & 日本語"),
                 try KeyRecipe(kind: .age, name: "backups"),
-                try KeyRecipe(kind: .passphrase, name: "bank", style: .memorable(words: 6, digitAndCapital: true)),
+                try KeyRecipe(kind: .passphrase, name: "bank", style: .memorable(words: 6, digitsAndUppercase: true)),
                 try KeyRecipe(kind: .wallet, name: "cold"),
                 try KeyRecipe(kind: .ssh, name: "github"),
                 try KeyRecipe(kind: .wireguard, name: "home"),
@@ -45,11 +31,17 @@ struct CatalogFormatV1Tests {
         }
     }
 
+    static let expected = CatalogFile(
+        diceKeys: [CatalogFile.DiceKeyItem(id: id, name: "Example", centerFace: "M1t")],
+        // swiftlint:disable:next force_try
+        keys: try! expectedRecipes.map { CatalogFile.KeyItem(diceKey: id, recipe: $0) })
+
     @Test("the v1 file decodes to exactly these DiceKeys and keys")
     func fileDecodes() throws {
         var file = try CatalogFile(json: Fixture.data("catalog-v1.json"))
         #expect(file.diceKeys == Self.expected.diceKeys)
-        #expect(file.keys.filter { $0.kind != .passphrase && $0.kind != .wallet }.allSatisfy { $0.publicKey != nil })
+        let withPublicKeys = file.keys.filter { $0.recipe.kind != .passphrase && $0.recipe.kind != .wallet }
+        #expect(withPublicKeys.allSatisfy { $0.publicKey != nil })
         file.keys = file.keys.map {
             var key = $0
             key.publicKey = nil

@@ -207,7 +207,7 @@ extension View {
     /// Asks before deleting the key set in `entry`, saying how to get it back.
     func confirmsKeyDeletion(_ entry: Binding<KeyEntry?>, onDelete: @escaping (KeyEntry) -> Void) -> some View {
         alert(
-            "Delete \(entry.wrappedValue?.name ?? "")?",
+            "Delete \(entry.wrappedValue?.recipe?.name ?? "")?",
             isPresented: Binding(get: { entry.wrappedValue != nil }, set: { if !$0 { entry.wrappedValue = nil } }),
             presenting: entry.wrappedValue
         ) { entry in

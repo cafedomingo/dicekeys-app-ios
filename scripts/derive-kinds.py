@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Derives every key kind independently of the Swift code, for Fixtures/kinds.json.
 
-It reimplements the construction from docs/derivation.md (keyed BLAKE2b HKDF over the seed,
-info = type || recipe), the kind templates, encodings and password formatter from docs/derivation.md,
-reading only the word lists from the Swift sources. The Swift tests then check
-that the app derives the same values, so the fixture never comes from the code it checks.
+It reimplements docs/derivation.md: the seed's rotation, HKDF-SHA256 over the seed with
+info = type || recipe, the recipe format, the encodings, the passphrase formatter and the
+DiceKey id, reading only the EFF and BIP39 word lists from the Swift sources. The Swift tests
+then check that the app derives the same values, so the fixture never comes from the code it
+checks.
 
   python3 scripts/derive-kinds.py           check the fixture against this implementation
   python3 scripts/derive-kinds.py --write   rewrite the fixture, only to add cases
@@ -22,6 +23,7 @@ Needs scripts/requirements.txt: `cryptography` for Ed25519 and X25519, and `mnem
 
 import base64
 import hashlib
+import hmac
 import json
 import re
 import shutil
@@ -38,18 +40,38 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE = ROOT / "Packages" / "Derivation"
 FIXTURE = PACKAGE / "Tests" / "DerivationTests" / "Fixtures" / "kinds.json"
-VECTORS = PACKAGE / "Tests" / "DerivationTests" / "Fixtures" / "vectors.json"
-
-TYPE_NAMES = {
-    "ssh": "SigningKey",
-    "wireguard": "UnsealingKey",
-    "age": "UnsealingKey",
-    "passphrase": "Password",
-    "wallet": "Secret",
+# DiceKeys as typed, some in a non-canonical rotation, and the seeds the original DiceKeys C++
+# derived from them: this script's rotation rule must reproduce those.
+RECORDED_SEEDS = {
+    "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t": (
+        "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t"
+    ),
+    "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b": (
+        "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b"
+    ),
+    "I5lW5tZ5tY2tD3rU1lX3bB4bA2bL2lC1lO1tP1tM2bS1lT1bR3lN2lJ3lE2rF3rG3rV5tH1lK3r": (
+        "D3tL2bS1bE2tK3tY2lA2rM2rJ3bH1bZ5lB4rP1lN2bV5lW5lX3rO1lR3bG3tI5bU1bC1bT1rF3t"
+    ),
+    "N1rO6lX2tZ1lY5rA6rR1lE6bD2bM3bB4tP1tC6lU1tI3rK1tL6lW1rH1rJ2lF5lV4lT2rS4bG2l": (
+        "F5tK1rB4rA6bN1bV4tL6tP1rR1tO6tT2bW1bC6tE6lX2rS4lH1bU1rD2lZ1tG2tJ2tI3bM3lY5b"
+    ),
 }
-MEMORABLE_WORD_LIST = "EFF_large_7776_words_9_chars_max_20160719"
-LETTERS_DIGITS = "CHARS_57_letters_digits_20261002"
-LETTERS_DIGITS_SYMBOLS = "CHARS_67_letters_digits_symbols_20261002"
+SEEDS = [
+    "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t",
+    "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
+]
+
+# The type is hashed in front of the recipe: what the derived bytes become.
+TYPE_NAMES = {
+    "ssh": "ed25519",
+    "wireguard": "x25519",
+    "age": "x25519",
+    "passphrase": "passphrase",
+    "wallet": "bip39",
+}
+MEMORABLE_WORD_LIST = "eff_large_wordlist"
+LETTERS_DIGITS = "letters-digits"
+LETTERS_DIGITS_SYMBOLS = "letters-digits-symbols"
 CHARACTERS = {
     LETTERS_DIGITS: "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789",
     LETTERS_DIGITS_SYMBOLS: "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*-_?",
@@ -71,16 +93,19 @@ WHITE_SPACE = {
     0x205F,
     0x3000,
 }
-# The recipe's JSON field names and values, as Recipe.swift spells them.
-PURPOSE = "purpose"
-LENGTH_IN_CHARS = "lengthInChars"
-LENGTH_IN_WORDS = "lengthInWords"
+# The recipe's JSON field names and values, as KeyRecipe.swift spells them.
+KIND = "kind"
+NAME = "name"
+LENGTH = "length"
+LIST = "list"
 SEPARATOR = "separator"
-WORD_LIST = "wordList"
-CAPITALIZE = "capitalize"
+UPPERCASE = "uppercase"
 HYPHEN = "-"
 DIGITS_SEPARATOR = "digits"
 MAXIMUM_NAME_LENGTH = 64
+# The DiceKey id is its own type with no recipe: info is just the type.
+DICEKEY_ID_TYPE = "dicekey-id"
+DICEKEY_ID_LENGTH = 16
 ZERO_WIDTH_JOINER = "\u200d"
 TOOLS = ("ssh-keygen", "wg", "age-keygen")
 
@@ -106,9 +131,9 @@ STYLES = [
     {"random": {"length": 24, "symbols": False}},
     {"random": {"length": 12, "symbols": True}},
     {"random": {"length": 64, "symbols": False}},
-    {"memorable": {"words": 6, "digitAndCapital": False}},
-    {"memorable": {"words": 4, "digitAndCapital": True}},
-    {"memorable": {"words": 10, "digitAndCapital": True}},
+    {"memorable": {"words": 6, "digitsAndUppercase": False}},
+    {"memorable": {"words": 4, "digitsAndUppercase": True}},
+    {"memorable": {"words": 10, "digitsAndUppercase": True}},
 ]
 
 
@@ -123,14 +148,25 @@ MEMORABLE_WORDS = swift_strings(PACKAGE / "Sources" / "Derivation" / "WordLists+
 BIP39_WORDS = swift_strings(PACKAGE / "Sources" / "KeyFormats" / "Wordlist.swift", "english")
 
 
-def hkdf_blake2b(seed, info, length):
-    prk = hashlib.blake2b(seed.encode(), key=bytes(32), digest_size=32).digest()
+def hkdf_sha256(ikm, info, length, salt=bytes(32)):
+    """RFC 5869 HKDF with HMAC-SHA256. No salt is the RFC's 32 zero bytes."""
+    prk = hmac.new(salt, ikm, hashlib.sha256).digest()
     out, previous, counter = b"", b"", 1
     while len(out) < length:
-        previous = hashlib.blake2b(previous + info + bytes([counter]), key=prk, digest_size=32).digest()
+        previous = hmac.new(prk, previous + info + bytes([counter]), hashlib.sha256).digest()
         out += previous
         counter += 1
     return out[:length]
+
+
+def check_rfc5869():
+    """RFC 5869 appendix A, test cases 1 and 3; 3 has no salt, as the derivation does."""
+    okm = hkdf_sha256(bytes([0x0B] * 22), bytes.fromhex("f0f1f2f3f4f5f6f7f8f9"), 42, bytes(range(13)))
+    expected = "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
+    assert okm.hex() == expected, "RFC 5869 test case 1"
+    okm = hkdf_sha256(bytes([0x0B] * 22), b"", 42)
+    expected = "8da4e775a563c18f715f802a063c5a31b8a11f5c5ee1879ec3454e5f3c738d2d9d201395faa4b61a96c8"
+    assert okm.hex() == expected, "RFC 5869 test case 3"
 
 
 def normalized_name(name):
@@ -149,16 +185,16 @@ def normalized_name(name):
 def recipe_text(kind, name, style):
     """The recipe's fields in RFC 8785 (JCS) form, which for these flat ASCII-keyed objects is
     exactly Python's sorted, compact json.dumps."""
-    fields = {PURPOSE: f"{kind}:{name}"}
+    fields = {KIND: kind, NAME: name}
     if "random" in (style or {}):
         r = style["random"]
-        fields |= {LENGTH_IN_CHARS: r["length"], WORD_LIST: LETTERS_DIGITS_SYMBOLS if r["symbols"] else LETTERS_DIGITS}
+        fields |= {LENGTH: r["length"], LIST: LETTERS_DIGITS_SYMBOLS if r["symbols"] else LETTERS_DIGITS}
     elif "memorable" in (style or {}):
         m = style["memorable"]
-        separator = DIGITS_SEPARATOR if m["digitAndCapital"] else HYPHEN
-        fields |= {LENGTH_IN_WORDS: m["words"], SEPARATOR: separator, WORD_LIST: MEMORABLE_WORD_LIST}
-        if m["digitAndCapital"]:
-            fields[CAPITALIZE] = True
+        separator = DIGITS_SEPARATOR if m["digitsAndUppercase"] else HYPHEN
+        fields |= {LENGTH: m["words"], SEPARATOR: separator, LIST: MEMORABLE_WORD_LIST}
+        if m["digitsAndUppercase"]:
+            fields[UPPERCASE] = True
     return json.dumps(fields, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
@@ -168,18 +204,18 @@ def blocks(secret, size):
 
 
 def passphrase(seed, recipe, style):
-    info = b"Password" + recipe.encode()
+    info = TYPE_NAMES["passphrase"].encode() + recipe.encode()
     if "random" in style:
         chars = CHARACTERS[LETTERS_DIGITS_SYMBOLS if style["random"]["symbols"] else LETTERS_DIGITS]
         length = style["random"]["length"]
-        return "".join(chars[index] for index, _ in blocks(hkdf_blake2b(seed, info, length * 8), len(chars)))
+        return "".join(chars[index] for index, _ in blocks(hkdf_sha256(seed.encode(), info, length * 8), len(chars)))
     count = style["memorable"]["words"]
-    entries = blocks(hkdf_blake2b(seed, info, count * 8), len(MEMORABLE_WORDS))
+    entries = blocks(hkdf_sha256(seed.encode(), info, count * 8), len(MEMORABLE_WORDS))
     words = [MEMORABLE_WORDS[index] for index, _ in entries]
-    if not style["memorable"]["digitAndCapital"]:
+    if not style["memorable"]["digitsAndUppercase"]:
         return HYPHEN.join(words)
-    capital = entries[-1][1] % count
-    words[capital] = words[capital].upper()
+    upper = entries[-1][1] % count
+    words[upper] = words[upper].upper()
     joined = words[0]
     for i in range(1, count):
         joined += str(entries[i - 1][1] % 10) + words[i]
@@ -259,9 +295,9 @@ def derive(seed, kind, given, style):
         case["style"] = style
     info = TYPE_NAMES[kind].encode() + recipe.encode()
     if kind == "ssh":
-        case["publicKey"], case["fingerprint"], case["secret"] = ssh(hkdf_blake2b(seed, info, 32), name)
+        case["publicKey"], case["fingerprint"], case["secret"] = ssh(hkdf_sha256(seed.encode(), info, 32), name)
     elif kind in ("wireguard", "age"):
-        scalar = hashlib.sha512(hkdf_blake2b(seed, info, 32)).digest()[:32]
+        scalar = hkdf_sha256(seed.encode(), info, 32)
         public = X25519PrivateKey.from_private_bytes(scalar).public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
         if kind == "wireguard":
             case["publicKey"] = case["fingerprint"] = base64.b64encode(public).decode()
@@ -272,14 +308,37 @@ def derive(seed, kind, given, style):
     elif kind == "passphrase":
         case["secret"] = passphrase(seed, recipe, style)
     else:
-        case["secret"] = bip39(hkdf_blake2b(seed, info, 32))
+        case["secret"] = bip39(hkdf_sha256(seed.encode(), info, 32))
     return case
 
 
+def canonical_seed(text):
+    """The smallest of the four quarter turns' texts. A clockwise turn moves the die at row r,
+    column c to row c, column 4 - r, and turns its top t -> r -> b -> l -> t."""
+    faces = [text[i : i + 3] for i in range(0, 75, 3)]
+    turns = []
+    for _ in range(4):
+        turns.append("".join(faces))
+        faces = [faces[5 * (4 - c) + r] for r in range(5) for c in range(5)]
+        faces = [f[:2] + "trbl"["trbl".index(f[2]) + 1 - 4] for f in faces]
+    return min(turns)
+
+
+def hkdf_vector(seed, type_name, recipe, length):
+    """The construction alone, below any key format."""
+    output = hkdf_sha256(seed.encode(), type_name.encode() + recipe.encode(), length)
+    return {"seed": seed, "type": type_name, "recipe": recipe, "length": length, "output": output.hex()}
+
+
+def dicekey_id(seed):
+    """16 bytes as unpadded URL-safe base64."""
+    secret = hkdf_sha256(seed.encode(), DICEKEY_ID_TYPE.encode(), DICEKEY_ID_LENGTH)
+    return {"seed": seed, "id": base64.urlsafe_b64encode(secret).decode().rstrip("=")}
+
+
 def cases():
-    seeds = [key["seed"] for key in json.loads(VECTORS.read_text())["diceKeys"][:2]]
     result = []
-    for seed in seeds:
+    for seed in SEEDS:
         for kind in ("ssh", "wireguard", "age", "wallet"):
             for name in NAMES:
                 result.append(derive(seed, kind, name, None))
@@ -319,14 +378,28 @@ def check_tools(fixture):
                 derived = subprocess.run(["age-keygen", "-y", path], capture_output=True, text=True, check=True)
                 assert derived.stdout.strip() == case["publicKey"], case["name"]
             elif case["kind"] == "wallet":
-                entropy = hkdf_blake2b(case["seed"], case["type"].encode() + case["recipe"].encode(), 32)
+                entropy = hkdf_sha256(case["seed"].encode(), case["type"].encode() + case["recipe"].encode(), 32)
                 assert reference.check(case["secret"]), case["name"]
                 assert bytes(reference.to_entropy(case["secret"])) == entropy, case["name"]
     print("keys match", ", ".join(TOOLS), "and the BIP39 reference")
 
 
 def main():
-    fixture = {"origin": "scripts/derive-kinds.py", "cases": cases()}
+    check_rfc5869()
+    seeds = [{"text": text, "seed": canonical_seed(text)} for text in RECORDED_SEEDS]
+    assert all(entry["seed"] == RECORDED_SEEDS[entry["text"]] for entry in seeds), "the rotation rule"
+    passphrase = recipe_text("passphrase", "nas", {"random": {"length": 24, "symbols": False}})
+    fixture = {
+        "origin": "scripts/derive-kinds.py",
+        "seeds": seeds,
+        "hkdf": [
+            hkdf_vector(SEEDS[0], TYPE_NAMES["ssh"], recipe_text("ssh", "github", None), 32),
+            hkdf_vector(SEEDS[0], TYPE_NAMES["passphrase"], passphrase, 24 * 8),
+            hkdf_vector(SEEDS[1], DICEKEY_ID_TYPE, "", DICEKEY_ID_LENGTH),
+        ],
+        "diceKeyIds": [dicekey_id(seed) for seed in SEEDS],
+        "cases": cases(),
+    }
     if "--write" in sys.argv:
         FIXTURE.write_text(json.dumps(fixture, indent=1, ensure_ascii=False) + "\n")
         print(f"wrote {len(fixture['cases'])} cases")

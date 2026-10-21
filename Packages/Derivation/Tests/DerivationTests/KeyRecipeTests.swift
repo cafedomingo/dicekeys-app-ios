@@ -3,6 +3,7 @@
 //  DerivationTests
 //
 
+import Foundation
 import Testing
 
 @testable import Derivation
@@ -48,25 +49,26 @@ func invisibleCharactersAreRejected(_ name: String) {
     #expect(try KeyRecipe.normalizedName("\u{2764}\u{FE0F}") == "\u{2764}\u{FE0F}")
 }
 
-@Test func templates() throws {
-    #expect(try KeyRecipe(kind: .ssh, name: "github").json == #"{"purpose":"ssh:github"}"#)
-    #expect(try KeyRecipe(kind: .wallet, name: #"a "b" \c"#).json == #"{"purpose":"wallet:a \"b\" \\c"}"#)
+@Test func recipeText() throws {
+    #expect(try KeyRecipe(kind: .ssh, name: "github").json == #"{"kind":"ssh","name":"github"}"#)
+    #expect(try KeyRecipe(kind: .wallet, name: #"a "b" \c"#).json == #"{"kind":"wallet","name":"a \"b\" \\c"}"#)
     #expect(
         try KeyRecipe(kind: .passphrase, name: "nas").json
-            == #"{"lengthInChars":24,"purpose":"passphrase:nas","wordList":"CHARS_57_letters_digits_20261002"}"#)
+            == #"{"kind":"passphrase","length":24,"list":"letters-digits","name":"nas"}"#)
     #expect(
-        try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 6, digitAndCapital: true)).json
-            == #"{"capitalize":true,"lengthInWords":6,"purpose":"passphrase:nas","separator":"digits","wordList":"EFF_large_7776_words_9_chars_max_20160719"}"#
+        try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 6, digitsAndUppercase: true)).json
+            == #"{"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas","separator":"digits","uppercase":true}"#
     )
 }
 
 @Test func styleOnlyOnPassphrases() throws {
-    #expect(try KeyRecipe(kind: .age, name: "backup", style: .memorable(words: 6, digitAndCapital: false)).style == nil)
+    #expect(
+        try KeyRecipe(kind: .age, name: "backup", style: .memorable(words: 6, digitsAndUppercase: false)).style == nil)
     #expect(throws: KeyRecipeError.styleOutOfRange) {
         try KeyRecipe(kind: .passphrase, name: "nas", style: .random(length: 11, symbols: false))
     }
     #expect(throws: KeyRecipeError.styleOutOfRange) {
-        try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 11, digitAndCapital: false))
+        try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 11, digitsAndUppercase: false))
     }
 }
 
@@ -91,4 +93,65 @@ func invisibleCharactersAreRejected(_ name: String) {
     #expect(
         CanonicalJSON.object(["\u{FB33}": .integer(1), "\u{1F600}": .boolean(true), "a": .string("x")])
             == "{\"a\":\"x\",\"\u{1F600}\":true,\"\u{FB33}\":1}")
+}
+
+/// Recipe text is accepted only as the exact canonical text of a recipe, because the text is
+/// what gets hashed: any other spelling of the same recipe would derive a different key.
+@Test(arguments: [
+    #" {"kind":"ssh","name":"github"}"#,
+    #"{"kind": "ssh","name":"github"}"#,
+    #"{"name":"github","kind":"ssh"}"#,
+    #"{"kind":"ssh","name":"github","name":"github"}"#,
+    #"{"kind":"ssh","name":"\u0067ithub"}"#,
+    #"{"kind":"ssh","name":" github"}"#,
+    #"{"kind":"ssh","name":"cafe\#u{0301}"}"#,
+    #"{"kind":"ssh","name":""}"#,
+    #"{"kind":"ssh"}"#,
+    #"{"kind":"pgp","name":"github"}"#,
+    #"{"purpose":"ssh:github"}"#,
+    #"{"kind":"ssh","name":"github","type":"SigningKey"}"#,
+    #"{"kind":"ssh","name":"github","purpose":"x"}"#,
+    #"{"kind":"ssh","length":24,"name":"github"}"#,
+    #"{"kind":"ssh","list":"letters-digits","name":"github"}"#,
+    #"{"kind":"passphrase","name":"nas"}"#,
+    #"{"kind":"passphrase","length":24,"name":"nas"}"#,
+    #"{"kind":"passphrase","list":"letters-digits","name":"nas"}"#,
+    #"{"kind":"passphrase","length":24.0,"list":"letters-digits","name":"nas"}"#,
+    #"{"kind":"passphrase","length":11,"list":"letters-digits","name":"nas"}"#,
+    #"{"kind":"passphrase","length":65,"list":"letters-digits","name":"nas"}"#,
+    #"{"kind":"passphrase","length":24,"list":"letters","name":"nas"}"#,
+    #"{"kind":"passphrase","length":24,"list":"letters-digits","name":"nas","separator":"-"}"#,
+    #"{"kind":"passphrase","length":24,"list":"letters-digits","name":"nas","uppercase":true}"#,
+    #"{"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas"}"#,
+    #"{"kind":"passphrase","length":3,"list":"eff_large_wordlist","name":"nas","separator":"-"}"#,
+    #"{"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas","separator":"-","uppercase":true}"#,
+    #"{"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas","separator":"digits"}"#,
+    #"{"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas","separator":"-","uppercase":false}"#,
+    #"{"capitalize":true,"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas","separator":"digits"}"#,
+    #"{"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas","separator":" "}"#,
+    #"{"kind":"passphrase","lengthInChars":24,"name":"nas","wordList":"CHARS_57_letters_digits_20261002"}"#,
+    #"["ssh","github"]"#,
+    #"{"kind":"ssh","name":"github"} "#,
+    ""
+])
+func nonCanonicalRecipesAreRejected(_ text: String) {
+    #expect(throws: KeyRecipeError.notARecipe) { try KeyRecipe(json: text) }
+}
+
+@Test func canonicalRecipesParse() throws {
+    let memorable = try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 6, digitsAndUppercase: true))
+    #expect(try KeyRecipe(json: memorable.json) == memorable)
+    let random = try KeyRecipe(kind: .passphrase, name: "nas", style: .random(length: 64, symbols: true))
+    #expect(try KeyRecipe(json: random.json) == random)
+    #expect(try KeyRecipe(json: #"{"kind":"ssh","name":"a \"b\" \\c"}"#).name == #"a "b" \c"#)
+}
+
+/// The fields of a catalog or paper key are held to the same rules as recipe text: a name
+/// that isn't already normalized is refused, not quietly normalized.
+@Test func decodedFieldsMustBeCanonical() throws {
+    let decoder = JSONDecoder()
+    #expect(try decoder.decode(KeyRecipe.self, from: Data(#"{"name":"github","kind":"ssh"}"#.utf8)).name == "github")
+    #expect(throws: KeyRecipeError.notARecipe) {
+        try decoder.decode(KeyRecipe.self, from: Data(#"{"kind":"ssh","name":"cafe\#u{0301}"}"#.utf8))
+    }
 }

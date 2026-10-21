@@ -29,8 +29,10 @@ private struct ImportsCatalog: ViewModifier {
             ) { file in
                 Button("Add what's new") { merge(file) }
             } message: { file in
+                let diceKeyNames = file.diceKeys.map(\.name).formatted(.list(type: .and))
+                let keyNames = file.keys.map(\.recipe.name).formatted(.list(type: .and))
                 Text(
-                    "\(file.diceKeys.map(\.name).formatted(.list(type: .and))): \(Self.count(file.keys.count, "key")) (\(file.keys.map(\.name).formatted(.list(type: .and)))). Only what this device doesn't have yet is added. Public keys are worked out from the dice, never taken from the file."
+                    "\(diceKeyNames): \(Self.count(file.keys.count, "key")) (\(keyNames)). Only what this device doesn't have yet is added. Public keys are worked out from the dice, never taken from the file."
                 )
             }
             .alert(
