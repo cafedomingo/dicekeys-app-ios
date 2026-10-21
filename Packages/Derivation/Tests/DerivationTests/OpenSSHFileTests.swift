@@ -16,10 +16,10 @@ struct OpenSSHFileTests {
 
     @Test("the check value is deterministic and equals the first four bytes of SHA-256 of the public key")
     func checkValue() throws {
-        let key = SigningKey(seed: Self.seed, recipe: try KeyRecipe(kind: .ssh, name: "ssh"))
+        let key = Ed25519Key(seed: Self.seed, recipe: try KeyRecipe(kind: .ssh, name: "ssh"))
         let bytes = try decodedPem(OpenSSH.privateKeyPEM(key))
         let offset = try privateSectionOffset(bytes)
-        let expected = Array(SHA256.hash(data: key.verificationKeyBytes).prefix(4))
+        let expected = Array(SHA256.hash(data: key.publicKey).prefix(4))
         #expect(Array(bytes[offset..<offset + 4]) == expected)
         #expect(Array(bytes[offset + 4..<offset + 8]) == expected)
         #expect(OpenSSH.privateKeyPEM(key) == OpenSSH.privateKeyPEM(key))
@@ -29,7 +29,7 @@ struct OpenSSHFileTests {
     func sshKeygen() throws {
         #if os(macOS)
             guard FileManager.default.isExecutableFile(atPath: "/usr/bin/ssh-keygen") else { return }
-            let key = SigningKey(seed: Self.seed, recipe: try KeyRecipe(kind: .ssh, name: "laptop"))
+            let key = Ed25519Key(seed: Self.seed, recipe: try KeyRecipe(kind: .ssh, name: "laptop"))
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             defer { try? FileManager.default.removeItem(at: directory) }

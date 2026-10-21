@@ -21,27 +21,27 @@ public enum OpenSSH {
 
     /// `ssh-ed25519 <base64> <comment>`. The comment is the key's name, so `authorized_keys`
     /// says which key a line is.
-    public static func publicKeyLine(_ key: Derivation.SigningKey, comment: String) -> String {
+    public static func publicKeyLine(_ key: Derivation.Ed25519Key, comment: String) -> String {
         "\(keyType) " + Data(publicKeyBlob(key)).base64EncodedString() + " " + comment
     }
 
     /// `SHA256:<base64>` without padding, as `ssh-keygen -l` prints it.
-    public static func fingerprint(_ key: Derivation.SigningKey) -> String {
+    public static func fingerprint(_ key: Derivation.Ed25519Key) -> String {
         let digest = Data(SHA256.hash(data: publicKeyBlob(key))).base64EncodedString()
         return "SHA256:" + digest.trimmingCharacters(in: CharacterSet(charactersIn: "="))
     }
 
     /// An unencrypted `openssh-key-v1` block. The check value, random in OpenSSH, is derived
     /// from the public key so the export is deterministic.
-    public static func privateKeyPEM(_ key: Derivation.SigningKey, comment: String = "") -> String {
-        let publicKey = Array(key.verificationKeyBytes)
-        let checkValue = Array(SHA256.hash(data: key.verificationKeyBytes).prefix(4))
+    public static func privateKeyPEM(_ key: Derivation.Ed25519Key, comment: String = "") -> String {
+        let publicKey = Array(key.publicKey)
+        let checkValue = Array(SHA256.hash(data: key.publicKey).prefix(4))
         var section = ByteWriter()
         section.append(checkValue)
         section.append(checkValue)
         section.sshString(keyType)
         section.sshString(publicKey)
-        section.sshString(Array(key.signingKeyBytes))
+        section.sshString(Array(key.seed) + publicKey)
         section.sshString(comment)
         var padding: UInt8 = 1
         while section.count % paddingBlockSize != 0 {
@@ -59,10 +59,10 @@ public enum OpenSSH {
         return Armor.pem("OPENSSH PRIVATE KEY", blob.bytes)
     }
 
-    private static func publicKeyBlob(_ key: Derivation.SigningKey) -> [UInt8] {
+    private static func publicKeyBlob(_ key: Derivation.Ed25519Key) -> [UInt8] {
         var blob = ByteWriter()
         blob.sshString(keyType)
-        blob.sshString(Array(key.verificationKeyBytes))
+        blob.sshString(Array(key.publicKey))
         return blob.bytes
     }
 }

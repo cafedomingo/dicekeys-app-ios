@@ -145,7 +145,7 @@ def swift_strings(path, name):
 
 
 MEMORABLE_WORDS = swift_strings(PACKAGE / "Sources" / "Derivation" / "WordLists+EFF.swift", "effLargeWords")
-BIP39_WORDS = swift_strings(PACKAGE / "Sources" / "KeyFormats" / "Wordlist.swift", "english")
+BIP39_WORDS = swift_strings(PACKAGE / "Sources" / "KeyFormats" / "BIP39+English.swift", "englishWords")
 
 
 def hkdf_sha256(ikm, info, length, salt=bytes(32)):

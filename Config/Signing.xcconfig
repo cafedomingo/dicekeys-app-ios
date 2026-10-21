@@ -13,6 +13,6 @@
 
 DEVELOPMENT_TEAM =
 APP_BUNDLE_ID = com.cafedomingo.dicekeys
-APP_ENTITLEMENTS = DiceKeys.entitlements
+APP_ENTITLEMENTS = DiceKeyVault.entitlements
 
 #include? "Signing.local.xcconfig"
