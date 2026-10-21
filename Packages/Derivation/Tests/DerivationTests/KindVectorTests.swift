@@ -26,6 +26,14 @@ struct KindVector: Codable, Sendable, CustomTestStringConvertible {
     let publicKey: String?
     let fingerprint: String?
     let secret: String
+    let postQuantum: PostQuantumVector?
+}
+
+/// An age key's post-quantum identity, derived from the key's own recipe as a Secret.
+struct PostQuantumVector: Codable, Sendable {
+    let type: String
+    let publicKey: String
+    let secret: String
 }
 
 struct DiceKeyIDVector: Codable, Sendable {
@@ -70,10 +78,29 @@ func kindVector(_ vector: KindVector) throws {
     #expect(key.publicKey == vector.publicKey)
     #expect(key.fingerprint == vector.fingerprint)
     #expect(key.secret == vector.secret)
+    #expect(key.postQuantum?.recipient == vector.postQuantum?.publicKey)
+    #expect(key.postQuantum?.identity == vector.postQuantum?.secret)
+    if let postQuantum = vector.postQuantum {
+        #expect(postQuantum.type == DerivableType.mlkem768x25519.rawValue)
+    }
 }
 
 @Test func kindFixtureCoversEveryKind() {
     #expect(Set(kindCases.map(\.kind)) == Set(KeyKind.allCases.map(\.rawValue)))
+    #expect(kindCases.allSatisfy { ($0.kind == KeyKind.age.rawValue) == ($0.postQuantum != nil) })
+}
+
+/// The example identity and recipient in the age specification (https://c2sp.org/age), a pair
+/// `age-keygen -y` agrees on. The seed is the identity's Bech32 data, decoded separately.
+@Test func agePostQuantumMatchesTheSpecExample() throws {
+    var url = URL(fileURLWithPath: #filePath)
+    url.deleteLastPathComponent()
+    url.append(path: "Fixtures/age-pq-spec.txt")
+    let lines = try String(contentsOf: url, encoding: .utf8).split(separator: "\n").map(String.init)
+    let seed = try #require(Data(hexString: "31bda90fbf9fccdde5cfc0ed5a0378c5ea67ea193d7938b03b8c5dabb9a67de3"))
+    let key = try Age.postQuantum(seed: seed)
+    #expect(key.identity == lines[0])
+    #expect(key.recipient == lines[1])
 }
 
 @Test(arguments: kindFixture.hkdf)

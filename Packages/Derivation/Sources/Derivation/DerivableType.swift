@@ -10,6 +10,8 @@ public enum DerivableType: String, Sendable {
     case x25519
     case passphrase
     case bip39
+    /// An age key's post-quantum identity: the X-Wing seed.
+    case mlkem768x25519
     /// A DiceKey's id, which has no recipe.
     case diceKeyID = "dicekey-id"
 }

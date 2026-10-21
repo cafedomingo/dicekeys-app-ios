@@ -16,6 +16,9 @@ public struct DerivedKey: Equatable, Sendable {
     public let fingerprint: String?
     /// The private key file or string, the passphrase, or the recovery phrase.
     public let secret: String
+    /// An age key's post-quantum identity and recipient, beside the X25519 ones above. Nil
+    /// for every other kind.
+    public private(set) var postQuantum: AgePostQuantumKey?
 
     /// Every recipe the app builds is valid, so derivation cannot fail.
     public static func derive(seed: String, recipe: KeyRecipe) -> DerivedKey {
@@ -35,8 +38,14 @@ public struct DerivedKey: Equatable, Sendable {
         case .age:
             let key = X25519KeyPair(seed: seed, recipe: recipe)
             let publicKey = Age.recipient(key)
-            return DerivedKey(
-                recipe: recipe, publicKey: publicKey, fingerprint: publicKey, secret: Age.identity(key))
+            let postQuantumSeed = Secret.bytes(seed: seed, recipe: recipe, type: .mlkem768x25519)
+            do {
+                return DerivedKey(
+                    recipe: recipe, publicKey: publicKey, fingerprint: publicKey, secret: Age.identity(key),
+                    postQuantum: try Age.postQuantum(seed: postQuantumSeed))
+            } catch {
+                preconditionFailure("CryptoKit rejected 32 bytes of X-Wing seed: \(error)")
+            }
         case .passphrase:
             guard let passphrase = Passphrase.derive(seed: seed, recipe: recipe) else {
                 preconditionFailure("A passphrase recipe always has a style")
