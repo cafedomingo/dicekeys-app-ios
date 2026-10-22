@@ -29,7 +29,7 @@ struct LoadScreen: View {
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .appBackdrop()
+        .background(Color.bg)
         .navigationTitle(isTyping ? "Type it in" : "Scan DiceKey")
         .toolbarTitleDisplayMode(isTyping ? .inline : .automatic)
         .toolbar {

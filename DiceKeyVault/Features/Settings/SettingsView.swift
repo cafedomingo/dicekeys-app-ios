@@ -65,8 +65,8 @@ struct SettingsView: View {
             .importsCatalog($catalogToImport)
             .errorAlert($error)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done", systemImage: "checkmark") { dismiss() }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done", systemImage: "xmark") { dismiss() }
                 }
             }
         }

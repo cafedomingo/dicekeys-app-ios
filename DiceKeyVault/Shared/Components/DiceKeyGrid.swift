@@ -33,9 +33,9 @@ struct DieView: View {
         static let barHeight: CGFloat = 0.045
     }
     private static let minimumBarHeight: CGFloat = 1.5
-    private static let shadowOpacity = 0.25
     private static let shadowRadius: CGFloat = 1
     private static let shadowOffset: CGFloat = 1
+    private static let edgeWidth: CGFloat = 1
 
     static func spacing(for size: CGFloat) -> CGFloat { size * Ratio.corner }
 
@@ -46,9 +46,11 @@ struct DieView: View {
     var body: some View {
         RoundedRectangle(cornerRadius: size * Ratio.corner)
             .fill(Color.dieFace)
-            .shadow(
-                color: Color.onDie.opacity(Self.shadowOpacity), radius: Self.shadowRadius, y: Self.shadowOffset
-            )
+            .shadow(color: .dieShadow, radius: Self.shadowRadius, y: Self.shadowOffset)
+            .overlay {
+                RoundedRectangle(cornerRadius: size * Ratio.corner).strokeBorder(
+                    Color.dieEdge, lineWidth: Self.edgeWidth)
+            }
             .frame(width: size, height: size)
             .overlay {
                 if !concealed, let letter = face.letter {
@@ -67,7 +69,7 @@ struct DieView: View {
     }
 }
 
-/// The grid sits in a dark box, as the dice do.
+/// The grid sits in a box, as the dice do.
 struct DiceKeyGrid: View {
     private static let side = 5
     private static let selectionLineWidth: CGFloat = 3

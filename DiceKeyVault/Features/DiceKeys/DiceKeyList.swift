@@ -7,7 +7,9 @@ import SwiftData
 import SwiftUI
 
 /// Home: every DiceKey the app has seen with its keys beneath, so a key is one tap away. Before
-/// the first DiceKey, the one way in.
+/// the first DiceKey, the one way in. The list is tinted `accent` rather than the app's
+/// `accent-ink`, since a selected row puts white text on the tint, so marks in it use
+/// `RowAccentInk`, which turns `on-accent` on a selected row.
 struct DiceKeyList: View {
     @Binding var selection: SidebarSelection?
     let onScan: () -> Void
@@ -29,11 +31,11 @@ struct DiceKeyList: View {
                         section(for: record)
                     }
                 }
+                .tint(Color.accent)
                 .navigationTitle(AppInfo.name)
                 .confirmsKeyDeletion($keyToDelete, onDelete: onDelete)
             }
         }
-        .appBackdrop()
         .toolbar {
             if !records.isEmpty {
                 ToolbarItem(placement: .primaryAction) {
@@ -62,7 +64,7 @@ struct DiceKeyList: View {
             }
             if unlocked.diceKey(id: record.diceKeyID) != nil {
                 Label("New key", systemImage: "plus")
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(RowAccentInk())
                     .tag(SidebarSelection.newKey(record.diceKeyID))
             }
         }
@@ -95,6 +97,7 @@ private struct DiceKeyRow: View {
             if !isUnlocked && saved.contains(id: record.diceKeyID) {
                 UnlockButton(diceKeyID: record.diceKeyID, name: record.name)
                     .buttonStyle(.bordered)
+                    .tint(RowAccentInk())
                     .buttonBorderShape(.capsule)
                     .controlSize(.small)
             }
@@ -104,7 +107,7 @@ private struct DiceKeyRow: View {
     private func status(isUnlocked: Bool, locksAt: Date?) -> Text {
         if let locksAt {
             return Text("Locks in \(Text(timerInterval: Date.now...max(.now, locksAt), countsDown: true))")
-                .foregroundStyle(Color.accentInk)
+                .foregroundStyle(RowAccentInk())
         }
         let keys = keyCount == 0 ? Text("no keys yet") : Text("^[\(keyCount) key](inflect: true)")
         return Text("\(isUnlocked ? "Unlocked" : "Locked") · \(keys)").foregroundStyle(.secondary)
@@ -136,7 +139,7 @@ private struct RingedAvatar: View {
                         RoundedRectangle(cornerRadius: DieView.spacing(for: Self.dieSize) + inset)
                             .inset(by: Self.width / 2)
                             .trim(from: 0, to: remaining(at: context.date))
-                            .stroke(Color.accentInk, style: StrokeStyle(lineWidth: Self.width, lineCap: .round))
+                            .stroke(RowAccentInk(), style: StrokeStyle(lineWidth: Self.width, lineCap: .round))
                     }
                 }
             }
@@ -180,5 +183,12 @@ private struct FirstDiceKey: View {
                 .multilineTextAlignment(.center)
         }
         .padding()
+    }
+}
+
+/// `accent-ink`, or `on-accent` on a row selected with the `accent` fill.
+private struct RowAccentInk: ShapeStyle {
+    func resolve(in environment: EnvironmentValues) -> Color {
+        environment.backgroundProminence == .increased ? .onAccent : .accentInk
     }
 }
