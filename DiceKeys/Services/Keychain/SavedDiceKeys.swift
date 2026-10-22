@@ -36,11 +36,22 @@ final class SavedDiceKeys {
         changed(id: id, saved: false)
     }
 
+    struct Mismatch: LocalizedError {
+        var errorDescription: String? { "This saved DiceKey doesn't match. Forget it and scan it again." }
+    }
+
     /// Asks for Face ID, Touch ID or the passcode, then reads the DiceKey.
     func load(id: String, name: String) async throws -> DiceKey {
         let context = try await DeviceOwner.authenticate(reason: "Unlock \(name)")
-        let data = try Keychain.load(id: id, context: context)
-        return try DiceKey(humanReadableForm: String(decoding: data, as: UTF8.self))
+        return try Self.diceKey(from: try Keychain.load(id: id, context: context), id: id)
+    }
+
+    /// An item is named by the id its DiceKey derived when saved. One whose DiceKey derives
+    /// another id now, as after ids were made differently, must not unlock as this one.
+    static func diceKey(from data: Data, id: String) throws -> DiceKey {
+        let diceKey = try DiceKey(humanReadableForm: String(decoding: data, as: UTF8.self))
+        guard diceKey.id == id else { throw Mismatch() }
+        return diceKey
     }
 
     private func changed(id: String, saved: Bool) {

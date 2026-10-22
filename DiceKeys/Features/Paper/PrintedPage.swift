@@ -38,14 +38,14 @@ enum PrintedPage {
 extension CatalogFile.KeyItem {
     /// "Passphrase · nas · Random, 24 characters", as the paper lists it.
     var printedLine: String {
-        ([kind.title, name] + [style?.summary].compactMap(\.self)).joined(separator: " · ")
+        ([recipe.kind.title, recipe.name] + [recipe.style?.summary].compactMap(\.self)).joined(separator: " · ")
     }
 }
 
 extension CatalogFile.KeyItem {
     /// "nas · Passphrase, 24 characters": the name first, short enough for the card.
     var cardLine: String {
-        "\(name) · \(kind.title)" + (style.map { ", " + $0.shortSummary } ?? "")
+        "\(recipe.name) · \(recipe.kind.title)" + (recipe.style.map { ", " + $0.shortSummary } ?? "")
     }
 }
 
@@ -53,7 +53,8 @@ extension PassphraseStyle {
     var shortSummary: String {
         switch self {
         case .random(let length, let symbols): "\(length) characters\(symbols ? " + symbols" : "")"
-        case .memorable(let words, let digitAndCapital): "\(words) words\(digitAndCapital ? " + digit, capital" : "")"
+        case .memorable(let words, let digitsAndUppercase):
+            "\(words) words\(digitsAndUppercase ? " + digits, uppercase" : "")"
         }
     }
 
@@ -61,8 +62,8 @@ extension PassphraseStyle {
     var summary: String {
         switch self {
         case .random(let length, let symbols): "Random, \(length) characters\(symbols ? " with symbols" : "")"
-        case .memorable(let words, let digitAndCapital):
-            "Memorable, \(words) words\(digitAndCapital ? " with a digit and a capital" : "")"
+        case .memorable(let words, let digitsAndUppercase):
+            "Memorable, \(words) words\(digitsAndUppercase ? " with digits and an uppercase word" : "")"
         }
     }
 }

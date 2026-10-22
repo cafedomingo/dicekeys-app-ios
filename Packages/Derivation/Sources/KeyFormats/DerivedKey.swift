@@ -17,38 +17,39 @@ public struct DerivedKey: Equatable, Sendable {
     /// The private key file or string, the passphrase, or the recovery phrase.
     public let secret: String
 
-    /// Every template is a valid recipe, so derivation cannot fail.
+    /// Every recipe the app builds is valid, so derivation cannot fail.
     public static func derive(seed: String, recipe: KeyRecipe) -> DerivedKey {
-        do {
-            switch recipe.kind {
-            case .ssh:
-                let key = try SigningKey.derive(seed: seed, recipe: recipe.json)
-                return DerivedKey(
-                    recipe: recipe,
-                    publicKey: OpenSSH.publicKeyLine(key, comment: recipe.name),
-                    fingerprint: OpenSSH.fingerprint(key),
-                    secret: OpenSSH.privateKeyPEM(key, comment: recipe.name))
-            case .wireguard:
-                let key = try UnsealingKey.derive(seed: seed, recipe: recipe.json)
-                let publicKey = WireGuard.publicKey(key)
-                return DerivedKey(
-                    recipe: recipe, publicKey: publicKey, fingerprint: publicKey,
-                    secret: WireGuard.privateKey(key))
-            case .age:
-                let key = try UnsealingKey.derive(seed: seed, recipe: recipe.json)
-                let publicKey = Age.recipient(key)
-                return DerivedKey(
-                    recipe: recipe, publicKey: publicKey, fingerprint: publicKey, secret: Age.identity(key))
-            case .passphrase:
-                let password = try Password.derive(seed: seed, recipe: recipe.json)
-                return DerivedKey(recipe: recipe, publicKey: nil, fingerprint: nil, secret: password.password)
-            case .wallet:
-                let secret = try Secret.derive(seed: seed, recipe: recipe.json)
-                return DerivedKey(
-                    recipe: recipe, publicKey: nil, fingerprint: nil, secret: try BIP39.mnemonic(entropy: secret.bytes))
+        switch recipe.kind {
+        case .ssh:
+            let key = SigningKey(seed: seed, recipe: recipe)
+            return DerivedKey(
+                recipe: recipe,
+                publicKey: OpenSSH.publicKeyLine(key, comment: recipe.name),
+                fingerprint: OpenSSH.fingerprint(key),
+                secret: OpenSSH.privateKeyPEM(key, comment: recipe.name))
+        case .wireguard:
+            let key = UnsealingKey(seed: seed, recipe: recipe)
+            let publicKey = WireGuard.publicKey(key)
+            return DerivedKey(
+                recipe: recipe, publicKey: publicKey, fingerprint: publicKey, secret: WireGuard.privateKey(key))
+        case .age:
+            let key = UnsealingKey(seed: seed, recipe: recipe)
+            let publicKey = Age.recipient(key)
+            return DerivedKey(
+                recipe: recipe, publicKey: publicKey, fingerprint: publicKey, secret: Age.identity(key))
+        case .passphrase:
+            guard let passphrase = Passphrase.derive(seed: seed, recipe: recipe) else {
+                preconditionFailure("A passphrase recipe always has a style")
             }
-        } catch {
-            preconditionFailure("A key recipe template failed to derive: \(error)")
+            return DerivedKey(recipe: recipe, publicKey: nil, fingerprint: nil, secret: passphrase)
+        case .wallet:
+            let entropy = Secret.bytes(seed: seed, recipe: recipe, type: .bip39)
+            do {
+                return DerivedKey(
+                    recipe: recipe, publicKey: nil, fingerprint: nil, secret: try BIP39.mnemonic(entropy: entropy))
+            } catch {
+                preconditionFailure("BIP39 rejected 32 bytes of entropy: \(error)")
+            }
         }
     }
 }

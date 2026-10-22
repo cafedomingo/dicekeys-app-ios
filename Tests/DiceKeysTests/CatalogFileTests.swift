@@ -23,7 +23,7 @@ struct CatalogFileTests {
         try context.recordIfNew(DiceKey.example)
         for recipe in [
             try KeyRecipe(kind: .ssh, name: "github"),
-            try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 7, digitAndCapital: true))
+            try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 7, digitsAndUppercase: true))
         ] {
             try context.addEntry(
                 for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe), diceKeyID: DiceKey.example.id)
@@ -47,7 +47,7 @@ struct CatalogFileTests {
         let file = try catalogWithKeys()
         let restored = try CatalogFile(importURL: try file.importURL)
         #expect(restored.diceKeys == file.diceKeys)
-        #expect(restored.keys.map(\.name) == file.keys.map(\.name))
+        #expect(restored.keys.map(\.recipe) == file.keys.map(\.recipe))
         #expect(restored.keys.allSatisfy { $0.publicKey == nil })
     }
 
@@ -57,7 +57,7 @@ struct CatalogFileTests {
         #expect(try file.merge(into: context) == (diceKeys: 0, keys: 0, unreadable: 0))
         let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         #expect(try file.merge(into: empty) == (diceKeys: 1, keys: 2, unreadable: 0))
-        #expect(try empty.entries(for: DiceKey.example.id).map(\.name) == ["github", "nas"])
+        #expect(try empty.entries(for: DiceKey.example.id).map(\.recipe?.name) == ["github", "nas"])
     }
 
     @Test("an imported public key is ignored, and filled in from the dice on unlock")
@@ -72,15 +72,18 @@ struct CatalogFileTests {
         #expect(try empty.entries(for: DiceKey.example.id).first?.publicKey == genuine)
     }
 
-    @Test("a passphrase without its style, or a key without its DiceKey, is skipped")
+    @Test("a passphrase without its style, a field no recipe has, or a key without its DiceKey, is skipped")
     func skipsWhatCantBeRebuilt() throws {
-        var file = try catalogWithKeys()
-        file.keys = [
-            CatalogFile.KeyItem(diceKey: DiceKey.example.id, kind: .passphrase, name: "x", style: nil),
-            CatalogFile.KeyItem(diceKey: "unknown", kind: .ssh, name: "y", style: nil)
-        ]
+        let id = DiceKey.example.id
+        let json = """
+            {"v":1,"diceKeys":[{"id":"\(id)","name":"Home","centerFace":"M1t"}],"keys":[
+            {"diceKey":"\(id)","kind":"passphrase","name":"x"},
+            {"diceKey":"\(id)","kind":"ssh","name":"y","flavor":"spicy"},
+            {"diceKey":"unknown","kind":"ssh","name":"z"}]}
+            """
+        let file = try CatalogFile(json: Data(json.utf8))
         let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
-        #expect(try file.merge(into: empty) == (diceKeys: 1, keys: 0, unreadable: 2))
+        #expect(try file.merge(into: empty) == (diceKeys: 1, keys: 0, unreadable: 3))
     }
 
     @Test("a key a later version wrote is skipped and counted, and the rest of the file still reads")
@@ -93,7 +96,7 @@ struct CatalogFileTests {
             {"diceKey":"\(id)","kind":"passphrase","name":"nas","style":{"diceware":{"words":6}}}]}
             """
         let file = try CatalogFile(json: Data(json.utf8))
-        #expect(file.keys.map(\.name) == ["github"])
+        #expect(file.keys.map(\.recipe.name) == ["github"])
         let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         #expect(try file.merge(into: empty) == (diceKeys: 1, keys: 1, unreadable: 2))
     }
@@ -122,9 +125,9 @@ struct CatalogFileTests {
             records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
         #expect(try CatalogFile(json: file.json()) == file)
-        #expect(try CatalogFile(importURL: try file.importURL).keys.map(\.name) == file.keys.map(\.name))
+        #expect(try CatalogFile(importURL: try file.importURL).keys.map(\.recipe) == file.keys.map(\.recipe))
         let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         try file.merge(into: empty)
-        #expect(Set(try empty.entries(for: DiceKey.example.id).map(\.name)) == Set(names))
+        #expect(Set(try empty.entries(for: DiceKey.example.id).compactMap(\.recipe?.name)) == Set(names))
     }
 }

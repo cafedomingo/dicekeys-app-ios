@@ -125,7 +125,6 @@ struct RecoverySheet: View {
     }
 
     private func publicKey(for key: CatalogFile.KeyItem) -> String? {
-        entries.first { $0.recipe?.kind == key.kind && $0.recipe?.name == key.name && $0.recipe?.style == key.style }?
-            .publicKey
+        entries.first { $0.recipe == key.recipe }?.publicKey
     }
 }

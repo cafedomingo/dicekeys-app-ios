@@ -66,14 +66,15 @@ struct CatalogTests {
         #expect(record.centerFace == DiceKey.example.centerFace.humanReadableForm)
     }
 
-    @Test("an entry rebuilds the same recipe, style included")
+    @Test("an entry stores the recipe's canonical text and rebuilds it, sorted by name")
     func entryRoundTrip() throws {
-        let style = PassphraseStyle.memorable(words: 7, digitAndCapital: true)
+        let style = PassphraseStyle.memorable(words: 7, digitsAndUppercase: true)
         let passphrase = try key(.passphrase, "nas", style: style)
         try context.addEntry(for: passphrase, diceKeyID: DiceKey.example.id)
         try context.addEntry(for: try key(.ssh, "github"), diceKeyID: DiceKey.example.id)
         let entries = try context.entries(for: DiceKey.example.id)
-        #expect(entries.map(\.name) == ["github", "nas"])
+        #expect(entries.map(\.recipe?.name) == ["github", "nas"])
+        #expect(entries[1].recipeJSON == passphrase.recipe.json)
         #expect(entries[1].recipe == passphrase.recipe)
         #expect(entries[1].publicKey == nil)
         #expect(entries[0].publicKey?.hasPrefix("ssh-ed25519 ") == true)
@@ -88,19 +89,32 @@ struct CatalogTests {
         #expect(try context.entries(for: DiceKey.example.id).count == 1)
     }
 
-    @Test("an entry of an unknown kind is skipped")
-    func unknownKind() throws {
-        let entry = KeyEntry(diceKeyID: "x", recipe: try key(.age, "backup").recipe, publicKey: nil)
-        entry.kind = "future"
-        context.insert(entry)
-        #expect(try context.entries(for: "x").isEmpty)
+    @Test("of two synced copies, the older stands for the key")
+    func olderCopyWins() throws {
+        let ssh = try key(.ssh, "github")
+        let newer = KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe, publicKey: nil)
+        newer.created = .now
+        context.insert(newer)
+        let older = KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe, publicKey: ssh.publicKey)
+        older.created = .distantPast
+        context.insert(older)
+        #expect(try context.entries(for: DiceKey.example.id).map(\.persistentModelID) == [older.persistentModelID])
     }
 
-    @Test("a passphrase whose style can't be read is left out, not guessed")
-    func unreadableStyle() throws {
-        let entry = KeyEntry(diceKeyID: "x", recipe: try key(.passphrase, "nas").recipe, publicKey: nil)
-        entry.style = Data("{\"future\":{}}".utf8)
+    @Test(
+        "an entry whose text isn't a recipe this version reads is left out, not guessed",
+        arguments: [
+            #"{"kind":"future","name":"backup"}"#,
+            #"{"name":"backup","kind":"age"}"#,
+            #"{"kind":"passphrase","length":6,"list":"eff_large_wordlist","name":"nas","separator":"future"}"#,
+            ""
+        ])
+    func unreadableRecipe(_ text: String) throws {
+        let entry = KeyEntry(diceKeyID: "x", recipe: try key(.age, "backup").recipe, publicKey: nil)
+        entry.recipeJSON = text
+        context.insert(entry)
         #expect(entry.recipe == nil)
+        #expect(try context.entries(for: "x").isEmpty)
     }
 
     @Test("deleting a key removes its synced copies and leaves the other keys")
@@ -110,7 +124,7 @@ struct CatalogTests {
         context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: github.recipe, publicKey: github.publicKey))
         try context.addEntry(for: try key(.ssh, "homelab"), diceKeyID: DiceKey.example.id)
         try context.deleteKey(github.recipe, diceKeyID: DiceKey.example.id)
-        #expect(try context.fetch(FetchDescriptor<KeyEntry>()).map(\.name) == ["homelab"])
+        #expect(try context.fetch(FetchDescriptor<KeyEntry>()).map(\.recipe?.name) == ["homelab"])
     }
 
     @Test("forgetting removes the record and its entries")

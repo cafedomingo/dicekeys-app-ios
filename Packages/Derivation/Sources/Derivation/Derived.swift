@@ -5,94 +5,57 @@
 
 import Foundation
 
-public struct Password: Sendable, Equatable {
-    public let password: String
-    public let recipe: Recipe
-
-    public static func derive(seed: String, recipe: String) throws(DerivationError) -> Password {
-        let parsed = try Recipe(json: recipe, type: .password)
-        let secret = Engine.secret(seed: seed, type: .password, recipe: parsed)
-        let password = PasswordFormatter.password(
-            from: secret, wordList: parsed.wordList, joining: parsed.joining, lengthInChars: parsed.lengthInChars)
-        return Password(password: password, recipe: parsed)
-    }
-
-    public func toJson() -> String {
-        ReferenceJSON.object([(key: "password", value: password)] + ReferenceJSON.recipeIfPresent(recipe))
-    }
-}
-
-public struct Secret: Sendable, Equatable {
-    public let bytes: Data
-    public let recipe: Recipe
-
-    public static func derive(seed: String, recipe: String) throws(DerivationError) -> Secret {
-        let parsed = try Recipe(json: recipe, type: .secret)
-        return Secret(bytes: Data(Engine.secret(seed: seed, type: .secret, recipe: parsed)), recipe: parsed)
-    }
-
-    public func toJson() -> String {
-        ReferenceJSON.object(
-            [(key: "secretBytes", value: ReferenceJSON.hex(bytes))] + ReferenceJSON.recipeIfPresent(recipe))
-    }
-}
-
-public struct SymmetricKey: Sendable, Equatable {
-    public let keyBytes: Data
-    public let recipe: Recipe
-
-    public static func derive(seed: String, recipe: String) throws(DerivationError) -> SymmetricKey {
-        let parsed = try Recipe(json: recipe, type: .symmetricKey)
-        return SymmetricKey(
-            keyBytes: Data(Engine.secret(seed: seed, type: .symmetricKey, recipe: parsed)), recipe: parsed)
-    }
-
-    public func toJson() -> String {
-        ReferenceJSON.object(
-            [(key: "keyBytes", value: ReferenceJSON.hex(keyBytes))] + ReferenceJSON.recipeIfPresent(recipe))
-    }
-}
-
-public struct UnsealingKey: Sendable, Equatable {
-    public let unsealingKeyBytes: Data
-    public let sealingKeyBytes: Data
-    public let recipe: Recipe
-
-    public static func derive(seed: String, recipe: String) throws(DerivationError) -> UnsealingKey {
-        let parsed = try Recipe(json: recipe, type: .unsealingKey)
-        let pair = Engine.x25519(secret: Engine.secret(seed: seed, type: .unsealingKey, recipe: parsed))
-        return UnsealingKey(unsealingKeyBytes: Data(pair.scalar), sealingKeyBytes: Data(pair.publicKey), recipe: parsed)
-    }
-
-    public func toJson() -> String {
-        ReferenceJSON.object([
-            (key: ReferenceJSON.recipeKey, value: recipe.json),
-            (key: "sealingKeyBytes", value: ReferenceJSON.hex(sealingKeyBytes)),
-            (key: "unsealingKeyBytes", value: ReferenceJSON.hex(unsealingKeyBytes))
-        ])
-    }
-}
-
+/// An Ed25519 key from a recipe.
 public struct SigningKey: Sendable, Equatable {
     /// The Ed25519 seed followed by the public key, 64 bytes.
     public let signingKeyBytes: Data
-    public let recipe: Recipe
 
-    public static let seedLength = 32
     public static let publicKeyLength = 32
 
     public var verificationKeyBytes: Data { Data(signingKeyBytes.suffix(Self.publicKeyLength)) }
 
-    public static func derive(seed: String, recipe: String) throws(DerivationError) -> SigningKey {
-        let parsed = try Recipe(json: recipe, type: .signingKey)
-        let bytes = Engine.ed25519(seed: Engine.secret(seed: seed, type: .signingKey, recipe: parsed))
-        return SigningKey(signingKeyBytes: Data(bytes), recipe: parsed)
+    public init(seed: String, recipe: KeyRecipe) {
+        let bytes = Engine.bytes(seed: seed, type: .ed25519, recipe: recipe.json, length: Engine.keyLength)
+        signingKeyBytes = Data(Engine.ed25519(seed: bytes))
     }
+}
 
-    public func toJson() -> String {
-        ReferenceJSON.object([
-            (key: ReferenceJSON.recipeKey, value: recipe.json),
-            (key: "signingKeyBytes", value: ReferenceJSON.hex(signingKeyBytes))
-        ])
+/// An X25519 key pair from a recipe.
+public struct UnsealingKey: Sendable, Equatable {
+    public let unsealingKeyBytes: Data
+    public let sealingKeyBytes: Data
+
+    public init(seed: String, recipe: KeyRecipe) {
+        let scalar = Engine.bytes(seed: seed, type: .x25519, recipe: recipe.json, length: Engine.keyLength)
+        unsealingKeyBytes = Data(scalar)
+        sealingKeyBytes = Data(Engine.x25519PublicKey(scalar: scalar))
+    }
+}
+
+/// 32 raw bytes from a recipe, for a key made from bytes: a wallet's BIP39 entropy.
+public enum Secret {
+    public static func bytes(seed: String, recipe: KeyRecipe, type: DerivableType) -> Data {
+        Data(Engine.bytes(seed: seed, type: type, recipe: recipe.json, length: Engine.keyLength))
+    }
+}
+
+/// A passphrase recipe's passphrase: one 8-byte block per character or word.
+public enum Passphrase {
+    /// Nil for a recipe of any other kind, which has no style.
+    public static func derive(seed: String, recipe: KeyRecipe) -> String? {
+        guard let style = recipe.style else { return nil }
+        let length = style.entryCount * PasswordFormatter.bytesPerEntry
+        return PasswordFormatter.passphrase(
+            from: Engine.bytes(seed: seed, type: .passphrase, recipe: recipe.json, length: length), style: style)
+    }
+}
+
+/// A DiceKey's id: 16 bytes as unpadded URL-safe base64. One-way: it reveals nothing about
+/// the dice. It is its own type with no recipe, so its info is the type name alone.
+public enum DiceKeyID {
+    private static let length = 16
+
+    public static func derive(seed: String) -> String {
+        Data(Engine.bytes(seed: seed, type: .diceKeyID, recipe: "", length: length)).base64URLEncodedString
     }
 }

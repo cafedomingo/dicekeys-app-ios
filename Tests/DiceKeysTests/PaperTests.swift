@@ -72,11 +72,11 @@ struct PaperTests {
             .trimmingCharacters(in: .whitespaces)
     }
 
-    private static func manyKeys(_ count: Int, nameLength: Int) -> CatalogFile {
+    private static func manyKeys(_ count: Int, nameLength: Int) throws -> CatalogFile {
         var file = Self.file
-        file.keys = (0..<count).map { index in
+        file.keys = try (0..<count).map { index in
             let name = String(repeating: "k", count: nameLength - String(index).count) + String(index)
-            return CatalogFile.KeyItem(diceKey: file.diceKeys[0].id, kind: .ssh, name: name, style: nil)
+            return CatalogFile.KeyItem(diceKey: file.diceKeys[0].id, recipe: try KeyRecipe(kind: .ssh, name: name))
         }
         return file
     }
@@ -89,7 +89,7 @@ struct PaperTests {
     @Test("the list card's PDF names every key and never holds the faces")
     func cardHoldsNoSecret() throws {
         let text = try Self.cardText(Self.file)
-        for key in Self.file.keys { #expect(text.contains(Self.searchable(key.name))) }
+        for key in Self.file.keys { #expect(text.contains(Self.searchable(key.recipe.name))) }
         let faces = DiceKey.example.faces
         #expect(!text.contains(faces[0].humanReadableForm + " " + faces[1].humanReadableForm))
         #expect(!text.contains(faces[0].humanReadableForm + faces[1].humanReadableForm))
@@ -177,7 +177,8 @@ struct PaperTests {
     func specialNames() throws {
         var file = Self.file
         file.keys.append(
-            CatalogFile.KeyItem(diceKey: file.diceKeys[0].id, kind: .ssh, name: #"quote " and \ مفتاح"#, style: nil))
+            CatalogFile.KeyItem(
+                diceKey: file.diceKeys[0].id, recipe: try KeyRecipe(kind: .ssh, name: #"quote " and \ مفتاح"#)))
         let text = try Self.cardText(file)
         #expect(text.contains("日本語"))
         #expect(text.contains(#"quote " and"#))

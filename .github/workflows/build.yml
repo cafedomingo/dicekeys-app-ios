@@ -58,10 +58,11 @@ jobs:
         run: actionlint
 
   # Both local packages with plain SwiftPM on the macOS host, in one job because each
-  # takes about a minute and a macOS runner costs half that just to start. Derivation: the
-  # recorded vectors (the tripwire for any change to derived secrets) and BLAKE2b's known
-  # answers. ReadDiceKey: the scanner over its photo corpus, built optimized because the
-  # full-size photos take minutes at -Onone and seconds at -O.
+  # takes about a minute and a macOS runner costs half that just to start. Derivation:
+  # kinds.json from scripts/derive-kinds.py (the tripwire for any change to derived secrets),
+  # recipe validation, the key formats and RFC 5869's HKDF vectors. ReadDiceKey: the scanner
+  # over its photo corpus, built optimized because the full-size photos take minutes at
+  # -Onone and seconds at -O.
   packages:
     runs-on: macos-26
     timeout-minutes: 45

@@ -39,9 +39,7 @@ struct DiceKeyScreen: View {
         self.onForget = onForget
         self.onDelete = onDelete
         let diceKeyID = record.diceKeyID
-        _entries = Query(
-            filter: #Predicate<KeyEntry> { $0.diceKeyID == diceKeyID },
-            sort: [SortDescriptor(\.name), SortDescriptor(\.created)], animation: .default)
+        _entries = Query(filter: #Predicate<KeyEntry> { $0.diceKeyID == diceKeyID }, animation: .default)
     }
 
     private var diceKey: DiceKey? { unlocked.diceKey(id: record.diceKeyID) }
@@ -107,7 +105,7 @@ struct DiceKeyScreen: View {
             if let diceKey {
                 PaperPreview(title: "Recovery sheet", filename: "\(record.name) recovery sheet", isSecret: true) {
                     RecoverySheet(
-                        code: RecoveryCode(diceKey: diceKey, record: record, entries: entries), entries: entries,
+                        code: RecoveryCode(diceKey: diceKey, record: record, entries: entries), entries: keys,
                         concealed: $0)
                 }
             }

@@ -14,7 +14,7 @@ struct DiceKeyList: View {
     let onDelete: (KeyEntry) -> Void
 
     @Query(sort: \DiceKeyRecord.name) private var records: [DiceKeyRecord]
-    @Query(sort: [SortDescriptor(\KeyEntry.name), SortDescriptor(\KeyEntry.created)]) private var entries: [KeyEntry]
+    @Query private var entries: [KeyEntry]
     @Environment(UnlockedDiceKeys.self) private var unlocked
     @State private var keyToDelete: KeyEntry?
     @State private var isShowingSettings = false

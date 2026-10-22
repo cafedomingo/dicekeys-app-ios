@@ -5,7 +5,6 @@
 
 import Derivation
 import DiceKeySpecification
-import Foundation
 import Synchronization
 
 /// 25 dice in reading order. Immutable, so it can cross actors.
@@ -21,8 +20,6 @@ final class DiceKey: Equatable, Sendable {
         23, 18, 13, 8, 3,
         24, 19, 14, 9, 4
     ]
-    /// The reference's recipe, so every DiceKeys app agrees on a DiceKey's id.
-    private static let idRecipe = "{\"purpose\":\"a unique identifier for this DiceKey\",\"lengthInBytes\":16}"
 
     let faces: [Face]
     /// Filled on first use: the id costs a derivation and views read it often.
@@ -64,8 +61,6 @@ final class DiceKey: Equatable, Sendable {
     /// and digit.
     static func defaultName(centerFace: String) -> String { "DiceKey with \(centerFace.prefix(2)) in center" }
 
-    /// A real DiceKey has every letter once; anything else is a misread or a typo.
-
     var humanReadableForm: String { faces.map(\.humanReadableForm).joined() }
 
     func turnedClockwise() -> DiceKey {
@@ -84,22 +79,13 @@ final class DiceKey: Equatable, Sendable {
         return smallest
     }
 
-    /// The reference's 16-byte id, as unpadded URL-safe base64. One-way: it reveals nothing
-    /// about the dice.
+    /// `DiceKeyID`: 16 bytes as unpadded URL-safe base64, revealing nothing about the dice.
     var id: String {
         idCache.withLock { cached in
             if let cached { return cached }
-            let id = idBytes.base64URLEncodedString
+            let id = DiceKeyID.derive(seed: seed)
             cached = id
             return id
-        }
-    }
-
-    var idBytes: Data {
-        do {
-            return try Secret.derive(seed: seed, recipe: Self.idRecipe).bytes
-        } catch {
-            preconditionFailure("The id recipe failed to derive: \(error)")
         }
     }
 }
