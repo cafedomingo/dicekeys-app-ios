@@ -59,7 +59,7 @@ struct PaperPreview<Page: View>: View {
             Button("Done", systemImage: "xmark") { dismiss() }
         }
         ToolbarItem(placement: .confirmationAction) {
-            Button("Print", systemImage: "printer", action: print).disabled(isBlocked)
+            Button("Print", systemImage: "printer", action: print).disabled(isBlocked).primaryAction()
         }
         ToolbarItemGroup(placement: .secondaryAction) {
             if isSecret {

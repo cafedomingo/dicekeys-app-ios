@@ -38,6 +38,7 @@ struct ContentView: View {
     @Environment(SavedDiceKeys.self) private var saved
     @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @Query private var records: [DiceKeyRecord]
 
     var body: some View {
@@ -48,7 +49,9 @@ struct ContentView: View {
                     sidebarSelection = .scan
                     compactColumn = .detail
                 },
-                onDelete: delete)
+                onDelete: delete
+            )
+            .appBackdrop(dice: sizeClass == .compact)
         } detail: {
             NavigationStack(path: $path) {
                 detail.navigationDestination(for: KeySelection.self, destination: pushed)
@@ -105,6 +108,7 @@ struct ContentView: View {
             }
         case nil:
             ContentUnavailableView("No DiceKey selected", systemImage: "square.grid.3x3")
+                .appBackdrop()
         }
     }
 

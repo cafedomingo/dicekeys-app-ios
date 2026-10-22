@@ -9,12 +9,12 @@ import SwiftUI
 /// their bars, each turned as on the icon.
 struct AppMark: View {
     static let coverSide: CGFloat = 72
-    private static let columns = 5
+    static let columns = 5
     /// The gap between dice, as a proportion of the side.
     private static let gapRatio: CGFloat = 0.035
 
     /// Proportions of a die's side.
-    private enum DieRatio {
+    enum DieRatio {
         static let corner: CGFloat = 0.16
         static let barLength: CGFloat = 0.34
         static let barThickness: CGFloat = 0.08
@@ -23,7 +23,7 @@ struct AppMark: View {
 
     /// Each die's clockwise turn in degrees, in reading order, as on the icon. An upright
     /// die has its bar at the bottom.
-    private static let turns: [Double] = [
+    static let turns: [Double] = [
         180, 90, 0, 270, 180,
         270, 90, 0, 0, 180,
         90, 270, 180, 0, 270,

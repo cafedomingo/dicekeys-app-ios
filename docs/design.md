@@ -24,7 +24,7 @@ DiceKey Vault turns a DiceKey (25 dice in a sealed box) into the few keys that a
 
 ## App icon
 
-The icon is a layered Icon Composer icon: a navy ground, with the DiceKey grid as the foreground layer. All 25 cells are filled in `accent`'s dark value, which holds up on the navy, each with its `on-accent` orientation bar, as a whole DiceKey. The navy and indigo nod to the original DiceKeys app without using its palette. It ships all four appearances: Default (navy), Dark (midnight ground), Clear (glass cells, light bars) and Tinted (monochrome, where the system supplies the hue). The files are in `docs/design/`: `app-icon-foreground.svg` is the grid layer for Icon Composer, and the other two are flattened Default and Dark renders. Don't add a letterform, a die in perspective or a key glyph.
+The icon is a layered Icon Composer icon: a deep petrol ground, with the DiceKey grid as the foreground layer. All 25 cells are filled in `accent`'s dark value, which holds up on the petrol, each with its `on-accent` orientation bar, as a whole DiceKey. It ships all four appearances: Default (petrol), Dark (near-black ground), Clear (glass cells, light bars) and Tinted (monochrome, where the system supplies the hue). The files are in `docs/design/`: `app-icon-foreground.svg` is the grid layer for Icon Composer, and the other two are flattened Default and Dark renders. Don't add a letterform, a die in perspective or a key glyph.
 
 ## Content
 
@@ -37,12 +37,14 @@ The icon is a layered Icon Composer icon: a navy ground, with the DiceKey grid a
 
 ## Color
 
-- The neutrals are iOS's own: `ink` and `ink-muted` text, `bg-raised` rows and `line` separators come from stock components, so dark mode and Increase Contrast work without a custom palette. The one custom neutral is the ground, `bg`, washed with `bg-tint` at the top so grouped rows read as raised.
-- `accent` (indigo) is the one hue. It marks the moment the machine reads something: a die just read, the selected die, and the primary action. Use it as a fill only, and put `on-accent` text on it. When the accent needs to be text or a mark, use `accent-ink`, which is also the app's tint; `accent-soft` is the ground of a key's kind icon.
+- The neutrals are iOS's own: `ink` and `ink-muted` text, `bg-raised` rows and `line` separators come from stock components, so dark mode and Increase Contrast work without a custom palette. The one custom neutral is the ground, `bg`: plain, with one motif and no wash or gradient. The app is elevated, as a sheet is, so in dark `bg-raised` rows are iOS's elevated gray, a step lighter than its usual one, and stand out from the ground.
+- The dice and the neutrals invert in dark: each keeps its hue and flips its lightness, so nothing is tinted in dark that is neutral in light.
+- `accent` (petrol) is the one hue. It marks the moment the machine reads something: a die just read, the selected die, and the primary action. Use it as a fill only, and put `on-accent` text on it. When the accent needs to be text or a mark, use `accent-ink`, which is also the app's tint; `accent-soft` is the ground of a key's kind icon. Home's list is the exception: its selected row is a fill with white text, so the list is tinted `accent`.
+- The ground's one motif is the corner dice: outlined dice with their bars, turned as on the icon, on a grid tilted 15° from the top right corner and fading out within 460 points of it. They are `ink`, at most 10% for outlines and 16% for bars (12% and 18% in dark), never the accent. On a phone they reach past the title and the first section headers, faint enough to read through, and rows sit on `bg-raised` above them. `appBackdrop()` draws them behind every list and form, once per screen: a sidebar beside a detail column leaves them out. They are left out under Increase Contrast, and behind the camera and typing, where the real dice are.
 - The primary action is `accent` with an `on-accent` label: the glass-prominent tint, in both themes. Allow one per screen.
 - `danger` means only destruction, and the recovery sheet's warning that the page is the DiceKey. A misread die is told in words under the camera, in `ink-muted`. Success has no color of its own; a passphrase's strength bar is the one graded scale (`strength-weak` to `strength-strong`).
 - The camera image sits on `camera` black, whatever the theme, with `camera-dim` over everything but the dice being read.
-- A die is drawn as the real one looks: a light `die-face` with an `on-die` glyph, set in the dark `die-box`.
+- A die is drawn as the real one looks: a light `die-face` with an `on-die` glyph, set in the dark `die-box`. Dark inverts all three: dark dice with light glyphs in a light box, so 25 bright faces don't glare. A dark die has a `die-edge` rim, which gives it the outline its shadow gives a light one, where it sits outside the box.
 
 ## Type
 
@@ -76,20 +78,21 @@ In code a token keeps its name in lower camel case: the color sets in `DiceKeyVa
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `bg` | `#f3f4f8` | `#0a0b10` | Ground behind lists and forms. |
-| `bg-tint` | `#e4e4f6` | `#17173a` | Top of the ground, fading into `bg` by the middle of the screen. |
-| `bg-raised` | system | system | List rows and sheets: the grouped background stock components draw. |
+| `bg` | `#eff3f4` | `#081012` | Ground behind lists and forms, under the corner dice. |
+| `bg-raised` | system | system | List rows and sheets: the grouped background stock components draw, at the elevated level (`#2c2c2e` in dark, 1.38:1 on `bg`). |
 | `ink` | system | system | Primary text and icons: `.primary`. |
 | `ink-muted` | system | system | Secondary text, captions and placeholders: `.secondary`. |
 | `line` | system | system | Row separators, drawn by stock lists. |
-| `accent` | `#3f3fb5` | `#5e5ce6` | The one hue. Fill only: the primary action, a just-read die, the selected die, the dice of the app mark. Text on it is always `on-accent`. Lighter in dark so it holds up on black. |
-| `on-accent` | `#ffffff` | `#ffffff` | Text and icons on `accent` (5:1 or better). |
-| `accent-ink` | `#3f3fb5` | `#8f8cff` | The app's tint: accent as text and marks, such as links, plain buttons, a kind's icon and the lock countdown. 5.6:1 or better on `bg` and `bg-raised` in both themes. |
-| `accent-soft` | `#e4e4f7` | `#33317a` | Ground of a key's kind icon, under `accent-ink`. |
-| `danger` | `#b81d16` | `#ff7b6b` | Destructive actions and the recovery sheet's warning band. Always with a word or an icon. 5.4:1 or better on `bg` and `bg-raised` in both themes. |
-| `die-face` | `#fbfbf7` | `#e8eae2` | A die's face, a concealed die, and the recovery sheet's concealed code. |
-| `on-die` | `#121411` | `#121411` | A die's glyph and bar, and its faint shadow. |
-| `die-box` | `#24244a` | `#16162e` | The ground the 25 dice sit in. |
+| `accent` | `#14596b` | `#1b7a8e` | The one hue. Fill only: the primary action, a just-read die, the selected die, the dice of the app mark. Text on it is always `on-accent`. Lighter in dark so it holds up on black, and still dark enough for white text: toolbar buttons that take it draw their glyph white whatever the app asks. |
+| `on-accent` | `#ffffff` | `#ffffff` | Text and icons on `accent` (4.9:1 or better). |
+| `accent-ink` | `#135466` | `#86d0e0` | The app's tint: accent as text and marks, such as links, plain buttons, a kind's icon and the lock countdown. 7.5:1 or better on `bg` and `bg-raised` in both themes. |
+| `accent-soft` | `#d5e8ec` | `#133540` | Ground of a key's kind icon, under `accent-ink`. |
+| `danger` | `#b81d16` | `#ff7b6b` | Destructive actions and the recovery sheet's warning band. Always with a word or an icon. 5.5:1 or better on `bg` and `bg-raised` in both themes. |
+| `die-face` | `#fbfbf7` | `#1c1c1e` | A die's face, a concealed die, and the recovery sheet's concealed code. |
+| `on-die` | `#121411` | `#e4e4e4` | A die's glyph and bar. |
+| `die-edge` | clear | `#636366` | The rim of a dark die: 3.2:1 on `bg`, 2.3:1 on `bg-raised`. |
+| `die-shadow` | `rgba(0, 0, 0, 0.25)` | `rgba(0, 0, 0, 0.25)` | A die's faint shadow. |
+| `die-box` | `#142b33` | `#9fb6bd` | The ground the 25 dice sit in, the opposite of the dice in each theme: 8:1 against them and 6.5:1 against `bg-raised` in dark. |
 | `camera` | `#000000` | `#000000` | Behind the live camera image, in every theme. |
 | `camera-dim` | `rgba(0, 0, 0, 0.75)` | `rgba(0, 0, 0, 0.75)` | Darkens the camera image around the dice being read. |
 | `strength-weak` | system red | system red | A passphrase's strength bar, weakest to strongest. |
@@ -145,4 +148,4 @@ The interface contract; what is stored and protected, and why, is in `security.m
 
 ## Settings
 
-A sheet opened by the gear in home's toolbar, a stock form with Done in the toolbar. Under Catalog, a Sync with iCloud switch whose footer says what syncs (never the dice or a secret) and warns when a change waits for the next launch, iCloud couldn't start, or the device isn't signed in; then Export catalog, which shares the file, and Import catalog, which takes a file back (`catalog-format.md`). About shows the version, a line saying the app is unofficial, a link to dicekeys.com, and credits for what the app draws on.
+A sheet opened by the gear in home's toolbar, a stock form with Done (an ✕, since every change applies at once) in the toolbar. Under Catalog, a Sync with iCloud switch whose footer says what syncs (never the dice or a secret) and warns when a change waits for the next launch, iCloud couldn't start, or the device isn't signed in; then Export catalog, which shares the file, and Import catalog, which takes a file back (`catalog-format.md`). About shows the version, a line saying the app is unofficial, a link to dicekeys.com, and credits for what the app draws on.
