@@ -123,7 +123,7 @@ struct DiceKeyScannerTests {
 
     @Test("a grid of faces that repeats a letter is read in full but is not a key")
     func repeatedLettersAreNotAKey() {
-        // A sheet of StickKeys stickers: each row the same five letters, the digit changing by row.
+        // A sheet of Stickeys stickers: each row the same five letters, the digit changing by row.
         // A copy of a key with a sticker in the wrong place repeats a letter the same way.
         let sheet = SyntheticDiceKey(
             faces: (0..<25).map { i in

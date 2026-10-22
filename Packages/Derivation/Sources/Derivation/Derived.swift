@@ -6,29 +6,27 @@
 import Foundation
 
 /// An Ed25519 key from a recipe.
-public struct SigningKey: Sendable, Equatable {
-    /// The Ed25519 seed followed by the public key, 64 bytes.
-    public let signingKeyBytes: Data
-
-    public static let publicKeyLength = 32
-
-    public var verificationKeyBytes: Data { Data(signingKeyBytes.suffix(Self.publicKeyLength)) }
+public struct Ed25519Key: Sendable, Equatable {
+    /// The 32-byte Ed25519 seed.
+    public let seed: Data
+    public let publicKey: Data
 
     public init(seed: String, recipe: KeyRecipe) {
         let bytes = Engine.bytes(seed: seed, type: .ed25519, recipe: recipe.json, length: Engine.keyLength)
-        signingKeyBytes = Data(Engine.ed25519(seed: bytes))
+        self.seed = Data(bytes)
+        publicKey = Data(Engine.ed25519PublicKey(seed: bytes))
     }
 }
 
 /// An X25519 key pair from a recipe.
-public struct UnsealingKey: Sendable, Equatable {
-    public let unsealingKeyBytes: Data
-    public let sealingKeyBytes: Data
+public struct X25519KeyPair: Sendable, Equatable {
+    public let privateKey: Data
+    public let publicKey: Data
 
     public init(seed: String, recipe: KeyRecipe) {
         let scalar = Engine.bytes(seed: seed, type: .x25519, recipe: recipe.json, length: Engine.keyLength)
-        unsealingKeyBytes = Data(scalar)
-        sealingKeyBytes = Data(Engine.x25519PublicKey(scalar: scalar))
+        privateKey = Data(scalar)
+        publicKey = Data(Engine.x25519PublicKey(scalar: scalar))
     }
 }
 

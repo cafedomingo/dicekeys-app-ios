@@ -2,14 +2,15 @@
 
 The scanner reads a DiceKey from the camera: 25 dice in a 5x5 box, each showing a letter, a
 digit and a rotation. It lives in `Packages/ReadDiceKey/Sources/ReadDiceKey/`, is written in
-Swift, and uses only system frameworks: `simd`, CoreVideo and Dispatch. This
-document explains what it reads, how, and why it works this way rather than the alternatives
+Swift, and uses only system frameworks (Foundation, with Dispatch, `simd`, CoreGraphics and
+CoreVideo) and the package's own `DiceKeySpecification` module. This document explains what it reads, how, and why it works this way rather than the alternatives
 that were measured.
 
-The reference implementation is DiceKeys' own scanner,
+The original implementation is DiceKeys' own scanner,
 [read-dicekey](https://github.com/dicekeys/read-dicekey), written in C++ on OpenCV. This
-scanner began as a port of it and still follows its approach to finding and decoding the bars. No code
-from it is included, and where this scanner departs from it is described below.
+scanner began as a Swift port of it and still follows its approach to finding and decoding
+the bars, so it is a derivative work (`THIRD_PARTY_LICENSES`). Where it departs from it is
+described below.
 
 ## What it is built for
 
@@ -93,7 +94,7 @@ Most regions are not bars (paper texture, the box, letters, the scene), so two f
 key thin them out:
 
 - **All 50 bars are the same size.** The areas are sorted and the tightest run of 35 found;
-  only candidates within 25% of its middle area stay. A tight run of much larger rectangles
+  only candidates with an area from 0.75 to 1/0.75 times its middle area stay. A tight run of much larger rectangles
   wins over a tight run of tiny ones, so specks of equal size cannot outvote the bars.
 - **A bar is found at several thresholds.** Of overlapping candidates (either's center inside
   the other), the one closest to that area stays.
@@ -134,13 +135,20 @@ common are needed to call it the same key, because two keys can share a face or 
 chance. With fewer, whichever of the two reads has more faces stands, so one key is not mixed
 into another on a coincidence. Successive frames of a key in view read most of its faces, so
 they share far more than five. A frame that reads nothing changes nothing. When all 25 faces are known and name 25 different letters,
-the key is read: a DiceKey has one die per letter, and a full sheet of StickKeys stickers,
+the key is read: a DiceKey has one die per letter, and a full sheet of Stickeys stickers,
 which repeats five letters, would otherwise read as a key.
+
+## Speed
+
+`ScannerBenchmarkTests` is opt-in (`SCANNER_BENCHMARK=1 swift test -c release --filter
+ScannerBenchmark` in `Packages/ReadDiceKey`) and times a scan of one 1080x1080 frame, the
+app's square. On a Mac it takes a few milliseconds and raises peak memory by about 10 MB.
+No phone has measured it (`backlog.md`).
 
 ## Accuracy and the corpus
 
-`ScannerCorpusTests` runs photos and a short video of keys: upstream's, the owner's (six
-keys, one of them printed in the DiceKeys booklet), and scenes with no key. The bar depends on
+`ScannerCorpusTests` runs photos and a short video of keys: upstream's, the owner's (one key
+is the one printed in the DiceKeys booklet), and scenes with no key. The bar depends on
 how a photo was taken, not on who took it:
 
 - **A well-framed key must read** (the photos in `well-framed/`) at the app's scale (the
@@ -151,7 +159,7 @@ how a photo was taken, not on who took it:
   all.
 - **Everything else must only never be misread** (the photos in `other/`): a steep tilt, low light, blur, a key far away
   under glare, a cropped key, the video at 360 pixels, and scenes with no key at all (loose and
-  jumbled dice, printed faces, StickKeys sheets, a sudoku grid), which must read nothing.
+  jumbled dice, printed faces, Stickeys sheets, a sudoku grid), which must read nothing.
 
 Every photo is checked for misreads at full size, at the app's scale and three quarters of
 it, and cropped to the centered square exactly as the app scans it. No face has been read wrong in any of them. The
@@ -164,7 +172,7 @@ photos far outside what the scanning overlay asks for are there to prove that, n
 | Threshold levels | `k * 255 / 13`, k = 2...13 | Upstream's choice. Spans the range evenly; fewer was never measured |
 | Minimum region size | 50 pixels | Drops specks before rectangle fitting; a bar is far larger at any usable distance |
 | Bar proportions | 0.177 thick per length, within a factor of 1.5 | The printed geometry, with slack for blur and perspective |
-| Size mode | tightest run of 35, keep within 25% | 50 bars of one size; 35 leaves room for missed and extra bars |
+| Size mode | tightest run of 35, keep 0.75 to 1/0.75 times its middle area | 50 bars of one size; 35 leaves room for missed and extra bars |
 | Pairing tolerance | a quarter face | A partner on a neighboring die is about two faces away |
 | Row and column tolerance | one face width | Rows are about two face widths apart; generous for perspective |
 | Even spacing | each step within 25% of the mean | Rejects a row that picked up a stray |
@@ -174,22 +182,27 @@ photos far outside what the scanning overlay asks for are there to prove that, n
 
 ## Why it works this way: alternatives measured
 
-The scanner began as a line-by-line Swift port of
-[read-dicekey](https://github.com/dicekeys/read-dicekey)'s C++ scanner (lib-read-dicekey,
-built on OpenCV), proven to read the corpus exactly as the C++ did. When exact equivalence
-stopped being a goal, Apple's frameworks were tried first, on the assumption that they would do
-the job with less code. Measured on the 23 corpus photos at 1080 pixels on an M2:
+Apple's frameworks were tried first, on the assumption that they would do the job with less
+code. Measured on the 23 corpus photos at 1080 pixels on an M2:
 
 | Approach | Result | Why |
 |---|---|---|
 | Vision `DetectRectanglesRequest` | 0 to 13 rectangles per frame; even a clean synthetic image of 50 bars gives 8 to 12 at real sizes | Built for a few prominent quadrilaterals (documents, cards). It caps its results per request; tiling the frame into 36 requests found more but still read only 14 faces |
 | Vision `DetectContoursRequest` | Full reads on about half the photos; mostly 34 to 270 ms, and 10 s on one | One global threshold, where uneven light needs many. Its cost grows faster than the contour count (at 512 pixels, 430 contours took 23 ms and 2,456 took 3.2 s). Dividing the image by its own blur first fixed much of the lighting but not the speed |
 | Vision `RecognizeTextRequest` as the reader | 20 to 49% of faces found in a full frame (56 to 770 ms); given each face's location, 85 to 91% read, with wrong but plausible reads | Built for lines of words, not isolated rotated pairs of characters. It has no error check, needs a detector anyway, and the fast level only reads upright text |
-| Template OCR as a third vote (upstream) | Could only veto good reads | Whenever the two codes agreed they were right (all 417 times, on the corpus cropped to the app's 1080-pixel square), and the app already required all three to agree, so OCR added nothing but vetoes. It cost 3,900 lines of glyph tables and matching code |
-| The Canny edge level (upstream) | One face more, of 550, from the well-framed photos at the app's frame size | It closes the outline of a bar printed against the edge of its die, and rescued one photo at full photo resolution, which the app never scans. Rendered by Core Image it cost 2.6 ms and ~120 MB per frame; on the CPU (the port's code), 9 ms. Not worth either |
-| OpenCV | Would shrink step 2 to a few calls | A large binary dependency to replace the region labeling and rectangle fitting, under 200 lines |
-| AprilTag, zxing-cpp | The right family of problem (fiducials, barcodes) | Their decoders are for their own tags and symbologies |
-| Core ML detector trained on rendered keys | The only framework route aimed at this problem | Needs a training pipeline and a model to maintain, accuracy unknown, and the bars would still be needed to guarantee correctness |
+
+Two things upstream does were dropped:
+
+- **Template OCR as a third vote** could only veto good reads: whenever the two codes agreed
+  they were right (all 417 times, on the corpus cropped to the app's 1080-pixel square).
+- **The Canny edge level** read one face more, of 550, from the well-framed photos at the
+  app's frame size, and cost 2.6 ms and about 120 MB per frame in Core Image, or 9 ms on the
+  CPU.
+
+OpenCV, AprilTag, zxing-cpp and a Core ML detector were considered and not tried: OpenCV is a
+large dependency to replace under 200 lines, the others' decoders are for their own tags and
+symbologies, and a trained model needs a pipeline to maintain without removing the need for
+the bars.
 
 The pattern: Vision's requests are built for a few salient objects per image or for natural
 text, and Apple ships no fast way to find many small blobs. Finding 50 identical small bars

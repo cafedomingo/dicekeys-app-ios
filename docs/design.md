@@ -8,18 +8,18 @@ DiceKey Vault turns a DiceKey (25 dice in a sealed box) into the few keys that a
 
 - **The derivation is the product.** A DiceKey plus a kind plus a name always gives the same key. The interface's only job is to make those three inputs unambiguous and to show the output carefully.
 - **The camera is the only setup.** No assembly walkthroughs, illustrations, tours or onboarding. Before the first DiceKey, home is one line and one button to the camera.
-- **Public by default, secret on purpose.** A key's public half or fingerprint shows freely. The secret half stays concealed until a deliberate Reveal, and copying it is local only and clears after one minute.
+- **Public by default, secret on purpose.** A key's public half or fingerprint shows freely. The secret half stays concealed until a deliberate Reveal, and copying it says when it clears. `security.md` has the protections behind both.
 - **The scan is the only check.** A scanned DiceKey is either one the app knows, with its name and keys, or a new one. An unexpected "New DiceKey" is how a misread die or the wrong box shows up, so it is stated plainly and paired with Scan again. Keys themselves carry no verify state: each derives the same way every time.
 - **Making a key is looking it up.** A kind plus a name gives the key immediately, so New key shows the result live as you type, and Save only bookmarks it.
-- **Capture on the best camera, derive on the safest machine.** The phone reads the DiceKey best. A desktop with a webcam (or Continuity Camera) is a fine place to derive and export. Both share the same screens.
+- **Capture on the best camera, derive on the safest machine.** The phone reads the DiceKey best. Intent, not built: a desktop with a webcam (or Continuity Camera) as a fine place to derive and export, sharing the same screens (backlog, The Mac).
 
-## Platform: iOS 26 and macOS 26 and later, Liquid Glass
+## Platform: iOS 26 and later, Liquid Glass
 
 - It is a native SwiftUI app built from stock components, with one two-column `NavigationSplitView` for every size: home, with every DiceKey and its keys, then whichever of them is selected, a key opened from a DiceKey pushed over it. A phone shows the columns as a stack. The system draws the glass; this system only decides what goes on it.
 - **There are two layers.** The navigation layer is glass: toolbars, the sidebar, sheets, and controls over the camera. The content layer is flat: rows, the DiceKey grid, keys and secrets. Never put glass on content, and never stack glass on glass.
 - The tint is `accent-ink`. Use `.buttonStyle(.glassProminent)` only for the screen's one primary action, and `.glass` for the rest of the controls on the glass layer.
-- On Mac the sidebar is a floating glass pane listing DiceKeys with their keys nested beneath. Toolbar actions sit in glass capsules at the top right. Scanning uses the Mac's camera or Continuity Camera and fills the detail pane.
-- New key is a draft of the key's own detail, never a sheet: a pushed screen on iPhone and the detail pane on Mac. Keep sheets for confirmations, such as Forget.
+- The Mac gets the iPad layout, as Designed for iPad. A Mac-native layout (a floating glass sidebar, toolbar actions in glass capsules, scanning in the detail pane) is intent, not built; it is in the backlog under The Mac.
+- New key is a draft of the key's own detail, never a sheet: a pushed screen on iPhone and the detail column where there is one. Keep sheets for confirmations, such as Forget.
 - Over the camera, controls are system glass.
 
 ## App icon
@@ -72,7 +72,7 @@ Use SF Symbols on Apple platforms, at the text's weight, colored `ink` or `ink-m
 
 ## Tokens
 
-In code a token keeps its name in lower camel case: the color sets in `DiceKeys/Resources/Colors.xcassets` are named as below, so `on-accent` is `Color.onAccent`, and spacing and radii are `CGFloat` constants such as `.space3` and `.radiusMd` in `DiceKeys/Shared/LayoutTokens.swift`. Change a token there and everything drawn with it follows. A token marked "system" is iOS's own and has no color set.
+In code a token keeps its name in lower camel case: the color sets in `DiceKeyVault/Resources/Colors.xcassets` are named as below, so `on-accent` is `Color.onAccent`, and spacing and radii are `CGFloat` constants such as `.space3` and `.radiusMd` in `DiceKeyVault/Shared/LayoutTokens.swift`. Change a token there and everything drawn with it follows. A token marked "system" is iOS's own and has no color set.
 
 | Token | Light | Dark | Use |
 |---|---|---|---|
@@ -110,7 +110,7 @@ In code a token keeps its name in lower camel case: the color sets in `DiceKeys/
 | `secret` | `.body`, monospaced | A revealed recovery phrase's words; a passphrase is `.title3` monospaced. Wraps anywhere; never truncated. |
 | `key` | `.footnote`, monospaced | Public keys and fingerprints. Selectable, wraps anywhere. |
 
-Families: `sans` is the system font, `mono` the system monospaced font, and `dice` Inconsolata Bold (`DiceKeys/fonts/Inconsolata-Bold.otf`).
+Families: `sans` is the system font, `mono` the system monospaced font, and `dice` Inconsolata Bold (`DiceKeyVault/fonts/Inconsolata-Bold.otf`).
 
 | Spacing | Value | Use |
 |---|---|---|
@@ -129,14 +129,20 @@ Sheets, rows and buttons take their corners from the system; buttons are capsule
 
 ## In the app
 
+The interface contract; what is stored and protected, and why, is in `security.md`.
+
 - **Home** gives each DiceKey a section: its center die, name and status ("Locked · 4 keys", "Locks in 0:42"), then its keys, then New key while it is unlocked, so a key is one tap away. A DiceKey kept on this device unlocks from its row with Face ID. Scan DiceKey sits in the toolbar, since scanning is rare once DiceKeys are kept. Before the first DiceKey, home is the app mark, one line and Scan your DiceKey as the primary action, with a footnote that paper restores the same way.
 - **The DiceKey grid** (`DiceKeyGrid`, `DieView`) is the only way a DiceKey is drawn. The center die alone (`DiceAvatar`) identifies a DiceKey in lists, whatever it is named.
 - **A DiceKey's screen** opens with its avatar, name and status ("2 keys · unlocked", or "New DiceKey · no keys yet" with "Used this DiceKey before? A die may be misread" and Scan again), then the concealed grid, then its keys. A new DiceKey is also the normal first run, so the notice is plain, not an error.
-- **Keeping a DiceKey on this device** is offered whenever a DiceKey that isn't kept is scanned or typed, in an alert as its screen opens: Keep on this device or Not now. Kept, it unlocks with Face ID or the passcode; not kept, it is read again each time it locks. The DiceKey's menu changes the choice later.
+- **Keeping a DiceKey on this device** is offered whenever a DiceKey that isn't kept is scanned or typed, in an alert as its screen opens: Keep on this device or Not now. The DiceKey's menu changes the choice later.
 - **The camera** is framed on `camera` black, counts dice ("17 of 25 dice read") with one short hint, and hands straight to the DiceKey's screen when all 25 are read.
 - **Typing a DiceKey** takes each die in three steps: its letter, its number, then which way is up, chosen from the die drawn four ways. Nothing defaults to upright, and a letter already on another die can't be typed: its key loses its fill and is struck through. The number pad fills the letters' space. Once every die is in, none is selected and Open DiceKey, the primary action, takes the keypad's place; tapping a die redoes it, and tapping it again puts it down. A half-typed DiceKey survives leaving the app for as long as an unlocked one does. A hardware keyboard types the same, with an arrow for where the top of the letter points.
 - **Key rows** show the name and the kind, never a status or any part of a secret. Kinds aren't color-coded; spell them as their tools do ("age", "WireGuard").
-- **New key** is a live draft in the detail column, never a sheet: kind, name, and the public key and fingerprint updating as you type. Save is the one primary action.
-- **A key** opens with a centered header, not a table: its kind's icon tile, its name in `title` type in place of the navigation title, and its kind and date. It shows its public half in full, always, and its secret only after Reveal, never as dots or a length hint. Reveal is the primary action and sits where the secret will show, whether the DiceKey is unlocked or Face ID unlocks it first. Each value has the same two actions, Copy and Share, side by side under it; copying a secret is local only and says when it clears, and SSH and age identities share as the file their tool reads. A wallet's recovery phrase is the one exception: it is written down, never copied or shared. A key is deleted by swiping its row or from its screen, after a confirmation that says how to make it again.
-- **Paper** comes in two pieces, each previewed in a sheet that shows the page exactly as it prints, with Print as the primary action and Save as PDF second. The list card, sized for the box, holds the keys and a QR code that restores them, and nothing secret. The recovery sheet is the DiceKey on paper: it asks for Face ID first, stays concealed until Show, warns before saving a file, and can't be printed while the screen is shared. The camera reads both codes and asks before loading either. Printed pages are laid out in points on the page, not with the screen's spacing tokens, and print in the light appearance.
+- **New key** is a live draft in the detail column, never a sheet: kind, name, and the public key and fingerprint updating as you type. Save is the one primary action; for a key that already exists it is disabled, and New key says so and offers to open it.
+- **A key** opens with a centered header, not a table: its kind's icon tile, its name in `title` type in place of the navigation title, and its kind and date. It shows its public half in full, always, and its secret only after Reveal, never as dots or a length hint. Reveal is the primary action and sits where the secret will show, whether the DiceKey is unlocked or Face ID unlocks it first. Each value has the same two actions, Copy and Share, side by side under it; copying a secret says when it clears, and SSH and age identities share as the file their tool reads. A wallet's recovery phrase is the one exception: it is written down, never copied or shared. A key is deleted by swiping its row or from its screen, after a confirmation that says how to make it again.
+- **Paper** comes in two pieces, each previewed in a sheet that shows the page exactly as it prints, with Print as the primary action and Save as PDF second. The list card is sized for the box and carries a QR code that restores the keys. The recovery sheet is the DiceKey on paper, so it is gated and concealed until Show (`security.md`). The camera reads both codes and asks before loading either. Printed pages are laid out in points on the page, not with the screen's spacing tokens, and print in the light appearance.
 - **Buttons**: one glass-prominent primary action per screen; Forget is destructive and always confirmed.
+
+## Settings
+
+A sheet opened by the gear in home's toolbar, a stock form with Done in the toolbar. Under Catalog, a Sync with iCloud switch whose footer says what syncs (never the dice or a secret) and warns when a change waits for the next launch, iCloud couldn't start, or the device isn't signed in; then Export catalog, which shares the file, and Import catalog, which takes a file back (`catalog-format.md`). About shows the version, a line saying the app is unofficial, a link to dicekeys.com, and credits for what the app draws on.

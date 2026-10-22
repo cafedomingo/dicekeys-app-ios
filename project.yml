@@ -1,19 +1,14 @@
 # XcodeGen spec. The Xcode project is generated, not committed:
 #
 #   swift run --package-path BuildTools xcodegen generate
-#   open DiceKeys.xcodeproj
+#   open DiceKeyVault.xcodeproj
 #
 # The app's logic comes from two local Swift packages: Packages/Derivation (recipes and
 # derived values) and Packages/ReadDiceKey (the scanner).
 
-name: DiceKeys
+name: DiceKeyVault
 options:
-  bundleIdPrefix: com.dicekeys
-  # iOS 26 is the floor because GitHub's hosted macOS runners (our CI compiler)
-  # ship Xcode 26.x: the simulator tests need a runtime the app can install on. Raise it
-  # to 27.0 once Xcode 27 is on the runners; the one 27-SDK API the app uses
-  # (PresentableError's item-bound alert) is already gated on the SDK, so nothing else
-  # needs to change. Xcode 27.0 builds this spec as is.
+  # The runners have no iOS 27 SDK, so the deployment target is 26.
   deploymentTarget:
     iOS: "26.0"
   xcodeVersion: "26.6"
@@ -61,26 +56,27 @@ packages:
     path: Packages/ReadDiceKey
 
 targets:
-  DiceKeys:
+  DiceKeyVault:
     type: application
     platform: iOS
     sources:
-      - path: DiceKeys
+      - path: DiceKeyVault
         excludes:
           - "**/.DS_Store"
           - "Resources/AppIcon.icon"
+          - "Info.plist"
       # Icon Composer package: the layered Liquid Glass icon, which Xcode compiles into every
       # size and the light, dark and tinted appearances.
-      - path: DiceKeys/Resources/AppIcon.icon
+      - path: DiceKeyVault/Resources/AppIcon.icon
         type: file
         buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
         CODE_SIGN_ENTITLEMENTS: $(APP_ENTITLEMENTS)
-        PRODUCT_NAME: DiceKeys
-        PRODUCT_MODULE_NAME: DiceKeys
-        INFOPLIST_FILE: iOS/Info.plist
+        PRODUCT_NAME: DiceKeyVault
+        PRODUCT_MODULE_NAME: DiceKeyVault
+        INFOPLIST_FILE: DiceKeyVault/Info.plist
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -96,16 +92,16 @@ targets:
         product: ReadDiceKey
     scheme:
       testTargets:
-        - DiceKeysTests
+        - DiceKeyVaultTests
       gatherCoverageData: true
 
-  DiceKeysTests:
+  DiceKeyVaultTests:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: Tests/DiceKeysTests
+      - path: Tests/DiceKeyVaultTests
     dependencies:
-      - target: DiceKeys
+      - target: DiceKeyVault
       - package: Derivation
         product: Derivation
       - package: Derivation
@@ -121,26 +117,26 @@ targets:
 
 
   # Screenshots of every screen for visual review, run by scripts/screen-walk.sh. Kept out
-  # of the DiceKeys scheme so CI does not run it.
-  DiceKeysUITests:
+  # of the DiceKeyVault scheme so CI does not run it.
+  DiceKeyVaultUITests:
     type: bundle.ui-testing
     platform: iOS
     sources:
-      - path: Tests/DiceKeysUITests
+      - path: Tests/DiceKeyVaultUITests
     dependencies:
-      - target: DiceKeys
+      - target: DiceKeyVault
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).UITests
-        TEST_TARGET_NAME: DiceKeys
+        TEST_TARGET_NAME: DiceKeyVault
 
 schemes:
-  DiceKeysScreenWalk:
+  DiceKeyVaultScreenWalk:
     build:
       targets:
-        DiceKeys: all
-        DiceKeysUITests: [test]
+        DiceKeyVault: all
+        DiceKeyVaultUITests: [test]
     test:
       targets:
-        - DiceKeysUITests
+        - DiceKeyVaultUITests

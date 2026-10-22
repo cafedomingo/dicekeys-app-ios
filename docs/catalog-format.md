@@ -44,5 +44,5 @@ The rule: only add optional fields, kinds and values. Never rename, remove or re
 one. Raise `v` only when an older app would otherwise get something wrong; an app refuses a
 newer `v`.
 
-`Tests/DiceKeysTests/Fixtures` holds v1 of each form. They are never regenerated: a failing
+`Tests/DiceKeyVaultTests/Fixtures` holds v1 of each form. They are never regenerated: a failing
 fixture test means the change breaks paper already printed.

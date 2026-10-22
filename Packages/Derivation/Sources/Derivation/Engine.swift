@@ -28,11 +28,10 @@ enum Engine {
         }
     }
 
-    /// The secret key is the seed followed by the public key, as libsodium lays it out.
-    static func ed25519(seed: [UInt8]) -> [UInt8] {
+    static func ed25519PublicKey(seed: [UInt8]) -> [UInt8] {
         do {
             let key = try Curve25519.Signing.PrivateKey(rawRepresentation: seed)
-            return seed + Array(key.publicKey.rawRepresentation)
+            return Array(key.publicKey.rawRepresentation)
         } catch {
             preconditionFailure("Ed25519 rejected a 32-byte seed: \(error)")
         }

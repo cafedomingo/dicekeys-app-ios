@@ -33,7 +33,7 @@ public enum BIP39 {
             for bit in (word * bitsPerWord)..<((word + 1) * bitsPerWord) {
                 index = index << 1 | Int(bits[bit / 8] >> (7 - bit % 8) & 1)
             }
-            return Wordlist.english[index]
+            return englishWords[index]
         }
     }
 }

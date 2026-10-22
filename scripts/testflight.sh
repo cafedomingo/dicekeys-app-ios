@@ -45,7 +45,7 @@ fi
 
 BUILD_NUMBER="${1:-$(date +%Y%m%d%H%M)}"
 MARKETING_VERSION="$(date +%Y.%-m.%-d)"
-ARCHIVE="build/DiceKeys.xcarchive"
+ARCHIVE="build/DiceKeyVault.xcarchive"
 EXPORT_DIR="build/export"
 
 # Expanded as ${AUTH[@]+"${AUTH[@]}"} below: macOS ships bash 3.2, where "${AUTH[@]}" on
@@ -66,8 +66,8 @@ swift run --package-path BuildTools xcodegen generate
 rm -rf "$ARCHIVE" "$EXPORT_DIR"
 
 xcodebuild archive \
-    -project DiceKeys.xcodeproj \
-    -scheme DiceKeys \
+    -project DiceKeyVault.xcodeproj \
+    -scheme DiceKeyVault \
     -destination 'generic/platform=iOS' \
     -archivePath "$ARCHIVE" \
     -allowProvisioningUpdates \

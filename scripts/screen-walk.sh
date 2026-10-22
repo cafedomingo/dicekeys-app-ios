@@ -26,7 +26,7 @@ xcrun simctl bootstatus "$udid" -b >/dev/null
 
 cd "$(dirname "$0")/.."
 swift run --package-path BuildTools xcodegen generate --quiet
-bundle_id="$(xcodebuild -showBuildSettings -project DiceKeys.xcodeproj -scheme DiceKeys 2>/dev/null |
+bundle_id="$(xcodebuild -showBuildSettings -project DiceKeyVault.xcodeproj -scheme DiceKeyVault 2>/dev/null |
   awk '/ PRODUCT_BUNDLE_IDENTIFIER =/ { print $3; exit }')"
 
 # Face ID enrolled and matched every couple of seconds, for the prompts the walk passes through.
@@ -41,7 +41,7 @@ for mode in light dark; do
   xcrun simctl keychain "$udid" reset
   xcrun simctl ui "$udid" appearance "$mode"
   TEST_RUNNER_SHOT_DIR="$out" TEST_RUNNER_SHOT_MODE="$mode" xcodebuild test \
-    -project DiceKeys.xcodeproj -scheme DiceKeysScreenWalk \
+    -project DiceKeyVault.xcodeproj -scheme DiceKeyVaultScreenWalk \
     -destination "platform=iOS Simulator,id=$udid" \
     CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= -quiet
 done

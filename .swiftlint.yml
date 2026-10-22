@@ -26,9 +26,8 @@ analyzer_rules:
   - unused_declaration
   - unused_import
 included:
-  - DiceKeys
+  - DiceKeyVault
   - Tests
-  - seed-security-key
   - Packages/ReadDiceKey/Sources/ReadDiceKey
   - Packages/ReadDiceKey/Tests
   - Packages/Derivation/Sources
@@ -46,7 +45,7 @@ custom_rules:
   color_literal:
     name: "Color literal"
     message: "Use a color from Colors.xcassets, or a system style such as .primary or .tint."
-    included: "^(.*/)?(DiceKeys|Tests/DiceKeys\\w*)/.*\\.swift$"
+    included: "^(.*/)?(DiceKeyVault|Tests/DiceKeyVault\\w*)/.*\\.swift$"
     excluded: "/Packages/"
     excluded_match_kinds: [comment, doccomment, string]
     # Color initializers with components (including the color-space and .init forms, typed
@@ -58,7 +57,7 @@ custom_rules:
   system_color:
     name: "System color in the app"
     message: "Reference the system color from an Interface color set in Colors.xcassets."
-    included: "^(.*/)?DiceKeys/.*\\.swift$"
+    included: "^(.*/)?DiceKeyVault/.*\\.swift$"
     excluded: "/Packages/"
     excluded_match_kinds: [comment, doccomment, string]
     regex: '(\b(Color|UIColor)|\bColor\(\s*(uiColor:\s*)?)\.(system|secondarySystem|tertiarySystem|quaternarySystem|label|secondaryLabel|tertiaryLabel|quaternaryLabel|placeholderText|separator|opaqueSeparator|link|lightText|darkText)\w*'

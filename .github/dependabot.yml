@@ -5,11 +5,6 @@ updates:
     schedule:
       interval: "weekly"
     labels: ["dependencies"]
-  - package-ecosystem: "swift"
-    directory: "/Packages/Derivation"
-    schedule:
-      interval: "weekly"
-    labels: ["dependencies"]
   - package-ecosystem: "pip"
     directory: "/scripts"
     schedule:

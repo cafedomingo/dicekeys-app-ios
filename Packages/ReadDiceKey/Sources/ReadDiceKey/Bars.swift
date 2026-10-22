@@ -15,8 +15,8 @@ import Foundation
 /// twelve levels and its dark regions found at each. A region whose smallest enclosing
 /// rectangle has an undoverline's proportions (0.177 as thick as it is long, with 50%
 /// slack) is a candidate. All 50 undoverlines of a key are nearly the same size, so only
-/// candidates within 25% of the most common area are kept, and of a bar found at several
-/// thresholds, the one closest to that area.
+/// candidates from 0.75 to 1/0.75 times the most common area are kept, and of a bar found at
+/// several thresholds, the one closest to that area.
 func findBars(in image: GrayImage) -> [Bar] {
     guard let brightest = image.pixels.max() else { return [] }
     let thresholds = (2...13).map { UInt8($0 * 255 / 13) }.filter { $0 <= brightest }

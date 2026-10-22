@@ -35,7 +35,7 @@ jobs:
           echo "$RUNNER_TEMP/lint/bin" >> "$GITHUB_PATH"
       - name: swift-format
         # Not scripts: the formatter folds the comment lines after a shebang into it, one per run.
-        run: swift format lint --strict --recursive DiceKeys Packages Tests BuildTools/Package.swift
+        run: swift format lint --strict --recursive DiceKeyVault Packages Tests BuildTools/Package.swift
       - name: SwiftLint
         run: swiftlint lint --strict --reporter github-actions-logging
       - name: ruff check
@@ -86,7 +86,7 @@ jobs:
       - name: Build iOS app (simulator)
         run: |
           set -o pipefail
-          xcodebuild build -project DiceKeys.xcodeproj -scheme DiceKeys \
+          xcodebuild build -project DiceKeyVault.xcodeproj -scheme DiceKeyVault \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep --line-buffered -E 'error:|warning: unre|^Ld |BUILD|\*\*' || true
           grep -q 'BUILD SUCCEEDED' build-ios.log
@@ -138,7 +138,7 @@ jobs:
           set -o pipefail
           # Ad-hoc signing: with no entitlements the app has no keychain access at all and
           # every SecItem call fails with errSecMissingEntitlement (-34018).
-          xcodebuild build-for-testing -project DiceKeys.xcodeproj -scheme DiceKeys \
+          xcodebuild build-for-testing -project DiceKeyVault.xcodeproj -scheme DiceKeyVault \
             -destination "platform=iOS Simulator,id=$UDID" \
             CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee build-ios.log | grep --line-buffered -E 'error:|warning: unre|^Ld |BUILD|\*\*' || true
           grep -q 'BUILD SUCCEEDED' build-ios.log
@@ -146,7 +146,7 @@ jobs:
       - name: Test without building
         run: |
           set -o pipefail
-          xcodebuild test-without-building -project DiceKeys.xcodeproj -scheme DiceKeys \
+          xcodebuild test-without-building -project DiceKeyVault.xcodeproj -scheme DiceKeyVault \
             -destination "platform=iOS Simulator,id=$UDID" \
             CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= 2>&1 | tee test-ios.log | grep --line-buffered -E 'error:|Test Case|Test Suite|passed|failed|\*\*' || true
           grep -q 'TEST EXECUTE SUCCEEDED' test-ios.log

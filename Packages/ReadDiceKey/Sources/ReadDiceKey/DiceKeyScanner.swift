@@ -60,7 +60,7 @@ public struct DiceKeyScanner: Sendable {
 
     /// All 25 faces, once every one has been read and they make a DiceKey. A DiceKey has one
     /// die per letter; faces that repeat a letter are something else, such as a sheet of
-    /// StickKeys stickers or a copy with a sticker in the wrong place, however well they read.
+    /// Stickeys stickers or a copy with a sticker in the wrong place, however well they read.
     public var diceKey: [ScannedFace]? {
         guard let all = allFaces, Set(all.map(\.letter)).count == 25 else { return nil }
         return all

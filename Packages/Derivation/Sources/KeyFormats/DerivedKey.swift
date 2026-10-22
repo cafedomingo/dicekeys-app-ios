@@ -21,19 +21,19 @@ public struct DerivedKey: Equatable, Sendable {
     public static func derive(seed: String, recipe: KeyRecipe) -> DerivedKey {
         switch recipe.kind {
         case .ssh:
-            let key = SigningKey(seed: seed, recipe: recipe)
+            let key = Ed25519Key(seed: seed, recipe: recipe)
             return DerivedKey(
                 recipe: recipe,
                 publicKey: OpenSSH.publicKeyLine(key, comment: recipe.name),
                 fingerprint: OpenSSH.fingerprint(key),
                 secret: OpenSSH.privateKeyPEM(key, comment: recipe.name))
         case .wireguard:
-            let key = UnsealingKey(seed: seed, recipe: recipe)
+            let key = X25519KeyPair(seed: seed, recipe: recipe)
             let publicKey = WireGuard.publicKey(key)
             return DerivedKey(
                 recipe: recipe, publicKey: publicKey, fingerprint: publicKey, secret: WireGuard.privateKey(key))
         case .age:
-            let key = UnsealingKey(seed: seed, recipe: recipe)
+            let key = X25519KeyPair(seed: seed, recipe: recipe)
             let publicKey = Age.recipient(key)
             return DerivedKey(
                 recipe: recipe, publicKey: publicKey, fingerprint: publicKey, secret: Age.identity(key))

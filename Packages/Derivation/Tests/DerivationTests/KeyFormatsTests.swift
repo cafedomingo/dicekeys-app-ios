@@ -46,7 +46,7 @@ struct BIP39Tests {
 
     @Test("the English list has 2048 words")
     func wordlistSize() {
-        #expect(Wordlist.english.count == 2048)
+        #expect(BIP39.englishWords.count == 2048)
     }
 
     @Test("entropy must be 16 to 32 bytes in steps of 4")
