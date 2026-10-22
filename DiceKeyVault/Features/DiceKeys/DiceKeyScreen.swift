@@ -60,13 +60,6 @@ struct DiceKeyScreen: View {
                 } else {
                     lockedActions
                 }
-            } footer: {
-                if diceKey != nil && keys.isEmpty {
-                    HStack {
-                        Text("Used this DiceKey before? A die may be misread.")
-                        Button("Scan again", action: onScan)
-                    }
-                }
             }
             Section("Keys") {
                 ForEach(keys) { entry in
