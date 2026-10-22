@@ -10,15 +10,17 @@ checks.
   python3 scripts/derive-kinds.py           check the fixture against this implementation
   python3 scripts/derive-kinds.py --write   rewrite the fixture, only to add cases
   python3 scripts/derive-kinds.py --tools   also check every key with something other than this
-                                            code: ssh-keygen, wg and age-keygen, which must be
-                                            installed, and the BIP39 reference implementation
+                                            code: ssh-keygen, wg, and age and age-keygen 1.3 or
+                                            later, which must be installed, and the BIP39
+                                            reference implementation
 
 Two implementations can share a misreading of a format, so --tools has each format's own
 tools read the keys back: they parse each secret and derive its public key and fingerprint,
-and a recovery phrase must pass BIP39's checksum and decode to the entropy it came from.
+each age identity decrypts a file age encrypted to its recipient, and a recovery phrase must
+pass BIP39's checksum and decode to the entropy it came from.
 
-Needs scripts/requirements.txt: `cryptography` for Ed25519 and X25519, and `mnemonic` for
---tools.
+Needs scripts/requirements.txt: `cryptography` for Ed25519, X25519 and ML-KEM-768, and
+`mnemonic` for --tools.
 """
 
 import base64
@@ -34,6 +36,7 @@ import unicodedata
 from pathlib import Path
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.asymmetric.mlkem import MLKEM768PrivateKey
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
@@ -69,6 +72,8 @@ TYPE_NAMES = {
     "passphrase": "passphrase",
     "wallet": "bip39",
 }
+# age's post-quantum identity: the key's own recipe, whose 32 bytes are the X-Wing seed.
+AGE_POST_QUANTUM_TYPE = "mlkem768x25519"
 MEMORABLE_WORD_LIST = "eff_large_wordlist"
 LETTERS_DIGITS = "letters-digits"
 LETTERS_DIGITS_SYMBOLS = "letters-digits-symbols"
@@ -107,7 +112,7 @@ MAXIMUM_NAME_LENGTH = 64
 DICEKEY_ID_TYPE = "dicekey-id"
 DICEKEY_ID_LENGTH = 16
 ZERO_WIDTH_JOINER = "\u200d"
-TOOLS = ("ssh-keygen", "wg", "age-keygen")
+TOOLS = ("ssh-keygen", "wg", "age", "age-keygen")
 
 NAMES = [
     "github",
@@ -280,6 +285,24 @@ def bech32(hrp, data):
     return hrp + "1" + "".join(BECH32[v] for v in values + [check >> 5 * (5 - i) & 31 for i in range(6)])
 
 
+def x25519_public(scalar):
+    return X25519PrivateKey.from_private_bytes(scalar).public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
+
+
+def age_post_quantum(seed, recipe):
+    """MLKEM768-X25519 (X-Wing), as age 1.3 and filippo.io/hpke make it: the identity is the
+    32-byte seed; SHAKE256 of it gives ML-KEM-768's 64-byte seed (d || z), then the X25519
+    secret, and the recipient is the encapsulation key followed by the X25519 public key."""
+    secret = hkdf_sha256(seed.encode(), AGE_POST_QUANTUM_TYPE.encode() + recipe.encode(), 32)
+    expanded = hashlib.shake_256(secret).digest(96)
+    encapsulation_key = MLKEM768PrivateKey.from_seed_bytes(expanded[:64]).public_key().public_bytes_raw()
+    return {
+        "type": AGE_POST_QUANTUM_TYPE,
+        "publicKey": bech32("age1pq", encapsulation_key + x25519_public(expanded[64:])),
+        "secret": bech32("age-secret-key-pq-", secret).upper(),
+    }
+
+
 def bip39(entropy):
     bits = int.from_bytes(entropy + hashlib.sha256(entropy).digest()[:1], "big")
     total = len(entropy) * 8 + len(entropy) // 4
@@ -298,13 +321,14 @@ def derive(seed, kind, given, style):
         case["publicKey"], case["fingerprint"], case["secret"] = ssh(hkdf_sha256(seed.encode(), info, 32), name)
     elif kind in ("wireguard", "age"):
         scalar = hkdf_sha256(seed.encode(), info, 32)
-        public = X25519PrivateKey.from_private_bytes(scalar).public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
+        public = x25519_public(scalar)
         if kind == "wireguard":
             case["publicKey"] = case["fingerprint"] = base64.b64encode(public).decode()
             case["secret"] = base64.b64encode(scalar).decode()
         else:
             case["publicKey"] = case["fingerprint"] = bech32("age", public)
             case["secret"] = bech32("age-secret-key-", scalar).upper()
+            case["postQuantum"] = age_post_quantum(seed, recipe)
     elif kind == "passphrase":
         case["secret"] = passphrase(seed, recipe, style)
     else:
@@ -348,6 +372,18 @@ def cases():
     return result
 
 
+def check_age(path, key, name):
+    """age-keygen reads the identity's recipient back, and the identity decrypts what age
+    encrypts to that recipient."""
+    path.write_text(key["secret"] + "\n")
+    derived = subprocess.run(["age-keygen", "-y", path], capture_output=True, text=True, check=True)
+    assert derived.stdout.strip() == key["publicKey"], name
+    message = name.encode()
+    sealed = subprocess.run(["age", "-r", key["publicKey"]], input=message, capture_output=True, check=True)
+    opened = subprocess.run(["age", "-d", "-i", path], input=sealed.stdout, capture_output=True, check=True)
+    assert opened.stdout == message, name
+
+
 def check_tools(fixture):
     missing = [tool for tool in TOOLS if not shutil.which(tool)]
     if missing:
@@ -373,10 +409,8 @@ def check_tools(fixture):
                 )
                 assert derived.stdout.strip() == case["publicKey"], case["name"]
             elif case["kind"] == "age":
-                path = Path(directory) / "identity"
-                path.write_text(case["secret"] + "\n")
-                derived = subprocess.run(["age-keygen", "-y", path], capture_output=True, text=True, check=True)
-                assert derived.stdout.strip() == case["publicKey"], case["name"]
+                for key in (case, case["postQuantum"]):
+                    check_age(Path(directory) / "identity", key, case["name"])
             elif case["kind"] == "wallet":
                 entropy = hkdf_sha256(case["seed"].encode(), case["type"].encode() + case["recipe"].encode(), 32)
                 assert reference.check(case["secret"]), case["name"]

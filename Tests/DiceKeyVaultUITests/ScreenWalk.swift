@@ -77,7 +77,8 @@ final class ScreenWalk: XCTestCase {
         tap(app.navigationBars.buttons["More"].firstMatch, "More")
     }
 
-    private func makeKey(name: String, kind: String? = nil) {
+    /// A key with a public half previews it as you type; the others preview behind Show.
+    private func makeKey(name: String, kind: String? = nil, hasPublicKey: Bool = false) {
         tap(button("New key"), "New key")
         if let kind {
             tap(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Kind'")).firstMatch, "Kind picker")
@@ -87,14 +88,19 @@ final class ScreenWalk: XCTestCase {
         tap(field, "Name field")
         field.typeText(name)
         snap("new-key-\(name)")
-        if kind != nil {
+        if kind != nil && !hasPublicKey {
             tap(button("Show"), "Show preview")
             snap("new-key-\(name)-shown")
         }
         tap(button("Save"), "Save")
         snap("key-\(name)")
+        if hasPublicKey { app.swipeUp() }
         tap(button("Reveal"), "Reveal")
         snap("key-\(name)-revealed")
+        if hasPublicKey {
+            app.swipeUp()
+            snap("key-\(name)-revealed-end")
+        }
         back()
     }
 
@@ -141,6 +147,7 @@ final class ScreenWalk: XCTestCase {
         back()
         makeKey(name: "nas", kind: "Passphrase")
         makeKey(name: "cold", kind: "Wallet")
+        makeKey(name: "backups", kind: "age", hasPublicKey: true)
         snap("dicekey-with-keys")
 
         openMenu()

@@ -30,7 +30,8 @@ public struct X25519KeyPair: Sendable, Equatable {
     }
 }
 
-/// 32 raw bytes from a recipe, for a key made from bytes: a wallet's BIP39 entropy.
+/// 32 raw bytes from a recipe, for a key made from bytes: a wallet's BIP39 entropy or an age
+/// key's X-Wing seed.
 public enum Secret {
     public static func bytes(seed: String, recipe: KeyRecipe, type: DerivableType) -> Data {
         Data(Engine.bytes(seed: seed, type: type, recipe: recipe.json, length: Engine.keyLength))

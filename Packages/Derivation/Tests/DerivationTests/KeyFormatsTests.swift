@@ -60,7 +60,7 @@ struct BIP39Tests {
 }
 
 extension Data {
-    fileprivate init?(hexString: String) {
+    init?(hexString: String) {
         let chars = Array(hexString.utf8)
         guard chars.count % 2 == 0 else { return nil }
         var bytes = [UInt8]()

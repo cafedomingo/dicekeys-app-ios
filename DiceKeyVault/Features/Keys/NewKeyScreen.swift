@@ -24,6 +24,8 @@ struct NewKeyScreen: View {
     @Environment(\.isSceneCaptured) private var isSceneCaptured
     @Environment(\.modelContext) private var context
 
+    private static let updates = "updates as you type"
+
     private var recipe: KeyRecipe? { try? KeyRecipe(kind: kind, name: name, style: style) }
 
     var body: some View {
@@ -52,14 +54,21 @@ struct NewKeyScreen: View {
             if kind == .passphrase {
                 PassphraseStyleSection(style: $style)
             }
-            if let publicKey = preview?.publicKey {
+            if let publicKey = preview?.publicKey, let postQuantum = preview?.postQuantum {
                 PublicKeySection(
-                    publicKey: publicKey, fingerprint: preview?.fingerprint, title: "Public key · updates as you type")
+                    publicKey: publicKey, title: "\(AgeRecipient.x25519Title) · \(Self.updates)",
+                    note: AgeRecipient.x25519Note)
+                PublicKeySection(
+                    publicKey: postQuantum.recipient, title: AgeRecipient.postQuantumTitle,
+                    note: AgeRecipient.postQuantumNote, foldedLines: AgeRecipient.postQuantumFoldedLines)
+            } else if let publicKey = preview?.publicKey {
+                PublicKeySection(
+                    publicKey: publicKey, fingerprint: preview?.fingerprint, title: "Public key · \(Self.updates)")
             } else if let preview {
-                Section("\(kind.secretTitle) · updates as you type") {
+                Section("\(kind.secretTitle) · \(Self.updates)") {
                     if isSecretShown {
                         SecretView(kind: kind, secret: preview.secret)
-                        SecretActions(key: preview)
+                        SecretActions(kind: kind, secret: preview.secret)
                     }
                     Button(isSecretShown ? "Hide" : "Show", systemImage: isSecretShown ? "eye.slash" : "eye") {
                         isSecretShown.toggle()

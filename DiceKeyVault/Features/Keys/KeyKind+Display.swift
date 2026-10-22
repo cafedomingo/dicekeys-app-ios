@@ -27,15 +27,13 @@ extension KeyKind {
         }
     }
 
-    /// Shared as the file its tool reads, rather than as text.
-    var sharesAsFile: Bool { self == .ssh || self == .age }
-
     /// A wallet's recovery phrase is shown to be written down, never copied or shared.
     var secretLeavesScreen: Bool { self != .wallet }
 
     var secretTitle: String {
         switch self {
-        case .ssh, .wireguard, .age: "Private key"
+        case .ssh, .wireguard: "Private key"
+        case .age: "Private keys"
         case .passphrase: "Passphrase"
         case .wallet: "Recovery phrase"
         }

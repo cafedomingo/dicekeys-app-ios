@@ -82,10 +82,12 @@ in front of the recipe and names what the bytes become.
 | ssh | `ed25519` | 32 | The bytes are the Ed25519 seed. |
 | wireguard | `x25519` | 32 | The bytes are the X25519 scalar, unclamped. |
 | age | `x25519` | 32 | The same scalar. |
+| age, post-quantum | `mlkem768x25519` | 32 | The bytes are the X-Wing seed that an age 1.3 identity holds. SHAKE256 of it gives 96 bytes: ML-KEM-768's seed (d ‖ z), then the X25519 secret. |
 | passphrase | `passphrase` | 8 per entry | See Passphrases. |
 | wallet | `bip39` | 32 | The bytes are the BIP39 entropy. |
 
-WireGuard and age share a type and differ by `kind` in the recipe. The X25519 scalar is
+WireGuard and age share a type and differ by `kind` in the recipe. An age key derives both
+of its identities from its one recipe; their types keep them independent. The X25519 scalar is
 clamped by the curve library when it is used (CryptoKit, libsodium and Python's
 `cryptography` all clamp internally), so every tool agrees on the public key; a port must use
 a library that does the same.
@@ -103,8 +105,11 @@ the exported text would not.
   at 64 columns and ends with a newline.
 - **wireguard**: the private scalar and the public key in standard base64.
 - **age**: `AGE-SECRET-KEY-1…` is Bech32 (BIP 173) with HRP `age-secret-key-`, computed over
-  the lower-case string and then upper-cased; the recipient is `age1…`, HRP `age`. Bech32 here
-  has no length limit.
+  the lower-case string and then upper-cased; the recipient is `age1…`, HRP `age`. The
+  post-quantum identity is `AGE-SECRET-KEY-PQ-1…`, HRP `age-secret-key-pq-`, over the 32-byte
+  seed, upper-cased the same way; its recipient is `age1pq1…`, HRP `age1pq`, over the 1,184-byte
+  ML-KEM-768 encapsulation key followed by the 32-byte X25519 public key, 1,959 characters.
+  Bech32 here has no length limit.
 - **wallet**: the 24-word BIP39 English phrase, with no BIP39 passphrase.
 
 ## Passphrases
@@ -201,15 +206,18 @@ If a test below fails, a derived byte has changed: fix the code, never the fixtu
   - `diceKeyIds`: seed and id;
   - `cases`: derivations across every kind and style, each with `seed`, `kind`, `input`
     (the name as typed, to exercise normalization), `name`, `style`, `recipe`, `type`, and the
-    `publicKey`, `fingerprint` and `secret` its tool reads.
+    `publicKey`, `fingerprint` and `secret` its tool reads; an age case adds `postQuantum`
+    with its `type`, `publicKey` and `secret`.
 
   `KindVectorTests` and `DiceKeySeedTests` check the app against it, including that every
   recipe parses back to itself. CI runs the script with `--tools`, so `ssh-keygen`, `wg` and
-  `age-keygen` read every key back, and the BIP39 reference decodes every phrase.
+  `age-keygen` 1.3 read every key back, `age` encrypts to every age recipient and the identity
+  decrypts it, and the BIP39 reference decodes every phrase.
 - `KeyRecipeTests`: the name rules, JCS escaping and ordering, and text that isn't a
   canonical recipe.
 - `PassphraseListTests` and `PasswordFormatterTests`: the lists' digests and literal character
   sets; blocks, quotients, digits and the uppercase word.
 - `OpenSSHFileTests`: `ssh-keygen` reads the private key file.
+- `age-pq-spec.txt`: the post-quantum example pair from the age specification.
 - HKDF-SHA256 against RFC 5869's test cases 1 and 3 in the script and case 3, the no-salt
   form, in Swift; BIP39 against its reference vectors.
