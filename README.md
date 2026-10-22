@@ -45,6 +45,6 @@ and scan the picture of its 25 dice from another screen.
 ## License
 
 Original work here is MIT-licensed (see [LICENSE](LICENSE)), but parts derive from DiceKeys,
-LLC's app and scanner, which have no open-source license yet, so this app is for personal use
+LLC's original code, which has no open-source license yet, so this app is for personal use
 and TestFlight only until DiceKeys, LLC picks one. Every third-party component and its terms
 is in [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).
