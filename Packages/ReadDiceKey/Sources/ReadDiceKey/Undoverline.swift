@@ -78,51 +78,30 @@ struct UndoverlineBits {
 /// letter end.
 private let dotCenters = FaceDimensionsFractional.dotCentersAsFractionOfUndoverline.map { Float($0) }
 
-/// Where the outline of a bar is sampled along its length to find how dark the bar is.
-private let outlinePositions = (0...30).map { Float($0) / 30 }
+/// How far either side of each end of a bar's rectangle the bar's end is looked for, as a
+/// fraction of its length.
+private let endSearchFraction: Float = 0.03
 
-/// Reads the bar in `bar` as an undoverline, or nil when its dots are not a valid code.
+/// Reads the bar in `bar` as an undoverline, or nil when its dots are not the code of a face.
 ///
 /// The rectangle can take in a little of whatever the bar touches at the brightness it was
-/// found at, so the line through its middle is first stretched 3% each way and then pulled
-/// back to the first dark pixel at each end. Each dot is the median of the pixels around its
-/// center, and dark and light are split where the samples fall into two tightest groups.
+/// found at, or miss a blurred end, so each end of the line is put where the brightness drops
+/// most steeply into the bar, within 3% of the rectangle's end. A fixed brightness would not
+/// do: a sheen on the ink or a shadow on the die beyond the bar moves where it is crossed.
+/// Each dot is the median of the pixels around its center, and dark and light are split where
+/// the samples fall into two tightest groups.
 func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
     guard bar.length >= 1, bar.center.x.isFinite, bar.center.y.isFinite else { return nil }
-    var start = bar.center - bar.axis * (bar.length / 2)
-    var end = bar.center + bar.axis * (bar.length / 2)
-    let darkBelow = twoLevelThreshold(image.samples(from: start, to: end, at: outlinePositions))
-
-    let stretch = (end - start) * 0.03
-    start -= stretch
-    end += stretch
-    let delta = end - start
-    let step = delta / max(abs(delta.x), abs(delta.y))
-    let acrossIsVertical = abs(delta.x) > abs(delta.y)
-    let (outerStart, outerEnd) = (start, end)
-    while image.sample(at: start, pixels: 3, acrossIsVertical: acrossIsVertical) > darkBelow,
-        isPoint(start + step, between: outerStart, and: outerEnd)
-    {
-        start += step
-    }
-    while image.sample(at: end, pixels: 3, acrossIsVertical: acrossIsVertical) > darkBelow,
-        isPoint(end - step, between: start, and: outerEnd)
-    {
-        end -= step
-    }
-
+    let halfLength = bar.axis * (bar.length / 2)
+    let start = image.barEnd(near: bar.center - halfLength, outward: -bar.axis, barLength: bar.length)
+    let end = image.barEnd(near: bar.center + halfLength, outward: bar.axis, barLength: bar.length)
     let dots = image.samples(from: start, to: end, at: dotCenters)
     let dotThreshold = twoLevelThreshold(dots)
     let bits = dots.reduce(UInt32(0)) { ($0 << 1) | ($1 > dotThreshold ? 1 : 0) }
-    guard let decoded = UndoverlineBits(bits) else { return nil }
+    guard let decoded = UndoverlineBits(bits), decoded.face != nil else { return nil }
     return decoded.wasReversed
         ? Undoverline(bar: bar, start: end, end: start, bits: decoded)
         : Undoverline(bar: bar, start: start, end: end, bits: decoded)
-}
-
-/// Whether `point` lies in the axis-aligned box spanned by `a` and `b`.
-private func isPoint(_ point: Point, between a: Point, and b: Point) -> Bool {
-    all(point .>= simd_min(a, b)) && all(point .<= simd_max(a, b))
 }
 
 /// The brightness that splits `samples` into a dark and a light group with the least total
@@ -157,6 +136,26 @@ func twoLevelThreshold(_ samples: [UInt8]) -> UInt8 {
 // MARK: - Sampling
 
 extension GrayImage {
+    /// The point within `endSearchFraction` of `barLength` either side of `point`, along
+    /// `outward`, where the brightness drops most steeply going inward. It steps one pixel at a
+    /// time along whichever axis `outward` runs closer to.
+    func barEnd(near point: Point, outward: Point, barLength: Float) -> Point {
+        let step = outward / max(abs(outward.x), abs(outward.y))
+        let acrossIsVertical = abs(outward.x) > abs(outward.y)
+        let reach = Int((barLength * endSearchFraction / step.length).rounded(.up))
+        var steepest = (drop: Int.min, point: point)
+        for offset in -reach...reach {
+            let candidate = point + step * Float(offset)
+            let drop =
+                Int(sample(at: candidate + step, pixels: 3, acrossIsVertical: acrossIsVertical))
+                - Int(sample(at: candidate - step, pixels: 3, acrossIsVertical: acrossIsVertical))
+            if drop > steepest.drop {
+                steepest = (drop, candidate)
+            }
+        }
+        return steepest.point
+    }
+
     /// Samples at fractions of the way from `start` to `end`, each the median of a
     /// neighborhood sized to the spacing between samples.
     func samples(from start: Point, to end: Point, at fractions: [Float]) -> [UInt8] {

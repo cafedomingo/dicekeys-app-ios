@@ -6,7 +6,7 @@ crash-regression input with no expected value. The video in `../videos` is named
 
 `well-framed/` holds the photos taken the way the scanning overlay asks, which must read;
 `other/` holds the rest, which must only never be misread. Two photos in `other/` look well
-framed but read little today, `U5bC4bE1l…` (nothing) and `Y6bS2rG4b…` (17 faces), and are the
+framed but read little today, `U5bC4bE1l…` (nothing) and `Y6bS2rG4b…` (20 faces), and are the
 first place to look for a scanner that reads more.
 
 Where they come from:
@@ -20,9 +20,9 @@ Where they come from:
   scanner read, checked by eye wherever the picture is sharp enough to tell.
 - The rest come from https://github.com/dicekeys/read-dicekey,
   `tests/test-lib-read-dicekey/img` at commit 04400368ff3fa82f3eb19f06fb7bebc67a789603.
-  One name is corrected from upstream: in
-  `Y6bS2rG4b…`, X4, L3 and O1 are turned right in the photo, where upstream had them turned
-  left.
+  Two names are corrected from upstream: in
+  `Y6bS2rG4b…`, X4, L3 and O1 are turned right in the photo, and in `U5bC4bE1l…`, O1 is,
+  where upstream had them turned left.
 
 The fixtures are losslessly compressed with `jpegtran -copy icc -optimize` (baseline JPEG)
 and `oxipng -o 4 --nx --strip tEXt,zTXt,iTXt,tIME,eXIf`. JPEGs retain their ICC profiles

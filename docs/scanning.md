@@ -101,13 +101,18 @@ key thin them out:
 
 ### 3. Reading a bar (`Undoverline.swift`)
 
-The line through the middle of the rectangle is stretched 3% each way and pulled back to the
-first dark pixel at each end, because a rectangle found at one threshold can include a little
-of what the bar touches. The 11 dots are sampled along it, each the median of up to 21 pixels
-around its center (fewer when the dots are small), and split into dark and light at the
-brightness that leaves the two groups tightest, with at least four dots on each side (every
-code has 4 to 7 light dots). The bits decode into the face, whether it is an underline or an
-overline, and which end is the letter end.
+The line through the middle of the rectangle ends where the bar does: within 3% of each end of
+the rectangle, at the steepest drop in brightness into the bar. A rectangle found at one
+threshold can take in a little of what the bar touches or miss a blurred end. Upstream instead
+stretched the line and pulled it back to the first pixel darker than the bar's own threshold,
+but a metallic sheen on the ink near an end, or a shadow on the die just past it, moves that
+crossing by several pixels and shifts the dots onto their edges. The 11 dots are sampled along
+it, each the median of up to 21 pixels around its center (fewer when the dots are small), and
+split into dark and light at the brightness that leaves the two groups tightest, with at least
+four dots on each side (every code has 4 to 7 light dots). The bits decode into the face,
+whether it is an underline or an overline, and which end is the letter end. A code that no face
+has is a misread; the line is dropped rather than kept, so its partner, finding no line where
+one should be, reads that spot again (step 4).
 
 ### 4. Assembling the grid (`Grid.swift`)
 
@@ -179,6 +184,7 @@ photos far outside what the scanning overlay asks for are there to prove that, n
 | Slot tolerance | a quarter step | Unambiguous: slots are a whole step apart |
 | Faces in common to merge frames | 5 | Too many to match by chance; frames of a key in view share far more |
 | Minimum dark and light dots | 4 and 4 | Every code has at least 4 of each |
+| Bar end search | 3% of the bar's length, rounded up to a whole pixel, either side of each end of its rectangle | With upstream's ends, lines that read correctly were 0.93 to 1.03 of their rectangle's length; the first dot starts 5.6% in |
 
 ## Why it works this way: alternatives measured
 
@@ -191,13 +197,29 @@ code. Measured on the 23 corpus photos at 1080 pixels on an M2:
 | Vision `DetectContoursRequest` | Full reads on about half the photos; mostly 34 to 270 ms, and 10 s on one | One global threshold, where uneven light needs many. Its cost grows faster than the contour count (at 512 pixels, 430 contours took 23 ms and 2,456 took 3.2 s). Dividing the image by its own blur first fixed much of the lighting but not the speed |
 | Vision `RecognizeTextRequest` as the reader | 20 to 49% of faces found in a full frame (56 to 770 ms); given each face's location, 85 to 91% read, with wrong but plausible reads | Built for lines of words, not isolated rotated pairs of characters. It has no error check, needs a detector anyway, and the fast level only reads upright text |
 
-Two things upstream does were dropped:
+Three things upstream does were dropped:
 
 - **Template OCR as a third vote** could only veto good reads: whenever the two codes agreed
-  they were right (all 417 times, on the corpus cropped to the app's 1080-pixel square).
+  they were right (all 417 times, on the corpus cropped to the app's 1080-pixel square). As a
+  tie-breaker where the codes disagree, the port's OCR named the right face 14 times and a
+  wrong one 3 times (photos at 1080).
 - **The Canny edge level** read one face more, of 550, from the well-framed photos at the
   app's frame size, and cost 2.6 ms and about 120 MB per frame in Core Image, or 9 ms on the
   CPU.
+- **Bar ends at a threshold crossing** read 15 fewer faces from the well-framed photos over
+  the four corpus sizes, and 85 fewer from the others: uneven light along a bar moves the
+  crossing, where the steepest drop stays at the edge (step 3).
+
+Two ways of reading dots under sheen were measured and not kept:
+
+- **A brightness gradient along the bar**, fitted with the two dot levels, read 5 more faces
+  from the well-framed photos over the four sizes and 56 more from the others (18 of the 25 on
+  the half-closed lid at 1080). Its extra freedom misfits small or blurred dots that a flat
+  split reads: it lost 2 on the booklet photo at 1080, 2 on `A32W41T31…`, all 14 of the
+  super-low-res photo at full size and all 15 of the blurry photo in the centered square.
+  Using it only where it fits much better than a flat split gave up the gains.
+- **Each dot against the ink beside it**, meant to cancel sheen since the ink beside a dot
+  carries the same, read 63 fewer faces from the well-framed photos over the four sizes.
 
 OpenCV, AprilTag, zxing-cpp and a Core ML detector were considered and not tried: OpenCV is a
 large dependency to replace under 200 lines, the others' decoders are for their own tags and
