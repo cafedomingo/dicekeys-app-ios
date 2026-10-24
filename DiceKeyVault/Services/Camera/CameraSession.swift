@@ -209,6 +209,13 @@ final class CameraSession {
             connection.isVideoMirrored = false
         }
 
+        // On a Mac a fixed camera is upright at 90 degrees, though the coordinator says 0.
+        if Self.isFixedToMacScreen(camera) {
+            applyPreviewRotation(90)
+            applyCaptureRotation(90)
+            return
+        }
+
         let coordinator = AVCaptureDevice.RotationCoordinator(device: camera, previewLayer: previewLayer)
         rotationCoordinator = coordinator
         // One angle drives both the preview and the frames. AVFoundation publishes two,
@@ -226,6 +233,11 @@ final class CameraSession {
                 }
             }
         ]
+    }
+
+    /// Any Mac camera but a Continuity Camera iPhone, which can be held any way up.
+    private static func isFixedToMacScreen(_ camera: AVCaptureDevice) -> Bool {
+        ProcessInfo.processInfo.isiOSAppOnMac && camera.deviceType != .continuityCamera
     }
 
     private func applyPreviewRotation(_ angle: CGFloat) {
