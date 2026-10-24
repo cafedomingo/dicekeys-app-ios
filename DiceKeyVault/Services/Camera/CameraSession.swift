@@ -209,10 +209,10 @@ final class CameraSession {
             connection.isVideoMirrored = false
         }
 
-        // On a Mac the coordinator turns a fixed camera's upright frames sideways.
+        // On a Mac a fixed camera is upright at 90 degrees, though the coordinator says 0.
         if Self.isFixedToMacScreen(camera) {
-            applyPreviewRotation(0)
-            applyCaptureRotation(0)
+            applyPreviewRotation(90)
+            applyCaptureRotation(90)
             return
         }
 
