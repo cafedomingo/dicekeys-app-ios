@@ -68,7 +68,7 @@ flowchart LR
     A["Camera frame (Y'CbCr)"] -->|"1. centered square of the luma plane"| B[Gray image]
     B -->|"2. 12 thresholds, keep bar-shaped dark regions"| C[Bars]
     C -->|"3. sample 11 dots, decode"| D[Undoverlines]
-    D -->|"4. pair lines, fit the 5x5 grid"| E[Faces in 25 slots]
+    D -->|"4. fit the 5x5 grid, read each slot"| E[Faces in 25 slots]
     E -->|"5. read the text where the lines disagree"| G[Faces settled]
     G -->|"6. merge with earlier frames"| F[DiceKey]
 ```
@@ -117,24 +117,71 @@ onto their edges.
 The 11 dots are sampled along the line, each the median of up to 21 pixels around its center
 (fewer when the dots are small), and split into dark and light at the brightness that leaves
 the two groups tightest, with at least four dots on each side (every code has 4 to 7 light
-dots). The bits decode into the face, whether the line is an underline or an overline, and
-which end is the letter end. A code that no face has is a misread, and the line is dropped,
-so that its partner, finding no line where one should be, reads that spot again (step 4).
+dots). The split must be clear: the gap between the lightest dark dot and the darkest light
+one must be at least a fifth of the distance between the two groups' mean brightness, or the
+line is not read, since dots that barely split could as well have split elsewhere, into
+another code. In a frame saved from the app, motion blur along the bars made both bars of one
+die read the same wrong face, and this rule refuses them; it also refuses the one face of the
+corpus video the scanner otherwise read wrong. It drops 1.6% of the lines that read right and
+28% of those that read wrong.
 
-### 4. Assembling the grid (`Grid.swift`)
+The bits decode into the face, whether the line is an underline or an overline, and which end
+is the letter end. A code that no face has is a misread, and the line is dropped; step 4,
+finding its slot without that line, reads it again where the grid puts it.
 
-- **Pairing.** Each line says where its partner should be: 0.82 of a face away, toward the
-  text. An underline and an overline that each sit where the other says are one face, when
-  the two misses together come to less than a quarter of a face.
-- **The grid.** A paired face with exactly four others in line along its row and its column,
-  evenly spaced both ways, fixes the grid: its center and the step from column to column and
-  row to row. Rows are taken to run within 45 degrees of the frame's x axis, so row 0 is the
-  top of the key as the camera sees it.
-- **Placing.** Every face goes to the grid position within a quarter step of its center. A
-  line whose partner was not found says where the partner should be, and it is read there
-  directly, which recovers lines too faint or too broken up to be found as rectangles.
-- **Rotation.** Each face's turn is its reading direction relative to the grid's rows, in
-  quarter turns.
+### 4. Assembling the grid (`GridFit.swift`, `Grid.swift`, `Slots.swift`)
+
+Each line says where the middle of its face is: 0.41 of a face from its own middle, toward the
+text. A die's two lines say the same place, and the dice of a key lie a step apart along its
+rows and columns. The grid is fitted to the face middles of all the lines read, whether or not
+a line's partner was found, and then each of the 25 slots is read where the grid puts it.
+
+- **Step and direction.** The step from die to die is the median distance from each face
+  middle to the nearest one more than 0.8 of a face away, which is on another die; a step
+  shorter than a face cannot be dice side by side. Rows run in the direction the lines share:
+  their angles, multiplied by four so that the four turns of a face become one direction, are
+  averaged, and the mean divided by four lies within 45 degrees of the frame's x axis, so row 0
+  is the top of the key as the camera sees it.
+- **Anchor.** Each face middle in turn is tried as column 0 and row 0 of a flat grid with that
+  step and direction. The one that puts the most face middles within a quarter step of a whole
+  column and row is kept.
+- **Flat refits.** The grid is refitted to those face middles by least squares three times,
+  flat (rows and columns straight, parallel and evenly spaced), gathering the middles on whole
+  columns and rows afresh each time.
+- **Strays.** While the middles span more than five columns, the outermost column with fewer
+  lines is dropped if it holds no more than two, one die's worth: a die beside the key, or a
+  line read on something else. Then the same for rows.
+- **Perspective.** With at least 16 lines left, the grid is refitted three times in
+  perspective, where rows converge and dice shrink with distance, each time gathering the
+  middles afresh but only within one column or row of those the flat grid kept. Strays are
+  then dropped again.
+- **Pinning.** The grid is the key's when the lines left span exactly five columns and five
+  rows, number at least 8, make up at least 60% of all the lines read in the frame, and fill
+  at least two slots of each outermost row and column. Their first column and row become
+  column 0 and row 0. Otherwise the frame reads nothing.
+- **Reading at the grid.** Each line goes to the slot its face middle is in, within a quarter
+  step of the slot's middle along each axis; of two lines of a kind in one slot, the one nearer
+  the middle is kept. Then each slot missing a line is read where the line must be, which
+  recovers lines too faint or broken up to be found as rectangles, or too near or far for
+  their size to pass as one. A line the slot holds says where its face's other line is; in a
+  slot holding neither, bars are tried on all four sides of its middle. These bars are placed
+  in columns and rows, where every face is the same square however perspective shows it (its
+  side the median length of the lines read, measured in columns), and only then mapped into
+  the frame, so perspective cannot stretch them. A line read this way fills the slot if the
+  slot still lacks its kind and its face middle is in that slot.
+- **Rotation.** Each face's turn is its reading direction relative to the grid's rows at its
+  slot, in quarter turns.
+
+**Why each gate is there.** Dice that are not a key can line up too, so the grid has to show
+it is the key's before any slot is read.
+
+- **Exactly five columns and rows:** the slots are the key's 25. With a whole column or row
+  out of view, nothing says which one is missing.
+- **60% of the lines on the key:** scattered or jumbled dice put 31 to 41% of their lines on
+  the best grid, a key at least 69%.
+- **Two slots in each outermost row and column:** in a frame saved from the app, a single
+  stray line past the key's edge would otherwise have pinned the grid a column off. A die
+  beyond the edge fills one slot, never two.
 
 ### 5. Reading the text (`FaceText.swift`)
 
@@ -194,13 +241,25 @@ die per letter, and a full sheet of Stickeys stickers, which repeats five letter
 otherwise read as a key. This is also the last guard on step 5's letter check, which sees only
 one frame.
 
+Stickeys, DiceKeys' stickers for backing up a key, carry the same bars and layout as the dice,
+larger, with no box around them. A kit holds "150 stickers (one for each die face)", and the
+backup is "a 5x5 grid of stickers that matches your DiceKey"
+([DiceKeys FAQ](https://dicekeys.com/faq/)), cut from sheets of five letters with every digit
+([`StickerSheetView.tsx`](https://github.com/dicekeys/dicekeys-app-typescript/blob/main/web/src/views/SVG/StickerSheetView.tsx)).
+A backup can repeat letters: DiceKeys' own app checks for one of each letter only when asked
+([`validateDiceKey.ts`](https://github.com/dicekeys/dicekeys-app-typescript/blob/main/web/src/dicekeys/DiceKey/validateDiceKey.ts),
+`requireOneOfEachLetter`, false by default). `diceKey` refuses such a key, since it needs 25
+different letters, and step 5's letter check never settles a die whose letter another die in
+the frame shows. By inference, stated nowhere: one kit has each face once, so a backup that
+repeats a letter does so with different digits, or with stickers from a second kit.
+
 ## Speed
 
 `ScannerBenchmarkTests` is opt-in (`SCANNER_BENCHMARK=1 swift test -c release --filter
 ScannerBenchmark` in `Packages/ReadDiceKey`) and times a scan of one 1080x1080 frame, the
-app's square, whose lines all agree. On a Mac it takes a few milliseconds (3.5 ms on an M6)
-and raises peak memory by about 11 MB. Each die step 5 reads adds about 2 ms. No phone has
-measured it (`backlog.md`).
+app's square, whose lines all agree. On a Mac it takes a few milliseconds (3.7 ms on an M4
+Pro) and raises peak memory by about 14 MB. Each die step 5 reads adds about 2 ms. No phone
+has measured it (`backlog.md`).
 
 ## Accuracy and the corpus
 
@@ -213,7 +272,7 @@ how a photo was taken, not on who took it:
   the app's square): at least 20 faces from one frame of each such photo, both filling the
   frame and at three quarters of that size, as a key held back to fit the scanning target,
   a window over the middle three quarters of the frame; and a recorded total across them
-  all.
+  all, a little below the 844 they read at the app's scale.
 - **Everything else must only never be misread** (the photos in `other/`): a steep tilt, low
   light, blur, a key far away under glare, a cropped key, the video at 360 pixels, and scenes
   with no key at all (loose and jumbled dice, printed faces, Stickeys sheets, a sudoku grid),
@@ -232,12 +291,19 @@ prove that, not to be read.
 | Minimum region size | 50 pixels | Drops specks before rectangle fitting; a bar is far larger at any usable distance |
 | Bar proportions | 0.177 thick per length, within a factor of 1.5 | The printed geometry, with slack for blur and perspective |
 | Size mode | tightest run of 35, keep 0.75 to 1/0.75 times its middle area | 50 bars of one size; 35 leaves room for missed and extra bars |
-| Pairing tolerance | a quarter face | A partner on a neighboring die is about two faces away |
-| Row and column tolerance | one face width | Rows are about two face widths apart; generous for perspective |
-| Even spacing | each step within 25% of the mean | Rejects a row that picked up a stray |
-| Slot tolerance | a quarter step | Unambiguous: slots are a whole step apart |
+| Same die | face middles within 0.8 of a face | A die's two lines put its middle in one place, within 0.1 of a face in 99 cases of 100; the next die's is 1.3 to 1.9 faces away (well-framed photos, app's scale) |
+| Slot tolerance | a quarter step along each axis | Unambiguous: slots are a whole step apart. The fit gathers the faces on the grid with it too |
+| Refits | 3, flat and again in perspective | Two read the same faces as three or four over the corpus and the saved frames; one read 3 fewer and 1 more |
+| Fewest lines for a grid | 8 | Pinning needs lines in at least four slots anyway; 4 and 6 read the same faces over the corpus and the saved frames |
+| Fewest lines for perspective | 16 | Perspective only refines a flat grid that many lines hold, since fitted to sparse dice it misread. Without it the well-framed photos read 23 fewer faces at the app's scale |
+| Perspective window | one column or row beyond the lines the flat grid kept | Gathering anywhere caught dice five rows past the key and lost a well-framed photo |
+| Stray lines | an outermost column or row with at most 2 | One die's two lines: a die beside the key, or a line read on something else |
+| Share on the key | 60% of the frame's lines | Scattered or jumbled dice put 31 to 41% of their lines on the best grid, a key at least 69% |
+| Slots in each outermost row and column | 2 | A die past the key's edge fills one; without this, one stray line there pinned a saved frame's grid a column off |
+| Smallest pivot | 1e-9 | The fit is in columns and rows, small numbers; points in one line, which cannot fix a grid, leave a pivot of rounding error |
 | Faces in common to merge frames | 5 | Too many to match by chance; frames of a key in view share far more |
 | Minimum dark and light dots | 4 and 4 | Every code has at least 4 of each |
+| Dot gap | a fifth of the distance between the dark and light means | Drops 1.6% of the lines that read right and 28% of those that read wrong |
 | Text grid | 48 samples across a face, one per pixel of the drawn faces, over 0.22 to 0.78 of its height | The band clears both bars, reaching their inner edges at the largest shift; at this size the best face was the right one for all 3,140 dice whose lines agree. Averaging 2x2 or 4x4 per sample read no more |
 | Text shift | up to 3 samples, about 6% of a face, either way | Covers the error in a center inferred from one line |
 | Size prediction | no more uncertain than one die's measured size | Dice the text settles on the corpus are predicted at a fifth of that (median) and never above 0.57 of it; three agreeing dice in a corner would give 81 for the far corner |
@@ -255,7 +321,7 @@ code. Measured on the 23 photos the corpus then held, at 1080 pixels on an M2:
 | Vision `DetectContoursRequest` | Full reads on about half the photos; mostly 34 to 270 ms, and 10 s on one | One global threshold, where uneven light needs many. Its cost grows faster than the contour count (at 512 pixels, 430 contours took 23 ms and 2,456 took 3.2 s). Dividing the image by its own blur first fixed much of the lighting but not the speed |
 | Vision `RecognizeTextRequest` as the reader | 20 to 49% of faces found in a full frame (56 to 770 ms); given each face's location, 85 to 91% read, with wrong but plausible reads | Built for lines of words, not isolated rotated pairs of characters. It has no error check, needs a detector anyway, and the fast level only reads upright text |
 
-Three things upstream does were replaced or dropped:
+Four things upstream does were replaced or dropped:
 
 - **Template OCR, replaced by step 5.** Upstream's OCR read each character on its own and voted
   beside the two codes. As a third vote it could only veto good reads: whenever the two codes
@@ -269,6 +335,21 @@ Three things upstream does were replaced or dropped:
 - **Bar ends at a threshold crossing, replaced by the steepest edge (step 3).** Crossings read
   15 fewer faces from the well-framed photos over the four corpus sizes, and 85 fewer from the
   others, because uneven light along a bar moves where a threshold is crossed.
+- **Pairing, and the grid through one face, replaced by the lattice (step 4).** Upstream
+  paired an underline and an overline when each sat where the other said, the two misses
+  together within a quarter of a face, and fitted the grid through a paired face with four
+  others in line along its row and its column, evenly spaced. Over 1,051 frames saved from the
+  app on a Mac (four sessions, kept locally, not in the repository), pairing lost nothing: true
+  pairs missed by at most 0.18 of a face. What lost frames was needing one face with a full
+  row and column of paired faces: a key with its left column cut off by the frame, and a key
+  fully in view with 19 paired faces but no complete column. From one frame each, with no face
+  read wrong either way, the lattice reads 795, 793, 767 and 739 faces from the well-framed
+  photos at the app's scale, three quarters of it, full size and the centered square, where
+  pairing read 795, 791, 769 and 717; 116, 117, 108 and 110 from the others, where pairing read
+  91, 94, 90 and 92 (both before the webcam frames of `D32T52S20…` joined the corpus); and
+  2,054 from the saved frames, where pairing read 478. One session's key was complete at frame
+  45 instead of 105. A scan takes 2.4 ms on average over the photos and frames, against
+  2.2 ms.
 
 Two ways of reading dots under sheen were measured and not kept:
 
@@ -281,10 +362,21 @@ Two ways of reading dots under sheen were measured and not kept:
 - **Each dot against the ink beside it**, meant to cancel sheen since the ink beside a dot
   carries the same, read 63 fewer faces from the well-framed photos over the four sizes.
 
+Three ways of finding the grid were measured and not kept:
+
+- **Vision's box detection.** `DetectRectanglesRequest` and
+  `DetectDocumentSegmentationRequest` found the key's box accurately in at most 18 of 103
+  images, as they were or inverted.
+- **Perspective first.** A perspective grid fitted straight away to the dice of a sparse frame
+  misread, so perspective only refines a flat grid that many lines already hold.
+- **Gathering lines anywhere after the perspective refit.** It caught dice five rows past the
+  key and lost a well-framed photo, hence the window of one column or row around the lines the
+  flat grid kept.
+
 OpenCV, AprilTag, zxing-cpp and a Core ML detector were considered and not tried: OpenCV is a
-large dependency for what steps 2 and 4 do in about 430 lines, the others' decoders are for their own tags and
-symbologies, and a trained model needs a pipeline to maintain without removing the need for
-the bars.
+large dependency for what steps 2 and 4 do in about 650 lines, the others' decoders are for
+their own tags and symbologies, and a trained model needs a pipeline to maintain without
+removing the need for the bars.
 
 The pattern: Vision's requests are built for a few salient objects per image or for natural
 text, and Apple ships no fast way to find many small blobs. Finding 50 identical small bars
@@ -297,10 +389,13 @@ and AprilTags, and those detectors are hand-written for their markers too.
   Such a key has to be typed in.
 - Text settles nothing in a frame with fewer than three dice whose lines agree, since their
   sizes are what tell it the size to read at.
-- A frame only counts if some die with both lines found has four more like it along its row
-  and its column; a key mostly out of frame reads nothing.
-- A steeply tilted key reads nothing: foreshortening brings each die's two lines closer
-  together than pairing allows. The scanning overlay asks for the key face on.
+- A frame only counts when what is in view pins the grid to the key's 5x5: lines in at least
+  two slots of each outermost row and column, and at least 60% of the frame's lines on the
+  key. A key partly out of frame reads the dice in view as long as both hold; a key with a
+  whole column or row out of view reads nothing.
+- A steeply tilted key reads less, or nothing: the flat grid must hold most of the key before
+  perspective refines it, and under a steep tilt the far dice lie more than a quarter step off
+  any flat grid. The scanning overlay asks for the key face on.
 - Blur, and the silver reflection a lamp can raise from the etched bars, lose dice for that
   frame; moving the phone brings them back.
 - A die turned over while the key is being scanned is noticed only when a frame reads it

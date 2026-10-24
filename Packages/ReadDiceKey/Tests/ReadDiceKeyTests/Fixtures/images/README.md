@@ -6,8 +6,8 @@ crash-regression input with no expected value. The video in `../videos` is named
 
 `well-framed/` holds the photos taken the way the scanning overlay asks, which must read;
 `other/` holds the rest, which must only never be misread. Two photos in `other/` look well
-framed but read little today, `U5bC4bE1l…` (nothing) and `Y6bS2rG4b…` (23 faces), and are the
-first place to look for a scanner that reads more.
+framed but do not read every face at the app's scale, `U5bC4bE1l…` (18 faces) and
+`Y6bS2rG4b…` (23), and are the first place to look for a scanner that reads more.
 
 Where they come from:
 
@@ -22,6 +22,11 @@ Where they come from:
 - The owner's, of the key `W1tO4tC6l…`, frames the app recorded from a Mac's built-in camera,
   cropped at the right to the key, leaving out the person holding it but for a hand. Their
   faces are what the scanner read from the sharp frames, checked by eye.
+- The owner's, of the key `D32T52S20…`, frames the app recorded from an external webcam on a
+  Mac, cropped to the box, leaving out the person holding it but for fingers:
+  `-webcam-tilted-1` and `-webcam-tilted-2` in `well-framed/`, and `-webcam-left-column-cut`
+  in `other/`. Their faces are what the scanner read merged over the session's frames, checked
+  by eye.
 - The rest come from https://github.com/dicekeys/read-dicekey,
   `tests/test-lib-read-dicekey/img` at commit 04400368ff3fa82f3eb19f06fb7bebc67a789603.
   Two names are corrected from upstream: in

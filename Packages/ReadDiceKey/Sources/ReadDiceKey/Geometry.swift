@@ -2,6 +2,8 @@
 //  Geometry.swift
 //  ReadDiceKey
 //
+//  Points and rectangles in image pixels, and the median of a set of lengths.
+//
 
 import simd
 
@@ -38,4 +40,11 @@ struct Bar: Sendable {
         let offset = point - center
         return abs(simd_dot(offset, axis)) <= length / 2 && abs(simd_dot(offset, axis.turnedClockwise)) <= width / 2
     }
+}
+
+/// The middle value of `values`, of which there is at least one, or the mean of the two middle values.
+func median(_ values: [Float]) -> Float {
+    let sorted = values.sorted()
+    let middle = sorted.count / 2
+    return sorted.count % 2 == 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
 }

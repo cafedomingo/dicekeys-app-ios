@@ -3,7 +3,8 @@
 //  ReadDiceKey
 //
 //  Reading one bar: finding the line through its middle, sampling its 11 dots, and decoding
-//  them into the face they name and the direction the face is turned.
+//  them into the face they name and the direction the face is turned, when they split
+//  cleanly into dark and light.
 //
 
 import DiceKeySpecification
@@ -11,8 +12,6 @@ import simd
 
 /// An underline or overline read from the image.
 struct Undoverline: Sendable {
-    /// The rectangle the line was found in.
-    let bar: Bar
     /// The letter end of the line.
     let start: Point
     /// The digit end of the line.
@@ -32,11 +31,6 @@ struct Undoverline: Sendable {
 
     /// Where the middle of this line's face is.
     var faceCenter: Point { center + towardFaceCenter }
-
-    /// Where the face's other line should be.
-    var oppositeBar: Bar {
-        Bar(center: bar.center + 2 * towardFaceCenter, axis: bar.axis, length: bar.length, width: bar.width)
-    }
 }
 
 /// An undoverline's 11 bits, taken from its letter end, are a 1, the overline flag, the
@@ -82,6 +76,11 @@ private let dotCenters = FaceDimensionsFractional.dotCentersAsFractionOfUndoverl
 /// fraction of its length.
 private let endSearchFraction: Float = 0.03
 
+/// The least gap between the lightest dark dot and the darkest light dot, as a share of the
+/// distance between the two groups' mean brightness, for a line to be read. Dots that barely
+/// split could as well have split elsewhere, into another code.
+private let minimumDotGap: Float = 0.2
+
 /// Reads the bar in `bar` as an undoverline, or nil when its dots are not the code of a face.
 ///
 /// The rectangle can take in a little of whatever the bar touches at the brightness it was
@@ -89,7 +88,7 @@ private let endSearchFraction: Float = 0.03
 /// most steeply into the bar, within 3% of the rectangle's end. A fixed brightness would not
 /// do: a sheen on the ink or a shadow on the die beyond the bar moves where it is crossed.
 /// Each dot is the median of the pixels around its center, and dark and light are split where
-/// the samples fall into two tightest groups.
+/// the samples fall into two tightest groups, with a clear gap between them.
 func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
     guard bar.length >= 1, bar.center.x.isFinite, bar.center.y.isFinite else { return nil }
     let halfLength = bar.axis * (bar.length / 2)
@@ -98,10 +97,21 @@ func readUndoverline(in image: GrayImage, bar: Bar) -> Undoverline? {
     let dots = image.samples(from: start, to: end, at: dotCenters)
     let dotThreshold = twoLevelThreshold(dots)
     let bits = dots.reduce(UInt32(0)) { ($0 << 1) | ($1 > dotThreshold ? 1 : 0) }
-    guard let decoded = UndoverlineBits(bits), decoded.face != nil else { return nil }
+    guard let decoded = UndoverlineBits(bits), decoded.face != nil, splitsCleanly(dots, at: dotThreshold) else {
+        return nil
+    }
     return decoded.wasReversed
-        ? Undoverline(bar: bar, start: end, end: start, bits: decoded)
-        : Undoverline(bar: bar, start: start, end: end, bits: decoded)
+        ? Undoverline(start: end, end: start, bits: decoded)
+        : Undoverline(start: start, end: end, bits: decoded)
+}
+
+/// Whether the gap between the dots darker and lighter than `threshold` is at least
+/// `minimumDotGap` of the distance between their means. Decoded dots have at least one of each.
+private func splitsCleanly(_ dots: [UInt8], at threshold: UInt8) -> Bool {
+    let dark = dots.filter { $0 <= threshold }.map(Float.init)
+    let light = dots.filter { $0 > threshold }.map(Float.init)
+    let mean = { (values: [Float]) in values.reduce(0, +) / Float(values.count) }
+    return light.min()! - dark.max()! >= minimumDotGap * (mean(light) - mean(dark))
 }
 
 /// The brightness that splits `samples` into a dark and a light group with the least total
