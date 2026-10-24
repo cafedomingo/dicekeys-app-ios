@@ -29,10 +29,13 @@ production in the CloudKit console.
 
 ## The Mac
 
-The app runs on Apple silicon Macs as Designed for iPad, with no code of its own: put a team
-id in `Config/Signing.local.xcconfig` and run on My Mac (Designed for iPad) once from Xcode,
-which registers the Mac. `project.yml` sets `SUPPORTS_MACCATALYST: NO`. Mac Catalyst, for a
-Mac-style app, can follow if the iPad look grates. What it would add, from `design.md`:
+The app is built for the Mac with Mac Catalyst, in the iPad layout: put a team id in
+`Config/Signing.local.xcconfig` and run on My Mac (Mac Catalyst) once from Xcode, which
+registers the Mac. Run as Designed for iPad instead, macOS reported every camera as upright
+at 0 degrees though each needed its own turn, listed a USB webcam nowhere, and zoomed a
+Continuity Camera too far, so it is not offered. `scripts/testflight.sh` uploads only the
+iOS build. A Mac-style layout can follow if the iPad look grates. What it would add, from
+`design.md`:
 
 - A floating glass sidebar listing DiceKeys with their keys nested beneath, and toolbar
   actions in glass capsules at the top right.

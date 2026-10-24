@@ -16,25 +16,27 @@ extension AVCaptureDevice {
 /// keep the result rather than asking on every render.
 @MainActor
 enum ActiveCameras {
+    /// On a phone, the back wide-angle camera: the sharpest, and CameraSession zooms it so
+    /// the key stays far enough away to focus on. The ultra wide is left out: it sees less
+    /// of each die and has to be held closer, and on the phone it scanned far worse.
+    ///
+    /// On a Mac, every camera: built-in, display, Continuity Camera and USB webcam, none of
+    /// which is at the back.
     static func get() -> [AVCaptureDevice] {
-        // On a phone, the back wide-angle camera: the sharpest, and CameraSession zooms it so
-        // the key stays far enough away to focus on. The ultra wide is left out: it sees less
-        // of each die and has to be held closer, and on the phone it scanned far worse. A Mac
-        // running the app as Designed for iPad has no back camera, so fall back to whatever
-        // video device there is (built-in, Continuity Camera, external webcam).
-        let back = AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.builtInWideAngleCamera],
-            mediaType: .video,
-            position: .back
-        ).devices.filter(\.canBeDisplayed)
-        if !back.isEmpty {
-            return back
-        }
-        return AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.builtInWideAngleCamera, .continuityCamera, .external],
-            mediaType: .video,
-            position: .unspecified
-        ).devices.filter(\.canBeDisplayed)
+        #if targetEnvironment(macCatalyst)
+            let session = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .continuityCamera, .external],
+                mediaType: .video,
+                position: .unspecified
+            )
+        #else
+            let session = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera],
+                mediaType: .video,
+                position: .back
+            )
+        #endif
+        return session.devices.filter(\.canBeDisplayed)
     }
 
     /// Requests camera permission if it has not been decided yet.
