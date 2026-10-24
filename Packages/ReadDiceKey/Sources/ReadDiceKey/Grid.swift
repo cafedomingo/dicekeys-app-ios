@@ -13,6 +13,8 @@ import simd
 struct Slot: Sendable {
     var underline: Undoverline?
     var overline: Undoverline?
+    /// The face its printed text settled, when its lines do not name one together.
+    var faceFromText: FaceWithUnderlineAndOverlineCode?
 
     /// The middle of the face.
     var center: Point? {
@@ -39,12 +41,14 @@ struct Slot: Sendable {
         return lengths.isEmpty ? nil : lengths.reduce(0, +) / Float(lengths.count)
     }
 
-    /// The face, when its two lines name the same one.
+    /// The face, when its two lines name the same one or its text settled it.
     var face: FaceWithUnderlineAndOverlineCode? {
-        guard let fromUnderline = underline?.bits.face, let fromOverline = overline?.bits.face,
-            fromUnderline.letter == fromOverline.letter, fromUnderline.digit == fromOverline.digit
-        else { return nil }
-        return fromUnderline
+        if let fromUnderline = underline?.bits.face, let fromOverline = overline?.bits.face,
+            fromUnderline.underlineCode == fromOverline.underlineCode
+        {
+            return fromUnderline
+        }
+        return faceFromText
     }
 }
 

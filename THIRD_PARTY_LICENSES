@@ -81,7 +81,9 @@ Where:     Packages/Derivation: the derivation's design (a seed from the DiceKey
 Origin:    https://github.com/googlefonts/Inconsolata
 Owner:     The Inconsolata Project Authors (Raph Levien)
 License:   SIL Open Font License 1.1 (https://openfontlicense.org)
-Where:     DiceKeyVault/fonts/Inconsolata-Bold.otf (shipped in the app bundle).
+Where:     Packages/ReadDiceKey/Sources/DiceKeySpecification/Resources/Inconsolata-Bold.otf
+           (shipped in the app bundle), which the app draws dice in and the scanner reads
+           their text against.
            The OFL permits bundling and derived works; the font itself is not
            sold separately here and keeps its name only inside the bundle.
 

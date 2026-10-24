@@ -2,9 +2,9 @@
 //  DiceKeyScanner.swift
 //  ReadDiceKey
 //
-//  Reads a DiceKey from successive camera frames. A face is read only when its underline
-//  and overline name the same face, and faces read in different frames are merged until
-//  all 25 are known. See docs/scanning.md.
+//  Reads a DiceKey from successive camera frames. A face is read when its underline and
+//  overline name the same face, or one names it and its printed text clearly does too, and
+//  faces read in different frames are merged until all 25 are known. See docs/scanning.md.
 //
 
 import CoreGraphics
@@ -70,7 +70,8 @@ public struct DiceKeyScanner: Sendable {
     /// - Returns: The dice found in this frame; empty when no key is in view.
     @discardableResult
     public mutating func scan(_ image: GrayImage) -> [DieInFrame] {
-        guard let (slots, grid) = readSlots(in: image) else { return [] }
+        guard let (barSlots, grid) = readSlots(in: image) else { return [] }
+        let slots = settlingFacesByText(barSlots, in: image)
         let gridAngle = grid.across.angle
         let read: [ScannedFace?] = slots.map { slot in
             guard let face = slot.face, let angle = slot.angle else { return nil }

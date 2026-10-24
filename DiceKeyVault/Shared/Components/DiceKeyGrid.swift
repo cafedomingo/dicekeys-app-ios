@@ -10,9 +10,8 @@ import DiceKeySpecification
 import SwiftUI
 
 extension Font {
-    /// Inconsolata Bold, the face printed on the dice, bundled in `fonts/`; used for nothing else.
-    static func dice(size: CGFloat) -> Font { .custom(diceFontName, size: size) }
-    private static let diceFontName = "Inconsolata-Bold"
+    /// The face printed on the dice, from `DiceKeySpecification`; used for nothing else.
+    static func dice(size: CGFloat) -> Font { .custom(PrintedFont.name, size: size) }
 }
 
 /// One die: its glyphs turned to its orientation, or blank when concealed or not yet entered.

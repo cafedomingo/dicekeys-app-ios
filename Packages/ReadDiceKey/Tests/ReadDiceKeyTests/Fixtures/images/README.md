@@ -6,7 +6,7 @@ crash-regression input with no expected value. The video in `../videos` is named
 
 `well-framed/` holds the photos taken the way the scanning overlay asks, which must read;
 `other/` holds the rest, which must only never be misread. Two photos in `other/` look well
-framed but read little today, `U5bC4bE1l…` (nothing) and `Y6bS2rG4b…` (20 faces), and are the
+framed but read little today, `U5bC4bE1l…` (nothing) and `Y6bS2rG4b…` (23 faces), and are the
 first place to look for a scanner that reads more.
 
 Where they come from:

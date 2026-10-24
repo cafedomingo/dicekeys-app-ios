@@ -12,7 +12,8 @@ later; the Mac runs it as Designed for iPad) on Observation, async/await and Swi
 concurrency, with no external dependencies. A DiceKey is scanned with the camera or typed by
 hand. Two local Swift packages supply the rest: `Derivation` (targets `Derivation`, for
 recipes and derived values, and `KeyFormats`, for key encodings and BIP39) and `ReadDiceKey`
-(the generated face specification and the DiceKey scanner). There is no Objective-C or C++ in the tree.
+(the generated face specification with the font the dice are printed in, and the DiceKey
+scanner). There is no Objective-C or C++ in the tree.
 
 ## Goals, in priority order
 

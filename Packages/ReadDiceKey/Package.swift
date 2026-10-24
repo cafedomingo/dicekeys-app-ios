@@ -19,7 +19,7 @@ let package = Package(
         .library(name: "ReadDiceKey", targets: ["ReadDiceKey"])
     ],
     targets: [
-        .target(name: "DiceKeySpecification"),
+        .target(name: "DiceKeySpecification", resources: [.copy("Resources/Inconsolata-Bold.otf")]),
         // Always optimized, because unoptimized it is too slow for a Debug build to read a
         // key. Unsafe flags are allowed here because the package is a local path dependency.
         .target(

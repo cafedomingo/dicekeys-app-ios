@@ -54,7 +54,7 @@ struct FacesReadOverlay: View {
                     var faceContext = context
                     faceContext.translateBy(x: die.center.x * scale, y: die.center.y * scale)
                     faceContext.rotate(by: Angle(radians: die.angle))
-                    let font = Font.custom("Inconsolata-Bold", size: faceSize * FaceDimensionsFractional.fontSize)
+                    let font = Font.custom(PrintedFont.name, size: faceSize * FaceDimensionsFractional.fontSize)
                     let offset = glyphCenterOffset * faceSize
                     for (glyph, x) in [(face.letter.rawValue, -offset), (face.digit.rawValue, offset)] {
                         faceContext.draw(
