@@ -135,7 +135,7 @@ struct ContentView: View {
     }
 
     private func scan() {
-        selectionBeforeScan = sidebarSelection
+        if sidebarSelection != .scan { selectionBeforeScan = sidebarSelection }
         sidebarSelection = .scan
         compactColumn = .detail
     }
@@ -208,6 +208,7 @@ struct ContentView: View {
     private func close(_ id: PersistentIdentifier) {
         path.removeAll { $0 == .entry(id) }
         if sidebarSelection == .key(id) { sidebarSelection = nil }
+        if selectionBeforeScan == .key(id) { selectionBeforeScan = nil }
     }
 
     /// Stops before touching the catalog if the device copy can't be removed, so a DiceKey
