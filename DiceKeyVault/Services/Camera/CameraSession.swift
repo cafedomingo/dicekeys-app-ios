@@ -209,6 +209,13 @@ final class CameraSession {
             connection.isVideoMirrored = false
         }
 
+        // On a Mac the coordinator turns a fixed camera's upright frames sideways.
+        if Self.isFixedToMacScreen(camera) {
+            applyPreviewRotation(0)
+            applyCaptureRotation(0)
+            return
+        }
+
         let coordinator = AVCaptureDevice.RotationCoordinator(device: camera, previewLayer: previewLayer)
         rotationCoordinator = coordinator
         // One angle drives both the preview and the frames. AVFoundation publishes two,
@@ -226,6 +233,11 @@ final class CameraSession {
                 }
             }
         ]
+    }
+
+    /// Any Mac camera but a Continuity Camera iPhone, which can be held any way up.
+    private static func isFixedToMacScreen(_ camera: AVCaptureDevice) -> Bool {
+        ProcessInfo.processInfo.isiOSAppOnMac && camera.deviceType != .continuityCamera
     }
 
     private func applyPreviewRotation(_ angle: CGFloat) {
