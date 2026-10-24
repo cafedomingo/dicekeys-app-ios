@@ -113,7 +113,7 @@ In code a token keeps its name in lower camel case: the color sets in `DiceKeyVa
 | `secret` | `.body`, monospaced | A revealed recovery phrase's words; a passphrase is `.title3` monospaced. Wraps anywhere; never truncated. |
 | `key` | `.footnote`, monospaced | Public keys and fingerprints. Selectable, wraps anywhere. |
 
-Families: `sans` is the system font, `mono` the system monospaced font, and `dice` Inconsolata Bold (`DiceKeyVault/fonts/Inconsolata-Bold.otf`).
+Families: `sans` is the system font, `mono` the system monospaced font, and `dice` Inconsolata Bold (`Packages/ReadDiceKey/Sources/DiceKeySpecification/Resources/Inconsolata-Bold.otf`, registered by `PrintedFont.name`).
 
 | Spacing | Value | Use |
 |---|---|---|

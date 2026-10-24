@@ -71,8 +71,9 @@ level (`scanning.md`). In order:
   labeling the regions once, the standard design for fiducial markers such as QR codes and
   AprilTags. Spike it against the corpus, and keep it only if it reads at least as many faces
   with none wrong.
-- **Then, only if the phone needs it,** a smaller frame (on the corpus cropped to the app's
-  square, 540 pixels read 412 faces against 417 at 1080, for about a third of the work), or
+- **Then, only if the phone needs it,** a smaller frame (on the 23-photo corpus, before step 5
+  and cropped to the app's square, 540 pixels read 412 faces against 417 at 1080, for about a
+  third of the work; measure again), or
   following the key between frames and searching only near where it was.
 
 ## Passphrase lists as JSON
@@ -150,9 +151,9 @@ and can break with any iOS release.
 
 ### Type only the dice the scanner cannot read
 
-A die whose underline or overline is damaged can never be scanned, because a face is read
-only when both lines agree, and today that means typing in the whole key. Scanning what it
-can and asking only for the rest would save typing 24 dice to fix one.
+A die with both lines damaged, or one damaged and its text unclear, can never be scanned,
+and today that means typing in the whole key. Scanning what it can and asking only for the
+rest would save typing 24 dice to fix one.
 
 It looks cheap: the scanner knows which slots it has read and never guesses at the others,
 and manual entry already holds a key of partially entered faces (`TypedDiceKey`,

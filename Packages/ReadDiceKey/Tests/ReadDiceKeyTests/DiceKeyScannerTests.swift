@@ -50,6 +50,39 @@ struct DiceKeyScannerTests {
         #expect(dice.allSatisfy { $0.face != nil })
     }
 
+    @Test("a die whose bars disagree is read from its printed text")
+    func readsTextWhereBarsDisagree() {
+        var scanner = DiceKeyScanner()
+        scanner.scan(key.image(side: 1080, unreadable: [7], printing: key.faces))
+        #expect(scanner.diceKey == key.faces)
+    }
+
+    @Test("text never settles a face that neither of the die's bars names")
+    func textIsOnlyASecondVote() {
+        let face = key.faces[7]
+        let neither = ScannedFace(
+            letter: face.letter, digit: FaceDigit.allCases[(FaceDigit.allCases.firstIndex(of: face.digit)! + 2) % 6],
+            clockwiseTurns: face.clockwiseTurns)
+        var printed = key.faces
+        printed[7] = neither
+        var scanner = DiceKeyScanner()
+        scanner.scan(key.image(side: 1080, unreadable: [7], printing: printed))
+        #expect(scanner.faces[7] == nil)
+    }
+
+    @Test("text never settles a face whose letter is read on another die")
+    func textRespectsOneDiePerLetter() {
+        let face = key.faces[7]
+        let sameLetter = ScannedFace(
+            letter: face.letter, digit: FaceDigit.allCases[(FaceDigit.allCases.firstIndex(of: face.digit)! + 3) % 6],
+            clockwiseTurns: 0)
+        let repeated = key.replacingFace(at: 12, with: sameLetter)
+        var scanner = DiceKeyScanner()
+        scanner.scan(repeated.image(side: 1080, unreadable: [7], printing: repeated.faces))
+        #expect(scanner.faces[12] == sameLetter)
+        #expect(scanner.faces[7] == nil)
+    }
+
     @Test("reports where each die is")
     func placesDice() throws {
         var scanner = DiceKeyScanner()

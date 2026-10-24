@@ -37,10 +37,6 @@
 	<string>The camera reads the dice of your DiceKey.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Face ID unlocks a DiceKey kept on this device.</string>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Inconsolata-Bold.otf</string>
-	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

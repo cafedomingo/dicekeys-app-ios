@@ -3,11 +3,12 @@
 //  ReadDiceKeyTests
 //
 //  Draws a DiceKey the way the dice are printed: on each white die, a black underline and
-//  overline with a white dot for every 1 bit of the line's 11-bit code. There is no letter
-//  or digit on the face, so anything the scanner reads here came from the bars.
+//  overline with a white dot for every 1 bit of the line's 11-bit code, and, when asked, the
+//  letter and digit between them. Without them, anything the scanner reads came from the bars.
 //
 
 import CoreGraphics
+import CoreText
 import DiceKeySpecification
 import Foundation
 
@@ -48,9 +49,12 @@ struct SyntheticDiceKey {
 
     /// A `side` x `side` frame with the key filling most of it, turned by `rotation` radians,
     /// leaving out the dice at the indexes in `hiding`. The dice at the indexes in
-    /// `unreadable` are drawn with an overline that names a different face, so the scanner
-    /// finds them but cannot read them.
-    func image(side: Int, rotation: Double = 0.05, hiding: Set<Int> = [], unreadable: Set<Int> = []) -> GrayImage {
+    /// `unreadable` are drawn with an overline that names a different face, so their bars
+    /// cannot be read. Each die shows the letter and digit `printing` gives for it, if any.
+    func image(
+        side: Int, rotation: Double = 0.05, hiding: Set<Int> = [], unreadable: Set<Int> = [],
+        printing: [ScannedFace]? = nil
+    ) -> GrayImage {
         let context = CGContext(
             data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: side,
             space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue
@@ -85,10 +89,34 @@ struct SyntheticDiceKey {
                 in: context, code: specs[spec].underlineCode, isOverline: false, centerY: lineOffset, faceSize: faceSize
             )
             drawLine(in: context, code: overline, isOverline: true, centerY: -lineOffset, faceSize: faceSize)
+            if let text = printing?[index] {
+                drawText(in: context, text: text, faceSize: faceSize)
+            }
             context.restoreGState()
         }
         let data = context.data!.assumingMemoryBound(to: UInt8.self)
         return GrayImage(width: side, height: side, pixels: Array(UnsafeBufferPointer(start: data, count: side * side)))
+    }
+
+    /// The face's letter and digit, in the font and place they are printed. The context is
+    /// flipped for them, since glyphs are drawn with y up.
+    private func drawText(in context: CGContext, text: ScannedFace, faceSize: Double) {
+        let provider = CGDataProvider(url: PrintedFont.url as CFURL)!
+        let font = CTFontCreateWithGraphicsFont(
+            CGFont(provider)!, faceSize * FaceDimensionsFractional.fontSize, nil, nil)
+        let characters = Array((text.letter.rawValue + text.digit.rawValue).utf16)
+        var glyphs = [CGGlyph](repeating: 0, count: characters.count)
+        CTFontGetGlyphsForCharacters(font, characters, &glyphs, characters.count)
+        let advance =
+            (FaceDimensionsFractional.charWidth + FaceDimensionsFractional.spaceBetweenLetterAndDigit) * faceSize
+        context.saveGState()
+        context.setFillColor(gray: 0, alpha: 1)
+        context.translateBy(
+            x: -FaceDimensionsFractional.textRegionWidth / 2 * faceSize,
+            y: (FaceDimensionsFractional.textBaselineY - 0.5) * faceSize)
+        context.scaleBy(x: 1, y: -1)
+        CTFontDrawGlyphs(font, glyphs, [.zero, CGPoint(x: advance, y: 0)], glyphs.count, context)
+        context.restoreGState()
     }
 
     /// One bar: 11 bits from the letter end, a 1, the overline flag, the 8-bit code, a 0.
