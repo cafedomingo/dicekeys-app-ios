@@ -2,9 +2,11 @@
 //  DiceKeyScanner.swift
 //  ReadDiceKey
 //
-//  Reads a DiceKey from successive camera frames. A face is read when its underline and
-//  overline name the same face, or one names it and its printed text clearly does too, and
-//  faces read in different frames are merged until all 25 are known. See docs/scanning.md.
+//  Reads a DiceKey from successive camera frames: in each, the bars are found and read as
+//  lines, the grid fitted to them, and the lines placed in its slots. A face is read when its
+//  underline and overline name the same face, or one names it and its printed text clearly
+//  does too, and faces read in different frames are merged until all 25 are known. See
+//  docs/scanning.md.
 //
 
 import CoreGraphics
@@ -70,12 +72,12 @@ public struct DiceKeyScanner: Sendable {
     /// - Returns: The dice found in this frame; empty when no key is in view.
     @discardableResult
     public mutating func scan(_ image: GrayImage) -> [DieInFrame] {
-        guard let (barSlots, grid) = readSlots(in: image) else { return [] }
-        let slots = settlingFacesByText(barSlots, in: image)
-        let gridAngle = grid.across.angle
-        let read: [ScannedFace?] = slots.map { slot in
-            guard let face = slot.face, let angle = slot.angle else { return nil }
-            let turns = Int(((angle - gridAngle) / (.pi / 2)).rounded())
+        let lines = findBars(in: image).compactMap { readUndoverline(in: image, bar: $0) }
+        guard let grid = fitGrid(to: lines) else { return [] }
+        let slots = settlingFacesByText(readSlots(lines, on: grid, in: image), in: image)
+        let read: [ScannedFace?] = slots.indices.map { index in
+            guard let face = slots[index].face, let angle = slots[index].angle else { return nil }
+            let turns = Int(((angle - grid.across(at: index).angle) / (.pi / 2)).rounded())
             return ScannedFace(
                 letter: face.letter,
                 digit: face.digit,
