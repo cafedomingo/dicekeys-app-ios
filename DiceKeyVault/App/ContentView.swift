@@ -26,6 +26,8 @@ struct ContentView: View {
     private static let backNavigationDuration = Duration.milliseconds(400)
 
     @State private var sidebarSelection: SidebarSelection?
+    /// Where closing the scanner goes back to.
+    @State private var selectionBeforeScan: SidebarSelection?
     @State private var path: [KeySelection] = []
     /// Set alongside the selection, since a phone pushes only for a sidebar list's selection
     /// and home before the first DiceKey has no list. The split view sets it back on Back.
@@ -45,10 +47,7 @@ struct ContentView: View {
         NavigationSplitView(preferredCompactColumn: $compactColumn) {
             DiceKeyList(
                 selection: $sidebarSelection,
-                onScan: {
-                    sidebarSelection = .scan
-                    compactColumn = .detail
-                },
+                onScan: scan,
                 onDelete: delete
             )
             .appBackdrop(dice: sizeClass == .compact)
@@ -89,12 +88,12 @@ struct ContentView: View {
     private var detail: some View {
         switch sidebarSelection {
         case .scan:
-            LoadScreen(onLoaded: load, onCodeRead: read)
+            LoadScreen(onLoaded: load, onCodeRead: read, onClose: { sidebarSelection = selectionBeforeScan })
         case .diceKey(let id):
             if let record = records.uniqueDiceKeys.first(where: { $0.diceKeyID == id }) {
                 DiceKeyScreen(
                     record: record, path: $path,
-                    onScan: { sidebarSelection = .scan },
+                    onScan: scan,
                     onForget: { forget(record) }, onDelete: delete
                 )
                 .id(id)
@@ -128,11 +127,17 @@ struct ContentView: View {
     private func keyScreen(_ id: PersistentIdentifier) -> some View {
         if let entry = context.model(for: id) as? KeyEntry {
             KeyScreen(
-                entry: entry, diceKey: unlocked.diceKey(id: entry.diceKeyID), onScan: { sidebarSelection = .scan },
+                entry: entry, diceKey: unlocked.diceKey(id: entry.diceKeyID), onScan: scan,
                 onDelete: delete
             )
             .id(id)
         }
+    }
+
+    private func scan() {
+        if sidebarSelection != .scan { selectionBeforeScan = sidebarSelection }
+        sidebarSelection = .scan
+        compactColumn = .detail
     }
 
     /// New key is open but its DiceKey has locked, so it has nothing to derive from.
@@ -203,6 +208,7 @@ struct ContentView: View {
     private func close(_ id: PersistentIdentifier) {
         path.removeAll { $0 == .entry(id) }
         if sidebarSelection == .key(id) { sidebarSelection = nil }
+        if selectionBeforeScan == .key(id) { selectionBeforeScan = nil }
     }
 
     /// Stops before touching the catalog if the device copy can't be removed, so a DiceKey
