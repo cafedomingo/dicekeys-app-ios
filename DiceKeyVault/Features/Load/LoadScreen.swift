@@ -10,6 +10,9 @@ import SwiftUI
 struct LoadScreen: View {
     let onLoaded: (DiceKey) -> Void
     let onCodeRead: (String) -> Void
+    /// Leaves the scanner. A phone has Back for this; a wider screen keeps the sidebar beside
+    /// it, which before the first DiceKey offers nothing else to go to.
+    let onClose: () -> Void
 
     @State private var isTyping = false
     /// Kept across switching to the camera and back, and dropped once loaded or when the app
@@ -18,6 +21,7 @@ struct LoadScreen: View {
     @State private var typed = TypedDiceKey()
     @State private var backgroundedAt: Date?
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         Group {
@@ -33,6 +37,11 @@ struct LoadScreen: View {
         .navigationTitle(isTyping ? "Type it in" : "Scan DiceKey")
         .toolbarTitleDisplayMode(isTyping ? .inline : .automatic)
         .toolbar {
+            if sizeClass != .compact {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close", systemImage: "xmark", action: onClose)
+                }
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button(
                     isTyping ? "Scan" : "Type it in",
