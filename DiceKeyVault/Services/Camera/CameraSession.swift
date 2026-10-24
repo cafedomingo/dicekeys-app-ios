@@ -7,7 +7,7 @@ import AVFoundation
 import Foundation
 import ReadDiceKey
 
-/// Owns the `AVCaptureSession` for scanning, its preview layer, and (on iOS)
+/// Owns the `AVCaptureSession` for scanning, its preview layer, and
 /// the `RotationCoordinator` that keeps the preview and the scanned frames
 /// level with the horizon. Frames go to `CameraSampleBufferDelegate`.
 @MainActor
