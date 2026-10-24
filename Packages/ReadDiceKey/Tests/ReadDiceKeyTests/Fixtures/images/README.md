@@ -13,11 +13,15 @@ Where they come from:
 
 - The owner's, of test keys, taken on an iPhone and stripped of everything but the picture:
   the `nokey-` photos, the video, and the photos of the keys `G5bS2rW5l…`, `---E2tM2tY2l…`,
-  `---------------Y2bI6l…`, `S5rU1lX5r…`, `I5lZ3bX3t…`, `P5l---Y5r…`, `F1tG3bD1t…`,
+  `---------------Y2bI6l…`, `S5rU1lX5r…`, `I5lZ3bX3t…`, `P5lU2lY5r…`, `F1tG3bD1t…`,
   `O3tI2tV2b…`, `O4tI5bV5b…` and `J2rC4rU1b…` (the key printed in the DiceKeys booklet).
   Their faces were read by eye at full resolution, except for `I5lZ3bX3t…`, `F1tG3bD1t…`,
   `O3tI2tV2b…`, `O4tI5bV5b…`, `J2rC4rU1b…` and the video, whose expected faces are what the
-  scanner read, checked by eye wherever the picture is sharp enough to tell.
+  scanner read, checked by eye wherever the picture is sharp enough to tell. In `P5lU2lY5r…`,
+  M1 is lost in glare in the photo and named from the video, which reads it.
+- The owner's, of the key `W1tO4tC6l…`, frames the app recorded from a Mac's built-in camera,
+  cropped at the right to the key, leaving out the person holding it but for a hand. Their
+  faces are what the scanner read from the sharp frames, checked by eye.
 - The rest come from https://github.com/dicekeys/read-dicekey,
   `tests/test-lib-read-dicekey/img` at commit 04400368ff3fa82f3eb19f06fb7bebc67a789603.
   Two names are corrected from upstream: in
