@@ -7,7 +7,7 @@ import AVFoundation
 import Foundation
 import ReadDiceKey
 
-/// Owns the `AVCaptureSession` for scanning, its preview layer, and (on iOS)
+/// Owns the `AVCaptureSession` for scanning, its preview layer, and
 /// the `RotationCoordinator` that keeps the preview and the scanned frames
 /// level with the horizon. Frames go to `CameraSampleBufferDelegate`.
 @MainActor
@@ -78,12 +78,16 @@ final class CameraSession {
         makePreviewLayer(for: camera)
     }
 
+    /// The preview layer is cleared before it is removed: removing it lays out the view, whose
+    /// update reads `previewLayer`, which `previewLayer?.removeFromSuperlayer()` would still be
+    /// modifying, and Swift traps on that.
     func stop() async {
         generation += 1
         rotationObservations = []
         rotationCoordinator = nil
-        previewLayer?.removeFromSuperlayer()
+        let removed = previewLayer
         previewLayer = nil
+        removed?.removeFromSuperlayer()
         nonisolated(unsafe) let session = self.session
         await serialized {
             if session.isRunning {
@@ -209,13 +213,6 @@ final class CameraSession {
             connection.isVideoMirrored = false
         }
 
-        // On a Mac a fixed camera is upright at 90 degrees, though the coordinator says 0.
-        if Self.isFixedToMacScreen(camera) {
-            applyPreviewRotation(90)
-            applyCaptureRotation(90)
-            return
-        }
-
         let coordinator = AVCaptureDevice.RotationCoordinator(device: camera, previewLayer: previewLayer)
         rotationCoordinator = coordinator
         // One angle drives both the preview and the frames. AVFoundation publishes two,
@@ -233,11 +230,6 @@ final class CameraSession {
                 }
             }
         ]
-    }
-
-    /// Any Mac camera but a Continuity Camera iPhone, which can be held any way up.
-    private static func isFixedToMacScreen(_ camera: AVCaptureDevice) -> Bool {
-        ProcessInfo.processInfo.isiOSAppOnMac && camera.deviceType != .continuityCamera
     }
 
     private func applyPreviewRotation(_ angle: CGFloat) {
