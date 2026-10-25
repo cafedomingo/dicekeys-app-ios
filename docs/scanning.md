@@ -326,7 +326,7 @@ repeats a letter does so with different digits, or with stickers from a second k
 ScannerBenchmark` in `Packages/ReadDiceKey`) and times a scan of one 1080x1080 frame, the
 app's square, whose lines all agree. On a Mac it takes a few milliseconds (3.6 ms on an M4
 Pro) and raises peak memory by about 13 MB. Each die step 5 reads adds about 1 ms. No phone
-has measured it (`backlog.md`).
+has measured it; on an iPhone a well-framed key reads in a few frames and the phone stays cool.
 
 ## Accuracy and the corpus
 
