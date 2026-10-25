@@ -198,7 +198,7 @@ struct ScannerCorpusTests {
     /// The fewest faces the photos that must read may yield between them, one frame each at the
     /// app's frame size. It sits a little below what they read (the test prints that), so that
     /// another Mac's JPEG decoder, which can move a face or two, cannot fail it.
-    static let minimumFacesRead = 841
+    static let minimumFacesRead = 864
 
     static let cases = CorpusImage.all.flatMap { image in Corpus.Size.allCases.map { (image, $0) } }
 

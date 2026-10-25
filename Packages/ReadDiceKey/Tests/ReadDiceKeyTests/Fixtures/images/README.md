@@ -5,9 +5,10 @@ seen or was not checked, optionally followed by a `-note` or `_note` suffix. Pho
 crash-regression input with no expected value. The video in `../videos` is named the same way.
 
 `well-framed/` holds the photos taken the way the scanning overlay asks, which must read;
-`other/` holds the rest, which must only never be misread. Two photos in `other/` look well
-framed but do not read every face at the app's scale, `U5bC4bE1l…` (18 faces) and
-`Y6bS2rG4b…` (23), and are the first place to look for a scanner that reads more.
+`other/` holds the rest, which must only never be misread. Three photos in `other/` look well
+framed but do not read every face at the app's scale, `U5bC4bE1l…` (18 faces), `Y6bS2rG4b…`
+(23) and `R5bD3bV2l…-studio-display-night-glare` (none), and are the first place to look for a
+scanner that reads more.
 
 Where they come from:
 
@@ -27,6 +28,11 @@ Where they come from:
   `-webcam-tilted-1` and `-webcam-tilted-2` in `well-framed/`, and `-webcam-left-column-cut`
   in `other/`. Their faces are what the scanner read merged over the session's frames, checked
   by eye.
+- The owner's, of the key `R5bD3bV2l…`, frames the app recorded at night from a Studio
+  Display's camera, lit by the display, cropped to the box: `-studio-display-night` in
+  `well-framed/`, and `-studio-display-night-glare` in `other/`, whose bottom row the
+  display's glare washes out. Their faces are what the scanner read merged over the session's
+  frames, checked by eye.
 - The rest come from https://github.com/dicekeys/read-dicekey,
   `tests/test-lib-read-dicekey/img` at commit 04400368ff3fa82f3eb19f06fb7bebc67a789603.
   Two names are corrected from upstream: in
