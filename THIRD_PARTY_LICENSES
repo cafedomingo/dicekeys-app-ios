@@ -36,11 +36,14 @@ Origin:    https://github.com/dicekeys/read-dicekey, commit 0440036
 Owner:     DiceKeys, LLC
 License:   NONE GRANTED (same placeholder as above).
 Where in this repo:
-    Packages/ReadDiceKey/Sources/ReadDiceKey began as a Swift port of
-    upstream's lib-read-dicekey and still follows its approach to finding and
-    decoding the bars (see docs/scanning.md), so it is a derivative work.
+    Packages/ReadDiceKey/Sources/ReadDiceKey/Bars.swift and Undoverline.swift
+    follow upstream's lib-read-dicekey in how they find the bars and decode
+    their dots (steps 2 and 3 in docs/scanning.md), so they are derivative
+    works. The rest of the scanner is this repository's own design.
     Packages/ReadDiceKey/Tests/ReadDiceKeyTests/Fixtures/images holds upstream's
     test photographs alongside the owner's; its README.md says which are which.
+    scripts/compare-upstream fetches and runs upstream to compare it with the
+    scanner; none of its source is copied here.
 
 
 3. dicekeys/seeded-crypto  (lib-seeded, whose design the derivation follows)

@@ -2,9 +2,11 @@
 //  DiceKeyScanner.swift
 //  ReadDiceKey
 //
-//  Reads a DiceKey from successive camera frames. A face is read when its underline and
-//  overline name the same face, or one names it and its printed text clearly does too, and
-//  faces read in different frames are merged until all 25 are known. See docs/scanning.md.
+//  Reads a DiceKey from successive camera frames: in each, the bars are found and read as
+//  lines, the grid fitted to them, and the lines placed in its slots. A face is read when its
+//  underline and overline name the same face, or one names it and its printed text clearly
+//  does too, and faces read in different frames are merged until all 25 are known. See
+//  docs/scanning.md.
 //
 
 import CoreGraphics
@@ -48,55 +50,47 @@ public struct DieInFrame: Sendable {
 public struct DiceKeyScanner: Sendable {
     /// The faces read so far, in the reading order of the grid of the last frame they were
     /// lined up with.
-    private(set) var faces = [ScannedFace?](repeating: nil, count: 25)
+    private(set) var faces = [ScannedFace?](repeating: nil, count: Grid.slotCount)
 
     public init() {}
 
     /// All 25 faces, rows top to bottom, once every one has been read, whatever they are.
     public var allFaces: [ScannedFace]? {
         let read = faces.compactMap { $0 }
-        return read.count == 25 ? read : nil
+        return read.count == Grid.slotCount ? read : nil
     }
 
     /// All 25 faces, once every one has been read and they make a DiceKey. A DiceKey has one
     /// die per letter; faces that repeat a letter are something else, such as a sheet of
     /// Stickeys stickers or a copy with a sticker in the wrong place, however well they read.
     public var diceKey: [ScannedFace]? {
-        guard let all = allFaces, Set(all.map(\.letter)).count == 25 else { return nil }
+        guard let all = allFaces, Set(all.map(\.letter)).count == all.count else { return nil }
         return all
     }
 
     /// Reads one frame and merges what it shows with the frames before.
-    /// - Returns: The dice found in this frame; empty when no key is in view.
+    /// - Returns: The dice found in this frame, each with its face as merged, or as this frame
+    ///   read it when the frame could not be lined up with the faces known, since those belong to
+    ///   other positions in it; empty when no key is in view.
     @discardableResult
     public mutating func scan(_ image: GrayImage) -> [DieInFrame] {
-        guard let (barSlots, grid) = readSlots(in: image) else { return [] }
-        let slots = settlingFacesByText(barSlots, in: image)
-        let gridAngle = grid.across.angle
-        let read: [ScannedFace?] = slots.map { slot in
+        let lines = findBars(in: image).compactMap { readUndoverline(in: image, bar: $0) }
+        guard let grid = fitGrid(to: lines) else { return [] }
+        let slots = settlingFacesByText(readSlots(lines, on: grid, in: image), in: image)
+        let read = slots.enumerated().map { index, slot -> ScannedFace? in
             guard let face = slot.face, let angle = slot.angle else { return nil }
-            let turns = Int(((angle - gridAngle) / (.pi / 2)).rounded())
-            return ScannedFace(
-                letter: face.letter,
-                digit: face.digit,
-                clockwiseTurns: turns
-            )
+            let turns = Int(((angle - grid.across(at: index).angle) / (.pi / 2)).rounded())
+            return ScannedFace(letter: face.letter, digit: face.digit, clockwiseTurns: turns)
         }
         let merged = merge(known: faces, read: read)
         if let merged {
             faces = merged
         }
-        // Faces that could not be lined up with this frame belong to other positions in it.
-        let shown = merged ?? read
-        return slots.indices.compactMap { index in
-            let slot = slots[index]
+        return zip(slots, merged ?? read).compactMap { slot, face in
             guard let center = slot.center, let angle = slot.angle, let size = slot.size else { return nil }
             return DieInFrame(
-                center: CGPoint(x: CGFloat(center.x), y: CGFloat(center.y)),
-                angle: Double(angle),
-                size: Double(size),
-                face: shown[index]
-            )
+                center: CGPoint(x: CGFloat(center.x), y: CGFloat(center.y)), angle: Double(angle), size: Double(size),
+                face: face)
         }
     }
 }
@@ -108,10 +102,10 @@ public struct DiceKeyScanner: Sendable {
 /// its grid been read that way) since the known faces were read: they are tried in all four
 /// turns, and the turn that agrees with this frame on the most faces and disagrees on none
 /// is kept. When every turn disagrees somewhere, the camera is on a different key and reading
-/// starts over. Five faces in common are needed to call it the same key, because two keys can
-/// share a face or two by chance. With fewer, whichever read has more faces stands, so one key
-/// is not mixed into another on a coincidence. Successive frames of a key in view read most of
-/// its faces, so they share far more than five.
+/// starts over. `Tuning.Merge.minimumFacesInCommon` faces in common are needed to call it the
+/// same key, because two keys can share a face or two by chance. With fewer, whichever read has
+/// more faces stands, so one key is not mixed into another on a coincidence. Successive frames
+/// of a key in view read most of its faces, so they share far more.
 private func merge(known: [ScannedFace?], read: [ScannedFace?]) -> [ScannedFace?]? {
     let knownCount = known.compactMap { $0 }.count
     guard knownCount > 0 else { return read }
@@ -125,19 +119,20 @@ private func merge(known: [ScannedFace?], read: [ScannedFace?]) -> [ScannedFace?
         turned = turnedClockwise(turned)
     }
     guard let best else { return read }
-    guard best.agreements >= 5 else {
+    guard best.agreements >= Tuning.Merge.minimumFacesInCommon else {
         return read.compactMap { $0 }.count > knownCount ? read : nil
     }
     return zip(best.turned, read).map { $1 ?? $0 }
 }
 
 /// The faces as they read after the whole key turns a quarter turn clockwise: the die in
-/// row r, column c moves to row c, column 4 - r, and turns with the key.
+/// row r, column c moves to row c, column `side - 1 - r`, and turns with the key.
 func turnedClockwise(_ faces: [ScannedFace?]) -> [ScannedFace?] {
+    let side = Grid.slotsPerSide
     var turned = faces
-    for row in 0..<5 {
-        for column in 0..<5 {
-            turned[column * 5 + (4 - row)] = faces[row * 5 + column].map {
+    for row in 0..<side {
+        for column in 0..<side {
+            turned[column * side + (side - 1 - row)] = faces[row * side + column].map {
                 ScannedFace(letter: $0.letter, digit: $0.digit, clockwiseTurns: $0.clockwiseTurns + 1)
             }
         }

@@ -3,7 +3,7 @@
 //  ReadDiceKey
 //
 //  Reading a die's printed letter and digit, to settle a face whose two bars do not agree or
-//  whose second bar was not found. See docs/scanning.md.
+//  were not both found. See docs/scanning.md.
 //
 
 import Accelerate
@@ -13,24 +13,11 @@ import DiceKeySpecification
 import Foundation
 import simd
 
-/// Samples across a face, in the grid its text is compared in.
-private let gridWidth = 48
-/// The band of a face between its bars that holds the text, as fractions of its height.
-private let textBand: ClosedRange<Float> = 0.22...0.78
-private let firstRow = Int((textBand.lowerBound * Float(gridWidth)).rounded())
-private let gridHeight = Int((textBand.upperBound * Float(gridWidth)).rounded()) - firstRow
-private let samplesPerText = gridWidth * gridHeight
-/// How many samples either way the comparison shifts, to allow for error in the die's center.
-private let maxShift = 3
-private let shiftsPerAxis = 2 * maxShift + 1
-
-/// How clearly a face's text must be read to settle it: its correlation with the best face, and
-/// how far that is ahead of the next face and of the best face at any other quarter turn.
-private let minimumScore: Float = 0.7
-private let minimumLeadOverOtherFaces: Float = 0.03
-private let minimumLeadOverOtherTurns: Float = 0.15
-/// The most uncertain a predicted size may be, in variances of one die's measured size.
-private let maximumSizeVariance: Float = 1
+/// The rows of the grid of samples a face's text is compared in: those of `Tuning.Text.band`.
+private let firstRow = Int((Tuning.Text.band.lowerBound * Float(Tuning.Text.gridWidth)).rounded())
+private let gridHeight = Int((Tuning.Text.band.upperBound * Float(Tuning.Text.gridWidth)).rounded()) - firstRow
+private let samplesPerText = Tuning.Text.gridWidth * gridHeight
+private let shiftsPerAxis = 2 * Tuning.Text.maximumShift + 1
 
 private let everyFace = letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCodes
 
@@ -39,7 +26,7 @@ private let everyFace = letterIndexTimesSixPlusDigitIndexFaceWithUndoverlineCode
 /// Each face is drawn one pixel per sample, with its baseline measured from the bottom, as
 /// CoreGraphics draws.
 private let faceTexts: [Float] = {
-    let side = gridWidth
+    let side = Tuning.Text.gridWidth
     guard let provider = CGDataProvider(url: PrintedFont.url as CFURL), let cgFont = CGFont(provider),
         let context = CGContext(
             data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: side,
@@ -71,9 +58,10 @@ private let faceTexts: [Float] = {
     return texts
 }()
 
-/// The slots, with each face whose bars disagree or whose second bar is missing settled by its
-/// printed text when:
-/// - the face its text reads best is one a bar names, so the text is only ever a second vote;
+/// The slots, with each face whose bars disagree, whose second bar is missing or either of
+/// whose bars was read only at the grid settled by its printed text when:
+/// - the face its text reads best is one a bar names, so the text only confirms a bar and never
+///   reads a face alone;
 /// - it reads clearly, ahead of every other face and of the best face at any other quarter turn;
 /// - it reads the same at the size the other dice predict for it, since a die whose bars did not
 ///   read may be measured wrong, and at a wrong size text can read as another face;
@@ -122,12 +110,12 @@ private struct SizePlane {
     /// from the few dice that agree in a sparse frame.
     func size(at index: Int) -> Float? {
         let x = Self.position(index)
-        return simd_dot(x, inverseNormal * x) <= maximumSizeVariance ? simd_dot(coefficients, x) : nil
+        return simd_dot(x, inverseNormal * x) <= Tuning.Text.maximumSizeVariance ? simd_dot(coefficients, x) : nil
     }
 
     private static func position(_ index: Int) -> SIMD3<Float> {
-        let (row, column) = index.quotientAndRemainder(dividingBy: 5)
-        return SIMD3(1, Float(row), Float(column))
+        let position = columnAndRow(of: index)
+        return SIMD3(1, position.y, position.x)
     }
 }
 
@@ -141,7 +129,7 @@ extension GrayImage {
         let face = everyFace[ranked[0]]
         let score = scores[ranked[0]]
         guard [slot.underline, slot.overline].contains(where: { $0?.bits.face?.underlineCode == face.underlineCode }),
-            score >= minimumScore, score - scores[ranked[1]] >= minimumLeadOverOtherFaces
+            score >= Tuning.Text.minimumScore, score - scores[ranked[1]] >= Tuning.Text.minimumLeadOverOtherFaces
         else { return nil }
         let atExpectedSize = faceTextScores(center: center, angle: angle, size: expectedSize)
         guard atExpectedSize.indices.max(by: { atExpectedSize[$0] < atExpectedSize[$1] }) == ranked[0] else {
@@ -150,13 +138,15 @@ extension GrayImage {
         let bestAtOtherTurns = [Float.pi / 2, .pi, -.pi / 2].map {
             faceTextScores(center: center, angle: angle + $0, size: size).max() ?? -1
         }
-        return score - (bestAtOtherTurns.max() ?? -1) >= minimumLeadOverOtherTurns ? face : nil
+        return score - (bestAtOtherTurns.max() ?? -1) >= Tuning.Text.minimumLeadOverOtherTurns ? face : nil
     }
 
     /// For each face, the best correlation of its text with the die's at `center`, `size`
-    /// pixels across and reading along `angle`, over shifts of up to `maxShift` samples. Each
-    /// shift is one row of windows: the part of the sampled patch that shift lines up with.
+    /// pixels across and reading along `angle`, over shifts of up to `Tuning.Text.maximumShift`
+    /// samples. Each shift is one row of windows: the part of the sampled patch that shift lines
+    /// up with.
     fileprivate func faceTextScores(center: Point, angle: Float, size: Float) -> [Float] {
+        let (gridWidth, maxShift) = (Tuning.Text.gridWidth, Tuning.Text.maximumShift)
         let across = Point(angle: angle)
         let down = across.turnedClockwise
         let step = size / Float(gridWidth)
