@@ -339,11 +339,11 @@ how a photo was taken, not on who took it:
   the app's square): at least 20 faces from one frame of each such photo, both filling the
   frame and at three quarters of that size, as a key held back to fit the scanning target,
   a window over the middle three quarters of the frame; and a recorded total across them
-  all, a little below the 843 they read at the app's scale.
+  all, a little below the 866 they read at the app's scale.
 - **Everything else must only never be misread** (the photos in `other/`): a steep tilt, low
-  light, blur, a key far away under glare, a cropped key, the video at 360 pixels, and scenes
-  with no key at all (loose and jumbled dice, printed faces, Stickeys sheets, a sudoku grid),
-  which must read nothing.
+  light, blur, a key far away under glare, a key in low light with its bottom row
+  washed out, a cropped key, the video at 360 pixels, and scenes with no key at all (loose and
+  jumbled dice, printed faces, Stickeys sheets, a sudoku grid), which must read nothing.
 
 Every photo is checked for misreads at full size, at the app's scale and three quarters of
 it, and cropped to the centered square exactly as the app scans it. No face has been read
@@ -372,31 +372,32 @@ Faces right/wrong:
 
 |  | full size | shorter side 1080 | centered 1080 square | shorter side 810 |
 |---|---|---|---|---|
-| well-framed (34 photos, 848 faces): this scanner | 815/0 | 843/0 | 787/0 | 840/0 |
-| read-dicekey | 778/0 | 760/0 | 683/0 | 784/1 |
-| read-dicekey, keys it calls complete | 20 of 34 | 20 of 34 | 18 of 34 | 21 of 34 |
-| other (12 photos, 295 faces): this scanner | 129/0 | 127/0 | 128/0 | 130/0 |
+| well-framed (35 photos, 873 faces): this scanner | 838/0 | 866/0 | 810/0 | 862/0 |
+| read-dicekey | 778/0 | 760/0 | 701/0 | 784/1 |
+| read-dicekey, keys it calls complete | 20 of 35 | 20 of 35 | 18 of 35 | 21 of 35 |
+| other (13 photos, 320 faces): this scanner | 129/0 | 127/0 | 128/0 | 130/0 |
 | read-dicekey | 39/0 | 62/0 | 80/0 | 43/1 |
-| read-dicekey, keys it calls complete | 0 of 12 | 0 of 12 | 0 of 12 | 1 of 12 |
+| read-dicekey, keys it calls complete | 0 of 13 | 0 of 13 | 0 of 13 | 1 of 13 |
 
 By whose photo it is, faces right, this scanner / read-dicekey:
 
 |  | full size | shorter side 1080 | centered 1080 square | shorter side 810 |
 |---|---|---|---|---|
 | read-dicekey's own well-framed (19 photos, 475 faces) | 473 / 473 | 475 / 473 | 467 / 443 | 475 / 473 |
-| the owner's well-framed, added later (15 photos, 373 faces) | 342 / 305 | 368 / 287 | 320 / 240 | 365 / 311 |
+| the owner's well-framed, added later (16 photos, 398 faces) | 365 / 305 | 391 / 287 | 343 / 258 | 387 / 311 |
 | read-dicekey's own `other/` (3 photos, 75 faces) | 64 / 19 | 65 / 42 | 66 / 42 | 67 / 43 |
-| the owner's `other/` (9 photos, 220 faces) | 65 / 20 | 62 / 20 | 62 / 38 | 63 / 0 |
+| the owner's `other/` (10 photos, 245 faces) | 65 / 20 | 62 / 20 | 62 / 38 | 63 / 0 |
 
 - **On read-dicekey's own well-framed photos the two are level:** they read the same at full
   size, and read-dicekey is two faces behind at each shorter-side size. On the centered square
   it reads 30 fewer faces than at its other sizes, 25 of them from `S4tI3lZ2t…_well_lit`, which
   it reads not at all there (this scanner reads 21).
 - **The gaps are on the later photos and on read-dicekey's own `other/` ones.** It reads
-  nothing from either Mac-camera frame of `W1tO4tC6l…` except 17 faces of one at full size,
-  nothing from `D32T52S20…-webcam-tilted-1` at three sizes, nothing from
-  `P5lU2lY5r…-blurry` at three, and nothing at any size from
-  `D32T52S20…-webcam-left-column-cut` or `U5bC4bE1l…`.
+  nothing from either built-in-camera frame of `W1tO4tC6l…` except 17 faces of one at full size,
+  nothing from `D32T52S20…-tilted-1` at three sizes, nothing from
+  `P5lU2lY5r…-blurry` or `R5bD3bV2l…-night` at three, and nothing at any size
+  from `D32T52S20…-left-column-cut` or `U5bC4bE1l…`. Neither reads a face from
+  `R5bD3bV2l…-night-glare`.
 - **Misreads:** this scanner has none at any size. read-dicekey has two, both at shorter side
   810: `G5bS2rW5l…-glare` U4b read as A3l, and `Y6bS2rG4b…` N4b as N3b. It flags both as
   errors (`errorSize()` 10 and 255), and neither frame passes its complete-key check.
@@ -507,7 +508,7 @@ Four of read-dicekey's choices were measured against what this scanner does inst
   read wrong either way, the lattice reads 794, 791, 766 and 737 faces from the well-framed
   photos at the app's scale, three quarters of it, full size and the centered square, where
   pairing read 795, 791, 769 and 717; 110, 113, 109 and 110 from the others, where pairing read
-  91, 94, 90 and 92 (both before the webcam frames of `D32T52S20…` joined the corpus); and
+  91, 94, 90 and 92 (both before the external-camera frames of `D32T52S20…` joined the corpus); and
   1,912 from the saved frames, where pairing read 478. One session's key was complete at frame
   46 instead of 105. A scan takes 2.8 ms on average over the photos and frames, against
   2.2 ms.
