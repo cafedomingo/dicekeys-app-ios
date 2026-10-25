@@ -70,6 +70,26 @@ struct DiceKeyScannerTests {
         #expect(scanner.faces[7] == nil)
     }
 
+    @Test("a die with one bar found and the other read only at the grid is read when its text names their face")
+    func textConfirmsAFaceBesideALineReadAtTheGrid() {
+        var scanner = DiceKeyScanner()
+        scanner.scan(key.image(side: 1080, washedOut: [7], printing: key.faces))
+        #expect(scanner.diceKey == key.faces)
+    }
+
+    @Test("a die with one bar found and the other read only at the grid is not read from the two bars alone")
+    func barsReadAtTheGridAreNotAFullVote() {
+        let face = key.faces[7]
+        let other = ScannedFace(
+            letter: face.letter, digit: FaceDigit.allCases[(FaceDigit.allCases.firstIndex(of: face.digit)! + 2) % 6],
+            clockwiseTurns: face.clockwiseTurns)
+        var printed = key.faces
+        printed[7] = other
+        var scanner = DiceKeyScanner()
+        scanner.scan(key.image(side: 1080, washedOut: [7], printing: printed))
+        #expect(scanner.faces[7] == nil)
+    }
+
     @Test("text never settles a face whose letter is read on another die")
     func textRespectsOneDiePerLetter() {
         let face = key.faces[7]

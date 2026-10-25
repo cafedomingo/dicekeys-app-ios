@@ -43,7 +43,7 @@ jobs:
       - name: ruff format
         run: ruff format --check scripts
       - name: shellcheck
-        run: shellcheck scripts/*.sh
+        run: shellcheck scripts/*.sh scripts/*/*.sh
       # kinds.json comes from the independent Python implementation; the real tools and the
       # BIP39 reference read every key back, and the Swift tests then match it on macOS.
       # Post-quantum age needs age 1.3, newer than Ubuntu's, so it comes from age's release,

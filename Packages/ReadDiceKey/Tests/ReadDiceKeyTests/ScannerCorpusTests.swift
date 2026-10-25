@@ -167,6 +167,27 @@ enum Corpus {
         return best
     }
 
+    /// The centered luma square of each frame of a video, in order: what the app scans.
+    static func frames(of url: URL) async throws -> [GrayImage] {
+        let asset = AVURLAsset(url: url)
+        let track = try #require(try await asset.loadTracks(withMediaType: .video).first)
+        let reader = try AVAssetReader(asset: asset)
+        let output = AVAssetReaderTrackOutput(
+            track: track,
+            outputSettings: [
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+            ])
+        reader.add(output)
+        #expect(reader.startReading())
+        var frames: [GrayImage] = []
+        while let sample = output.copyNextSampleBuffer() {
+            if let frame = sample.imageBuffer, let image = GrayImage(centeredSquareOf: frame) {
+                frames.append(image)
+            }
+        }
+        return frames
+    }
+
     enum CorpusError: Error { case cannotDecode(String) }
 }
 
@@ -177,7 +198,7 @@ struct ScannerCorpusTests {
     /// The fewest faces the photos that must read may yield between them, one frame each at the
     /// app's frame size. It sits a little below what they read (the test prints that), so that
     /// another Mac's JPEG decoder, which can move a face or two, cannot fail it.
-    static let minimumFacesRead = 793
+    static let minimumFacesRead = 841
 
     static let cases = CorpusImage.all.flatMap { image in Corpus.Size.allCases.map { (image, $0) } }
 
@@ -235,19 +256,8 @@ struct ScannerCorpusTests {
     @Test("never reads a face wrong across a video", arguments: videos)
     func neverMisreadsAVideo(url: URL) async throws {
         let expected = try #require(Corpus.faces(of: String(url.deletingPathExtension().lastPathComponent.prefix(75))))
-        let asset = AVURLAsset(url: url)
-        let track = try #require(try await asset.loadTracks(withMediaType: .video).first)
-        let reader = try AVAssetReader(asset: asset)
-        let output = AVAssetReaderTrackOutput(
-            track: track,
-            outputSettings: [
-                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
-            ])
-        reader.add(output)
-        #expect(reader.startReading())
         var scanner = DiceKeyScanner()
-        while let sample = output.copyNextSampleBuffer() {
-            guard let frame = sample.imageBuffer, let image = GrayImage(centeredSquareOf: frame) else { continue }
+        for image in try await Corpus.frames(of: url) {
             scanner.scan(image)
             #expect(Corpus.score(scanner.faces, against: expected).wrong == 0)
         }

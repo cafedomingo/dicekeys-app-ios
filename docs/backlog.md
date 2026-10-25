@@ -110,11 +110,13 @@ The scanner should be proved by the owner's own photographs of the owner's own k
 whether or not the repository is ever published; that those photos can also be
 redistributed, and upstream's cannot, is a bonus rather than the reason.
 
-Delete upstream's 23 photos; `Fixtures/images/README.md` says which they are. Most need no
-replacement: the owner's photos already cover glare, angle, dim light and fingers; very low
-resolution is a downscaled copy of one of the owner's; and the white-box and printed-paper
-photos show pre-production keys no one owns. Photograph throwaway test keys for the rest,
-each well-framed photo reading at least 20 faces and none misreading:
+Delete upstream's 23 photos; `Fixtures/images/README.md` says which they are.
+`scripts/compare-upstream` then compares on the owner's photos alone, and its split by whose
+photo it is loses a side. Most need no replacement: the owner's photos already cover glare,
+angle, dim light and fingers; very low resolution is a downscaled copy of one of the owner's;
+and the white-box and printed-paper photos show pre-production keys no one owns. Photograph
+throwaway test keys for the rest, each well-framed photo reading at least 20 faces and none
+misreading:
 
 - A strong shadow across half the key.
 - The box turned 180°, as a phone held upside down sees it.
@@ -122,8 +124,6 @@ each well-framed photo reading at least 20 faces and none misreading:
 - A box mixing dice from two kits, so a letter repeats: every face must read correctly and
   the scan must never finish.
 - A finished Stickeys backup, every sticker placed, since restoring from one is scanning it.
-- The box held up to a Mac's built-in camera, the one the app uses on a Mac, standing in for
-  upstream's crash input.
 
 The corpus totals in `ScannerCorpusTests` then reset to what remains.
 
@@ -163,3 +163,17 @@ Settle first that a typed face has no second line to check it against, so the sc
 make plain which dice were typed. And scanned rotations are relative to the top of the key as
 the camera saw it, so the partial key has to be shown that way up for typed rotations to
 agree with it.
+
+### Shorter exposures on a Mac's camera
+
+In a session of frames saved from a Mac's built-in camera, most frames that fail were blurred
+by motion along the bars, so their dots don't decode; no change to the grid recovers them.
+A shorter exposure would, if the Mac's camera offers one: check what `AVCaptureDevice` allows
+there before designing anything.
+
+### Scanning a Stickeys backup that repeats letters
+
+A backup can repeat letters (`scanning.md`, step 6), but `diceKey` needs 25 different
+letters, and step 5's letter check never settles a die whose letter another die shows. Both
+are what keep a full sheet of stickers, which repeats five letters, from reading as a key, so
+allowing repeats needs another way to tell a backup from a sheet.

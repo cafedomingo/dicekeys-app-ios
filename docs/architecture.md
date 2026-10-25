@@ -13,7 +13,8 @@ concurrency, with no external dependencies. A DiceKey is scanned with the camera
 hand. Two local Swift packages supply the rest: `Derivation` (targets `Derivation`, for
 recipes and derived values, and `KeyFormats`, for key encodings and BIP39) and `ReadDiceKey`
 (the generated face specification with the font the dice are printed in, and the DiceKey
-scanner). There is no Objective-C or C++ in the tree.
+scanner). There is no Objective-C or C++ in the app or its packages; the one C++ file is the
+driver of `scripts/compare-upstream/`.
 
 ## Goals, in priority order
 
@@ -47,7 +48,8 @@ opened from a `DiceKeyScreen` pushed over it. A phone shows the same columns as 
 - **`Derivation`**: `KeyRecipe` turns a kind and a name into canonical recipe JSON, and
   reads it back only in that form; `DerivedKey` derives and encodes it. `Fixtures/kinds.json`
   is written by `scripts/derive-kinds.py`, an independent implementation.
-- **`ReadDiceKey`** is the scanner.
+- **`ReadDiceKey`** is the scanner. `scripts/compare-upstream/compare-upstream.sh` reads its
+  photo corpus with DiceKeys' own scanner too, for the comparison in `scanning.md`.
 
 ## Where things live
 
