@@ -4,14 +4,17 @@
 # set before each run because the Simulator ignores a change made while a UI test runs, and
 # the app is reinstalled with a clean keychain so both runs start from the same state. Run it
 # on an iPhone and on iPhone Duo, which moves the navigation bar's items into a rail beside the
-# content.
+# content, and on an iPad in each orientation: landscape shots are named
+# NN-screen-landscape-light.png / NN-screen-landscape-dark.png.
 #
-# Usage: scripts/screen-walk.sh <output-folder> [simulator-udid]
+# Usage: scripts/screen-walk.sh <output-folder> [simulator-udid] [portrait|landscape]
 set -euo pipefail
 
-usage="usage: scripts/screen-walk.sh <output-folder> [simulator-udid]"
+usage="usage: scripts/screen-walk.sh <output-folder> [simulator-udid] [portrait|landscape]"
 mkdir -p "${1:?$usage}"
 out="$(cd "$1" && pwd)"
+orientation="${3:-portrait}"
+case "$orientation" in portrait | landscape) ;; *) echo "$usage" >&2; exit 1 ;; esac
 # `xcode-select` may point at the Command Line Tools, which ship no xcodebuild.
 if [[ -z "${DEVELOPER_DIR:-}" && ! -x "$(xcode-select -p 2>/dev/null)/usr/bin/xcodebuild" ]]; then
   XCODE_APP="$(printf '%s\n' /Applications/Xcode*.app | sort -V | tail -1)"
@@ -42,7 +45,7 @@ for mode in light dark; do
   xcrun simctl uninstall "$udid" "$bundle_id" || true
   xcrun simctl keychain "$udid" reset
   xcrun simctl ui "$udid" appearance "$mode"
-  TEST_RUNNER_SHOT_DIR="$out" TEST_RUNNER_SHOT_MODE="$mode" xcodebuild test \
+  TEST_RUNNER_SHOT_DIR="$out" TEST_RUNNER_SHOT_MODE="$mode" TEST_RUNNER_SHOT_ORIENTATION="$orientation" xcodebuild test \
     -project DiceKeyVault.xcodeproj -scheme DiceKeyVaultScreenWalk \
     -destination "platform=iOS Simulator,id=$udid" \
     CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= -quiet

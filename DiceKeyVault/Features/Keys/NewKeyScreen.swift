@@ -81,6 +81,7 @@ struct NewKeyScreen: View {
                     PassphraseStyleSection(style: $style)
                 }
             }
+            .centeredContent()
             .onChange(of: name) {
                 withAnimation { proxy.scrollTo(Self.nameRow, anchor: .top) }
             }

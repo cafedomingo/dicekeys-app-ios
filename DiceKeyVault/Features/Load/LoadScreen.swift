@@ -6,8 +6,11 @@
 import SwiftUI
 
 /// The camera, with typing the dice in as the fallback. The camera also reads list cards'
-/// and recovery sheets' codes.
+/// and recovery sheets' codes. A compact window centers its content; a wider one sits it
+/// under the title, so a tall column doesn't leave a gap between them.
 struct LoadScreen: View {
+    /// The window's size class, not this column's, which can report its own.
+    let isCompact: Bool
     let onLoaded: (DiceKey) -> Void
     let onCodeRead: (String) -> Void
 
@@ -28,7 +31,7 @@ struct LoadScreen: View {
             }
         }
         .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: isCompact ? .center : .top)
         .background(Color.bg)
         .navigationTitle(isTyping ? "Type it in" : "Scan DiceKey")
         .toolbarTitleDisplayMode(isTyping ? .inline : .automatic)

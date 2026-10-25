@@ -51,6 +51,7 @@ struct KeyScreen: View {
                         .foregroundStyle(Color.danger)
                 }
             }
+            .centeredContent()
             .appBackdrop()
             .navigationTitle(recipe.name)
             .toolbarTitleDisplayMode(.inline)

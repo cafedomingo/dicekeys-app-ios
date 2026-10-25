@@ -33,6 +33,7 @@ struct DiceKeyList: View {
                 }
                 .tint(Color.accent)
                 .navigationTitle(AppInfo.name)
+                .toolbarTitleDisplayMode(.large)
                 .confirmsKeyDeletion($keyToDelete, onDelete: onDelete)
             }
         }

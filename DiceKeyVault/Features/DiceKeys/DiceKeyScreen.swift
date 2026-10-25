@@ -72,6 +72,7 @@ struct DiceKeyScreen: View {
             }
         }
         .listStyle(.insetGrouped)
+        .centeredContent()
         .appBackdrop()
         .navigationTitle(record.name)
         .toolbarTitleDisplayMode(.inline)

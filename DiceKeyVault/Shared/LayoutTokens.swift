@@ -5,7 +5,7 @@
 
 import CoreFoundation
 
-/// The spacing and radius tokens of `docs/design.md`, named as there in lower camel case. Color
+/// The spacing, radius and width tokens of `docs/design.md`, named as there in lower camel case. Color
 /// tokens are the color sets in `Colors.xcassets`.
 extension CGFloat {
     static let space1: CGFloat = 4
@@ -16,4 +16,7 @@ extension CGFloat {
 
     static let radiusSm: CGFloat = 9
     static let radiusMd: CGFloat = 16
+
+    /// Wider than any phone's window (the folded Duo's is 466), so only a wider column is capped.
+    static let contentWidth: CGFloat = 480
 }

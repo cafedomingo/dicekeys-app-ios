@@ -3,16 +3,26 @@
 //  DiceKeyVaultUITests
 //
 //  Walks every screen the Simulator can reach and saves a screenshot at each stop, so a
-//  visual change can be judged screen by screen in both appearances. Run it with
-//  scripts/screen-walk.sh, which sets the appearance before each run: the Simulator ignores
-//  an appearance change made while a UI test is running. Not part of CI; the stops are
-//  found by their labels and will need updating when a screen changes.
+//  visual change can be judged screen by screen in both appearances and, on an iPad, both
+//  orientations. Run it with scripts/screen-walk.sh, which sets the appearance before each run:
+//  the Simulator ignores an appearance change made while a UI test is running. Not part of CI;
+//  the stops are found by their labels and will need updating when a screen changes.
 //
 
+import UIKit
 import XCTest
 
 @MainActor
 final class ScreenWalk: XCTestCase {
+    private enum Orientation: String {
+        case portrait
+        case landscape
+
+        var device: UIDeviceOrientation { self == .landscape ? .landscapeLeft : .portrait }
+    }
+
+    /// The most swipes up `tap` spends looking for an element below the fold.
+    private static let maxScrolls = 5
     private static let rowScrollLimit = 3
 
     private var app: XCUIApplication!
@@ -26,11 +36,32 @@ final class ScreenWalk: XCTestCase {
         ProcessInfo.processInfo.environment["SHOT_MODE"] ?? "unknown"
     }
 
+    private var orientation: Orientation {
+        ProcessInfo.processInfo.environment["SHOT_ORIENTATION"].flatMap(Orientation.init) ?? .portrait
+    }
+
+    /// The suffix of every shot's name: the appearance, after the orientation unless it is
+    /// portrait, so portrait names stay as they were and the two orientations never collide.
+    private var variant: String {
+        orientation == .portrait ? mode : "\(orientation.rawValue)-\(mode)"
+    }
+
+    /// In landscape the screenshot is still the device's portrait bitmap, a quarter turn
+    /// clockwise from what the window shows.
+    private func uprightPNG(_ screenshot: XCUIScreenshot) -> Data {
+        guard orientation == .landscape else { return screenshot.pngRepresentation }
+        let image = screenshot.image
+        let turned = UIImage(cgImage: image.cgImage!, scale: image.scale, orientation: .left)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        return UIGraphicsImageRenderer(size: turned.size, format: format).pngData { _ in turned.draw(at: .zero) }
+    }
+
     private func snap(_ name: String, settle: TimeInterval = 1.0) {
         counter += 1
         Thread.sleep(forTimeInterval: settle)
-        let file = String(format: "%02d-%@-%@.png", counter, name, mode)
-        let data = XCUIScreen.main.screenshot().pngRepresentation
+        let file = String(format: "%02d-%@-%@.png", counter, name, variant)
+        let data = uprightPNG(XCUIScreen.main.screenshot())
         do {
             try data.write(to: URL(fileURLWithPath: shotsDir).appending(path: file))
         } catch {
@@ -38,10 +69,25 @@ final class ScreenWalk: XCTestCase {
         }
     }
 
+    /// Swipes up over the detail's list, the last in the tree: `app.swipeUp()` didn't scroll the
+    /// capped detail on an iPad in landscape. Not `isHittable`: the key screen reports false for
+    /// it while it is plainly on screen.
+    private func swipeUpDetail() {
+        (app.collectionViews.allElementsBoundByIndex.last { $0.exists } ?? app).swipeUp()
+    }
+
+    /// Swipes up until `element` exists. A list leaves rows below the fold out of the
+    /// accessibility tree until it scrolls, and a window as short as an iPad's in landscape
+    /// leaves more of them there than portrait does.
+    private func scrollUntilExists(_ element: XCUIElement) -> Bool {
+        for _ in 0..<Self.maxScrolls where !element.exists { swipeUpDetail() }
+        return element.exists
+    }
+
     /// XCTest's first existence check comes about 1 s after `waitForExistence` is called, even
     /// when the element is already there, so `exists` is tried first.
     private func tap(_ element: XCUIElement, _ what: String, timeout: TimeInterval = 5) {
-        if element.exists || element.waitForExistence(timeout: timeout) {
+        if element.exists || element.waitForExistence(timeout: timeout) || scrollUntilExists(element) {
             element.tap()
         } else {
             XCTFail("missing: \(what)")
@@ -65,20 +111,36 @@ final class ScreenWalk: XCTestCase {
     }
 
     /// The back button on screen, wherever the system puts it: on iPhone Duo, in a toolbar
-    /// beside the content rather than a navigation bar. Offscreen bars stay in the tree.
-    private func back() {
+    /// beside the content rather than a navigation bar. Offscreen bars stay in the tree. With
+    /// the sidebar beside the detail, home is already on screen and the detail's root has no
+    /// back button, so a step that only goes home passes `isRequired: false`.
+    private func back(isRequired: Bool = true) {
         let backButtons = app.buttons.matching(identifier: "BackButton").allElementsBoundByIndex
         guard let button = backButtons.first(where: { $0.exists && $0.isHittable }) else {
-            XCTFail("missing: nav back")
+            if isRequired { XCTFail("missing: nav back") }
             return
         }
         button.tap()
         Thread.sleep(forTimeInterval: 0.8)
     }
 
+    /// The detail's New key button, since the sidebar has a New key row of its own.
+    private var newKeyButton: XCUIElement {
+        rightmost(app.buttons.matching(identifier: "New key"))
+    }
+
     /// The toolbar's overflow menu, where secondary actions go on a phone.
     private func openMenu() {
         tap(button("More"), "More")
+    }
+
+    /// The match furthest right that is on screen, else the first match. Beside a sidebar, the
+    /// detail's copy of a row or button is the one on the right, and it pushes where the
+    /// sidebar's selects; a phone shows only one copy.
+    private func rightmost(_ matches: XCUIElementQuery) -> XCUIElement {
+        matches.allElementsBoundByIndex
+            .filter { $0.exists && $0.isHittable }
+            .max { $0.frame.minX < $1.frame.minX } ?? matches.firstMatch
     }
 
     /// A list row by its text, scrolled until all of it is in the window. A row below the fold is
@@ -95,7 +157,7 @@ final class ScreenWalk: XCTestCase {
 
     /// A key with a public half previews it as you type; the others preview behind Show.
     private func makeKey(name: String, kind: String? = nil, hasPublicKey: Bool = false) {
-        tap(button("New key"), "New key")
+        tap(newKeyButton, "New key")
         if let kind {
             tap(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Kind'")).firstMatch, "Kind picker")
             tap(button(kind), kind)
@@ -110,11 +172,11 @@ final class ScreenWalk: XCTestCase {
         }
         tap(button("Save"), "Save")
         snap("key-\(name)")
-        if hasPublicKey { app.swipeUp() }
+        if hasPublicKey { swipeUpDetail() }
         tap(button("Reveal"), "Reveal")
         snap("key-\(name)-revealed")
         if hasPublicKey {
-            app.swipeUp()
+            swipeUpDetail()
             snap("key-\(name)-revealed-end")
         }
         back()
@@ -123,6 +185,7 @@ final class ScreenWalk: XCTestCase {
     func testWalk() throws {
         try XCTSkipIf(shotsDir.isEmpty, "Set SHOT_DIR (scripts/screen-walk.sh does) to save screenshots.")
         continueAfterFailure = true
+        XCUIDevice.shared.orientation = orientation.device
         app = XCUIApplication()
         app.launch()
         snap("home-first-launch", settle: 2.5)
@@ -155,7 +218,7 @@ final class ScreenWalk: XCTestCase {
         snap("dicekey-dice-shown")
 
         makeKey(name: "github")
-        tap(button("New key"), "New key")
+        tap(newKeyButton, "New key")
         tap(app.textFields.firstMatch, "Name field")
         app.textFields.firstMatch.typeText("github")
         snap("new-key-existing")
@@ -193,13 +256,13 @@ final class ScreenWalk: XCTestCase {
         tap(button("Delete key"), "Delete key")
         snap("key-deleted-by-swipe")
 
-        tap(app.cells.containing(.staticText, identifier: "github").firstMatch, "github")
-        app.swipeUp()
+        tap(rightmost(app.cells.containing(.staticText, identifier: "github")), "github")
+        swipeUpDetail()
         tap(button("Delete key"), "Delete key on detail")
         snap("key-detail-delete-confirm")
         tap(app.alerts.buttons["Delete key"], "confirm Delete key")
         snap("key-deleted-from-detail", settle: 1.5)
-        back()
+        back(isRequired: false)
         snap("home")
     }
 }
