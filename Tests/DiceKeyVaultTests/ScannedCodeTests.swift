@@ -12,8 +12,8 @@ import Testing
 struct ScannedCodeTests {
     @Test("a list link reads as a list, a recovery code as a recovery")
     func reads() throws {
-        #expect(try ScannedCode(payload: Fixture.text("catalog-link-v1.txt")) == .list(CatalogFormatV1Tests.expected))
-        guard case .recovery(let code)? = try ScannedCode(payload: Fixture.text("recovery-v1.txt")) else {
+        #expect(try ScannedCode(payload: Fixture.text("catalog-link-v2.txt")) == .list(PaperFormatV2Tests.expected))
+        guard case .recovery(let code)? = try ScannedCode(payload: Fixture.text("recovery-v2.txt")) else {
             Issue.record("not read as a recovery code")
             return
         }
@@ -32,19 +32,19 @@ struct ScannedCodeTests {
         #expect(throws: CatalogFile.Failure.notACatalog) {
             try ScannedCode(payload: "dicekeyvault://import?catalog=%21")
         }
-        #expect(throws: CatalogFile.Failure.notACatalog) { try ScannedCode(payload: "DKV1R:!!") }
+        #expect(throws: CatalogFile.Failure.notACatalog) { try ScannedCode(payload: "DKVR:!!") }
     }
 
     @Test("a code from a newer version says to update the app")
     func newerVersionSaysToUpdate() {
-        let message = CatalogFile.Failure.newerVersion(2).localizedDescription
+        let message = CatalogFile.Failure.newerVersion(3).localizedDescription
         #expect(message.contains("newer version"))
     }
 
     @Test("only this app's codes count as its own")
     func ownCodes() throws {
-        #expect(ScannedCode.isOwn(try Fixture.text("catalog-link-v1.txt")))
-        #expect(ScannedCode.isOwn(try Fixture.text("recovery-v1.txt")))
+        #expect(ScannedCode.isOwn(try Fixture.text("catalog-link-v2.txt")))
+        #expect(ScannedCode.isOwn(try Fixture.text("recovery-v2.txt")))
         #expect(!ScannedCode.isOwn("https://example.com"))
     }
 }

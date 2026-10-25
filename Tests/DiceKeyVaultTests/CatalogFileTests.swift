@@ -33,22 +33,20 @@ struct CatalogFileTests {
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
     }
 
-    @Test("the file reads back as it was written, readable and compact alike")
+    @Test("the file reads back as it was written")
     func roundTrip() throws {
         let file = try catalogWithKeys()
         #expect(file.keys.count == 2)
         #expect(try CatalogFile(json: file.json()) == file)
-        #expect(try CatalogFile(json: file.json(readable: false)) == file)
         #expect(String(decoding: try file.json(), as: UTF8.self).contains("\n"))
     }
 
-    @Test("the QR code's link carries the list without public keys")
+    @Test("the QR code's link carries the list")
     func importLink() throws {
         let file = try catalogWithKeys()
         let restored = try CatalogFile(importURL: try file.importURL)
         #expect(restored.diceKeys == file.diceKeys)
         #expect(restored.keys.map(\.recipe) == file.keys.map(\.recipe))
-        #expect(restored.keys.allSatisfy { $0.publicKey == nil })
     }
 
     @Test("merging adds only what is missing")

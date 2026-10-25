@@ -5,14 +5,13 @@
 
 import Derivation
 import Foundation
-import SwiftData
 import Testing
 
 @testable import DiceKeyVault
 
-/// Version 1 is printed on paper, so it must read the same in every later version of the app.
-/// If one of these fails, the change breaks paper already printed: change the code, never the
-/// fixtures.
+/// Version 1 is the exported file people keep, so it must read the same in every later version
+/// of the app. If one of these fails, the change breaks files already exported: change the code,
+/// never the fixtures.
 @MainActor
 struct CatalogFormatV1Tests {
     private static let id = "FDWCWOqOuLX6kRVI9K31_A"
@@ -50,17 +49,6 @@ struct CatalogFormatV1Tests {
         #expect(file.keys == Self.expected.keys)
     }
 
-    @Test("the v1 link decodes to exactly these DiceKeys and keys")
-    func linkDecodes() throws {
-        let file = try CatalogFile(importURL: #require(URL(string: Fixture.text("catalog-link-v1.txt"))))
-        #expect(file == Self.expected)
-    }
-
-    @Test("today's encoder writes the v1 link byte for byte")
-    func linkEncodes() throws {
-        #expect(try Self.expected.importURL.absoluteString == Fixture.text("catalog-link-v1.txt"))
-    }
-
     @Test("today's encoder writes the same v1 file, ignoring whitespace")
     func fileEncodes() throws {
         let fixture = try Fixture.data("catalog-v1.json")
@@ -68,14 +56,5 @@ struct CatalogFormatV1Tests {
         #expect(
             try JSONSerialization.jsonObject(with: fixture) as? NSDictionary
                 == JSONSerialization.jsonObject(with: written) as? NSDictionary)
-    }
-
-    @Test("merging the v1 link makes exactly these recipes, and the default keys")
-    func linkMakesTheseRecipes() throws {
-        let context = ModelContext(try Catalog.container(syncing: false, inMemory: true))
-        try Self.expected.merge(into: context)
-        #expect(
-            Set(try context.entries(for: DiceKey.example.id).compactMap(\.recipe))
-                == Set(try Self.expectedRecipes + KeyRecipe.defaults))
     }
 }

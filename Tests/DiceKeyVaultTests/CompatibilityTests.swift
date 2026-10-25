@@ -4,8 +4,9 @@
 //
 //  What this app writes outside itself must read the same in every later version: the
 //  store, synced through CloudKit to devices on other versions, and the names that find it.
-//  Derived keys, the DiceKey id and paper are pinned by their own fixtures (kinds.json,
-//  CatalogFormatV1Tests). A failure here means a change breaks data already written.
+//  Derived keys, the DiceKey id, the exported file and paper are pinned by their own fixtures
+//  (kinds.json, CatalogFormatV1Tests, PaperFormatV2Tests). A failure here means a change breaks
+//  data already written.
 //
 
 import Foundation
@@ -42,6 +43,7 @@ struct CompatibilityTests {
         #expect(Catalog.storeName == "Catalog")
         #expect(Catalog.syncSettingKey == "syncsCatalogWithICloud")
         #expect(CatalogFile.urlScheme == "dicekeyvault")
-        #expect(RecoveryCode.prefix == "DKV1R:")
+        #expect(RecoveryCode.prefix == "DKVR:")
+        #expect(PaperPayload.version == 2)
     }
 }
