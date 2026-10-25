@@ -18,7 +18,7 @@ DiceKey Vault turns a DiceKey (25 dice in a sealed box) into the few keys that a
 - It is a native SwiftUI app built from stock components, with one two-column `NavigationSplitView` for every size: home, with every DiceKey and its keys, then whichever of them is selected, a key opened from a DiceKey pushed over it. A phone shows the columns as a stack. The system draws the glass; this system only decides what goes on it.
 - **There are two layers.** The navigation layer is glass: toolbars, the sidebar, sheets, and controls over the camera. The content layer is flat: rows, the DiceKey grid, keys and secrets. Never put glass on content, and never stack glass on glass.
 - The tint is `accent-ink`. Use `.buttonStyle(.glassProminent)` only for the screen's one primary action, and `.glass` for the rest of the controls on the glass layer.
-- The Mac gets the iPad layout, as Designed for iPad. A Mac-native layout (a floating glass sidebar, toolbar actions in glass capsules, scanning in the detail pane) is intent, not built; it is in the backlog under The Mac.
+- The Mac gets the iPad layout, built with Mac Catalyst. A Mac-native layout (a floating glass sidebar, toolbar actions in glass capsules, scanning in the detail pane) is intent, not built; it is in the backlog under The Mac.
 - New key is a draft of the key's own detail, never a sheet: a pushed screen on iPhone and the detail column where there is one. Keep sheets for confirmations, such as Forget.
 - Over the camera, controls are system glass.
 

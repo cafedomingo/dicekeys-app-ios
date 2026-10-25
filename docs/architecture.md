@@ -8,7 +8,7 @@ why it is safe), `catalog-format.md` (the catalog's file, link and code formats)
 
 DiceKey Vault regenerates a few rarely used keys (SSH, WireGuard, age, passphrases, BIP39
 wallet phrases) from a DiceKey, and stores no secret. It is one SwiftUI target (iOS 26 and
-later; the Mac runs it as Designed for iPad) on Observation, async/await and Swift 6 strict
+later, and Mac Catalyst on the Mac) on Observation, async/await and Swift 6 strict
 concurrency, with no external dependencies. A DiceKey is scanned with the camera or typed by
 hand. Two local Swift packages supply the rest: `Derivation` (targets `Derivation`, for
 recipes and derived values, and `KeyFormats`, for key encodings and BIP39) and `ReadDiceKey`
