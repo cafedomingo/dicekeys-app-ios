@@ -2,7 +2,9 @@
 # Walks every screen of the app in light and then dark appearance and saves a screenshot of
 # each into the given folder as NN-screen-light.png / NN-screen-dark.png. The appearance is
 # set before each run because the Simulator ignores a change made while a UI test runs, and
-# the app is reinstalled with a clean keychain so both runs start from the same state.
+# the app is reinstalled with a clean keychain so both runs start from the same state. Run it
+# on an iPhone and on iPhone Duo, which moves the navigation bar's items into a rail beside the
+# content.
 #
 # Usage: scripts/screen-walk.sh <output-folder> [simulator-udid]
 set -euo pipefail
