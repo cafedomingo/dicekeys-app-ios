@@ -341,7 +341,7 @@ how a photo was taken, not on who took it:
   a window over the middle three quarters of the frame; and a recorded total across them
   all, a little below the 866 they read at the app's scale.
 - **Everything else must only never be misread** (the photos in `other/`): a steep tilt, low
-  light, blur, a key far away under glare, a key lit by a display at night with its bottom row
+  light, blur, a key far away under glare, a key in low light with its bottom row
   washed out, a cropped key, the video at 360 pixels, and scenes with no key at all (loose and
   jumbled dice, printed faces, Stickeys sheets, a sudoku grid), which must read nothing.
 
@@ -393,11 +393,11 @@ By whose photo it is, faces right, this scanner / read-dicekey:
   it reads 30 fewer faces than at its other sizes, 25 of them from `S4tI3lZ2t…_well_lit`, which
   it reads not at all there (this scanner reads 21).
 - **The gaps are on the later photos and on read-dicekey's own `other/` ones.** It reads
-  nothing from either Mac-camera frame of `W1tO4tC6l…` except 17 faces of one at full size,
-  nothing from `D32T52S20…-webcam-tilted-1` at three sizes, nothing from
-  `P5lU2lY5r…-blurry` or `R5bD3bV2l…-studio-display-night` at three, and nothing at any size
-  from `D32T52S20…-webcam-left-column-cut` or `U5bC4bE1l…`. Neither reads a face from
-  `R5bD3bV2l…-studio-display-night-glare`.
+  nothing from either built-in-camera frame of `W1tO4tC6l…` except 17 faces of one at full size,
+  nothing from `D32T52S20…-tilted-1` at three sizes, nothing from
+  `P5lU2lY5r…-blurry` or `R5bD3bV2l…-night` at three, and nothing at any size
+  from `D32T52S20…-left-column-cut` or `U5bC4bE1l…`. Neither reads a face from
+  `R5bD3bV2l…-night-glare`.
 - **Misreads:** this scanner has none at any size. read-dicekey has two, both at shorter side
   810: `G5bS2rW5l…-glare` U4b read as A3l, and `Y6bS2rG4b…` N4b as N3b. It flags both as
   errors (`errorSize()` 10 and 255), and neither frame passes its complete-key check.
@@ -508,7 +508,7 @@ Four of read-dicekey's choices were measured against what this scanner does inst
   read wrong either way, the lattice reads 794, 791, 766 and 737 faces from the well-framed
   photos at the app's scale, three quarters of it, full size and the centered square, where
   pairing read 795, 791, 769 and 717; 110, 113, 109 and 110 from the others, where pairing read
-  91, 94, 90 and 92 (both before the webcam frames of `D32T52S20…` joined the corpus); and
+  91, 94, 90 and 92 (both before the external-camera frames of `D32T52S20…` joined the corpus); and
   1,912 from the saved frames, where pairing read 478. One session's key was complete at frame
   46 instead of 105. A scan takes 2.8 ms on average over the photos and frames, against
   2.2 ms.
