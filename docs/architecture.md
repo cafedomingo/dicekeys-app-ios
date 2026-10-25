@@ -136,6 +136,8 @@ permissions error until it is accepted.
   recipe validation, the key formats and RFC 5869's HKDF vectors, and in
   `Packages/ReadDiceKey` the scanner over its photo corpus and drawn keys.
 - XcodeGen, then the iOS app built for the simulator and its Swift Testing suite run there.
+- The Mac app built with Mac Catalyst, unsigned, for the code under
+  `targetEnvironment(macCatalyst)` that the iOS builds skip.
 - On Ubuntu: `swift format lint --strict` (layout is the toolchain formatter's, configured in
   `.swift-format`), SwiftLint, ruff, shellcheck and actionlint, and `derive-kinds.py --tools`,
   which checks the public keys against `ssh-keygen`, `wg` and `age-keygen`.
