@@ -114,6 +114,30 @@ jobs:
           path: "*.log"
           retention-days: 7
 
+  catalyst:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/build-tools
+      - name: Generate project
+        run: swift run --package-path BuildTools xcodegen generate
+      - name: Build Mac app (Catalyst)
+        run: |
+          set -o pipefail
+          xcodebuild build -project DiceKeyVault.xcodeproj -scheme DiceKeyVault \
+            -destination 'generic/platform=macOS,variant=Mac Catalyst' \
+            CODE_SIGNING_ALLOWED=NO DEVELOPMENT_TEAM= 2>&1 | tee build-catalyst.log | grep --line-buffered -E 'error:|^Ld |BUILD|\*\*' || true
+          grep -q 'BUILD SUCCEEDED' build-catalyst.log
+      - name: Upload logs
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: catalyst-logs
+          path: "*.log"
+          retention-days: 7
+
   app-tests:
     runs-on: macos-26
     timeout-minutes: 60
