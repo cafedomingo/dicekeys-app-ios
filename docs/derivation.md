@@ -1,10 +1,11 @@
 # Derivation
 
-A key is a pure function of a DiceKey, a kind and a name, and, for a passphrase, its style.
-The same inputs give the same key on any device, forever. No derived secret is ever stored:
-the catalog keeps only the DiceKey's one-way id and public keys, and everything else is
-derived again when it is needed. This document is the specification. It is exact enough to
-reimplement on another platform, and `scripts/derive-kinds.py` is such a reimplementation;
+A key is a pure function of a DiceKey, a kind and a name (the default keys have none), and,
+for a passphrase, its style. The same inputs give the same key on any device, forever.
+No derived secret is ever stored: the catalog keeps only the DiceKey's one-way id and public
+keys, and everything else is derived again when it is needed. This document is the
+specification. It is exact enough to reimplement on another platform, and
+`scripts/derive-kinds.py` is such a reimplementation;
 `Packages/Derivation/Tests/DerivationTests/Fixtures/kinds.json` is its conformance suite.
 
 ## The seed
@@ -48,7 +49,8 @@ A recipe says what to derive. It is JSON, and its text is what gets hashed:
 
 The fields are `kind` (`ssh`, `wireguard`, `age`, `passphrase` or `wallet`) and `name`, and
 for a passphrase `length` and `list`, with `separator` and `uppercase` for words (see
-Passphrases). Nothing else. The type is not in the JSON: the kind decides it.
+Passphrases). Nothing else. Only the default keys have no `name` (see Default keys). The
+type is not in the JSON: the kind decides it.
 
 **One spelling.** A recipe is written as RFC 8785 (JCS) canonical JSON: keys sorted by UTF-16
 code unit, no whitespace, integers in plain decimal, non-ASCII written as raw UTF-8 (never
@@ -96,13 +98,14 @@ a library that does the same.
 pinned by kinds.json, but they are not key material: the key would survive a change to them,
 the exported text would not.
 
-- **ssh**: the public key line is `ssh-ed25519 <base64 of the public key blob> <name>`; the
-  fingerprint is `SHA256:` and the unpadded base64 of SHA-256 of that blob. The private key is
-  an unencrypted OpenSSH `openssh-key-v1` file (PROTOCOL.key): cipher and KDF `none`, empty
-  KDF options, one key; the private section is the check value twice (the first 4 bytes of
-  SHA-256 of the raw 32-byte public key), the key type, the public key, seed ‖ public key, and
-  the name as the comment, padded with bytes 1, 2, 3, … to a multiple of 8; the PEM is wrapped
-  at 64 columns and ends with a newline.
+- **ssh**: the public key line is `ssh-ed25519 <base64 of the public key blob> <name>` (for a
+  default, no name and no trailing space; see Default keys); the fingerprint is `SHA256:` and
+  the unpadded base64 of SHA-256 of that blob. The private key is an unencrypted OpenSSH
+  `openssh-key-v1` file (PROTOCOL.key): cipher and KDF `none`, empty KDF options, one key; the
+  private section is the check value twice (the first 4 bytes of SHA-256 of the raw 32-byte
+  public key), the key type, the public key, seed ‖ public key, and the name as the comment,
+  padded with bytes 1, 2, 3, … to a multiple of 8; the PEM is wrapped at 64 columns and ends
+  with a newline.
 - **wireguard**: the private scalar and the public key in standard base64.
 - **age**: `AGE-SECRET-KEY-1…` is Bech32 (BIP 173) with HRP `age-secret-key-`, computed over
   the lower-case string and then upper-cased; the recipient is `age1…`, HRP `age`. The
@@ -148,6 +151,34 @@ of the format; the SHA-256 of a list's entries joined by `\n` pins it (`Passphra
 Strength is exact because every entry is uniform: 24 random characters are about 140 bits, 6
 words about 77; the digits and the uppercase word add a little more.
 
+## Default keys
+
+Every DiceKey has an SSH and an age key that need no name. Each recipe holds `kind` alone and
+is written as a literal, which is the text that gets hashed, so no change to the code that
+writes recipes can change a default key:
+
+| Kind | Recipe text |
+|---|---|
+| ssh | `{"kind":"ssh"}` |
+| age | `{"kind":"age"}` |
+
+A default derives like any key, from `type || recipe`. The parser (`KeyRecipe(json:)`)
+accepts a recipe without a name only if its text is, byte for byte, one of these two:
+`{"kind":"passphrase"}`, `{"kind":"ssh","length":24}` and `{ "kind":"ssh" }` are refused. No
+literal equals a named recipe's text, since those hold `"name"`, and each starts with `{`, so
+`type || recipe` still reads only one way.
+
+Once an App Store release has a literal, it is never edited or removed, because a default has
+no name to make its key again and synced catalogs hold its rows. The set changes only by
+adding one, and an added literal reaches every DiceKey: the app adds each default a DiceKey
+lacks. A catalog row whose recipe has no name and isn't one of these, such as
+`{"kind":"wireguard"}` from a test build, is left out like any recipe this version can't
+read, and the DiceKey's other keys load as usual.
+
+Without a name, the encodings that use one fall back. The SSH public key line is
+`ssh-ed25519 <base64>`, with no comment and no trailing space, and the private key's comment is
+empty. Exported files take the tool's name alone: `id_ed25519`, `age.txt` and `age-pq.txt`.
+
 ## The DiceKey id
 
 16 bytes with type `dicekey-id` and an empty recipe, so `info` is just `dicekey-id`, written
@@ -165,15 +196,17 @@ change:
 - the type strings;
 - each kind's fields: their names, their values, the list names, and when an optional field
   is written (`uppercase` only with digits, and only as `true`);
+- the default recipe texts, which are literals;
 - the lists' contents and order;
 - the name rules, except to loosen them: a name accepted today must stay acceptable;
 - the JCS rules, which are a published standard.
 
 Every (kind, name, style) has exactly one recipe text, because names are normalized and the
-JSON is canonical, and the parser accepts nothing else. The format grows by adding: a new
-kind, a new type or a new list leaves every existing string alone. A new field must never be
-added to an existing kind with a default that changes its text. A key is replaced by giving
-it a new name (`github 2`); there is no other version counter.
+JSON is canonical, and the parser accepts nothing else. A default has exactly one too: its
+literal. The format grows by adding: a new kind, a new type, a new list or a new default
+leaves every existing string alone. A new field must never be added to an existing kind with
+a default that changes its text. A key is replaced by giving it a new name (`github 2`), so a
+default key can't be replaced; there is no other version counter.
 
 If a test below fails, a derived byte has changed: fix the code, never the fixture.
 
@@ -207,14 +240,18 @@ If a test below fails, a derived byte has changed: fix the code, never the fixtu
   - `cases`: derivations across every kind and style, each with `seed`, `kind`, `input`
     (the name as typed, to exercise normalization), `name`, `style`, `recipe`, `type`, and the
     `publicKey`, `fingerprint` and `secret` its tool reads; an age case adds `postQuantum`
-    with its `type`, `publicKey` and `secret`.
+    with its `type`, `publicKey` and `secret`;
+  - `defaults`: each default for each seed, with `seed`, `kind`, `recipe` (its literal),
+    `type`, and the `publicKey`, `fingerprint` and `secret` its tool reads, and for age
+    `postQuantum`.
 
   `KindVectorTests` and `DiceKeySeedTests` check the app against it, including that every
   recipe parses back to itself. CI runs the script with `--tools`, so `ssh-keygen`, `wg` and
   `age-keygen` 1.3 read every key back, `age` encrypts to every age recipient and the identity
   decrypts it, and the BIP39 reference decodes every phrase.
-- `KeyRecipeTests`: the name rules, JCS escaping and ordering, and text that isn't a
-  canonical recipe.
+- `KeyRecipeTests`: the name rules, JCS escaping and ordering, text that isn't a canonical
+  recipe, and the default literals byte for byte, with any other text that has no name
+  refused.
 - `PassphraseListTests` and `PasswordFormatterTests`: the lists' digests and literal character
   sets; blocks, quotients, digits and the uppercase word.
 - `OpenSSHFileTests`: `ssh-keygen` reads the private key file.

@@ -39,8 +39,10 @@ it can't.
 
 The catalog holds what is needed to derive each key again and nothing that unlocks one: per
 DiceKey its id, name, center die and the date it was first seen, and per key its DiceKey's
-id, its recipe, its public key and the date (`catalog-format.md` has the fields). For age
-that public key is the X25519 recipient; the post-quantum one is derived again each time.
+id, its recipe, its public key and the date (`catalog-format.md` has the fields). A DiceKey's
+default keys (`derivation.md`) are keys like the rest: the catalog holds their recipes, the
+same fixed texts for every DiceKey, and their public keys. For age that public key is the
+X25519 recipient; the post-quantum one is derived again each time.
 
 With Sync with iCloud on (Settings; off by default) this goes to the user's private CloudKit
 database, `iCloud.com.cafedomingo.dicekeys`, through SwiftData. That is safe because:
@@ -71,7 +73,7 @@ Changes from other devices can arrive any time after the device's first unlock.
 Two devices that each scan a DiceKey before they sync make a record each. One stands for the
 DiceKey everywhere, the same one on every device: a renamed one over one still named for its
 center die, then the oldest. Forget removes them all. Keys need no such step: they are told
-apart by what they derive, so copies of one key show once.
+apart by what they derive, so copies of one key show once, default keys included.
 
 ## The recovery sheet
 
@@ -101,4 +103,5 @@ Swift can't reliably zero memory, so a derived value may linger until reused. A 
 is compromised while a DiceKey is unlocked can read it; the lock delay keeps that window short.
 A suspended app runs no timer, so a DiceKey unlocked when the app left stays in memory until
 the app comes back and locks it, or until iOS ends the app. A key can't be rotated in place:
-it is a function of the DiceKey and its name, so a new key needs a new name.
+it is a function of the DiceKey and its name (a default key's, none), so a new key needs a
+new name and a default key can't be replaced.

@@ -29,6 +29,19 @@ struct KindVector: Codable, Sendable, CustomTestStringConvertible {
     let postQuantum: PostQuantumVector?
 }
 
+/// A default key, which has no name and so no input or style.
+struct DefaultVector: Codable, Sendable, CustomTestStringConvertible {
+    var testDescription: String { "\(kind) \(seed.prefix(6))" }
+    let seed: String
+    let kind: String
+    let recipe: String
+    let type: String
+    let publicKey: String?
+    let fingerprint: String?
+    let secret: String
+    let postQuantum: PostQuantumVector?
+}
+
 /// An age key's post-quantum identity, derived from the key's own recipe as a Secret.
 struct PostQuantumVector: Codable, Sendable {
     let type: String
@@ -55,6 +68,7 @@ private struct KindFixture: Codable, Sendable {
     let hkdf: [HKDFVector]
     let diceKeyIds: [DiceKeyIDVector]
     let cases: [KindVector]
+    let defaults: [DefaultVector]
 }
 
 private let kindFixture: KindFixture = {
@@ -71,9 +85,25 @@ private let kindCases = kindFixture.cases
 func kindVector(_ vector: KindVector) throws {
     let kind = try #require(KeyKind(rawValue: vector.kind))
     let recipe = try KeyRecipe(kind: kind, name: vector.input, style: vector.style ?? .standard)
-    #expect(recipe.name.utf8.elementsEqual(vector.name.utf8))
+    #expect(recipe.name?.utf8.elementsEqual(vector.name.utf8) == true)
     #expect(recipe.json.utf8.elementsEqual(vector.recipe.utf8))
     #expect(try KeyRecipe(json: vector.recipe) == recipe)
+    let key = DerivedKey.derive(seed: vector.seed, recipe: recipe)
+    #expect(key.publicKey == vector.publicKey)
+    #expect(kind.hasPublicKey == (vector.publicKey != nil))
+    #expect(key.fingerprint == vector.fingerprint)
+    #expect(key.secret == vector.secret)
+    #expect(key.postQuantum?.recipient == vector.postQuantum?.publicKey)
+    #expect(key.postQuantum?.identity == vector.postQuantum?.secret)
+    if let postQuantum = vector.postQuantum {
+        #expect(postQuantum.type == DerivableType.mlkem768x25519.rawValue)
+    }
+}
+
+@Test(arguments: kindFixture.defaults)
+func defaultVector(_ vector: DefaultVector) throws {
+    let recipe = try #require(KeyRecipe.defaults.first { $0.kind.rawValue == vector.kind })
+    #expect(recipe.json.utf8.elementsEqual(vector.recipe.utf8))
     let key = DerivedKey.derive(seed: vector.seed, recipe: recipe)
     #expect(key.publicKey == vector.publicKey)
     #expect(key.fingerprint == vector.fingerprint)
@@ -83,6 +113,13 @@ func kindVector(_ vector: KindVector) throws {
     if let postQuantum = vector.postQuantum {
         #expect(postQuantum.type == DerivableType.mlkem768x25519.rawValue)
     }
+}
+
+@Test func defaultFixtureCoversEveryDefault() {
+    let kinds = Set(KeyRecipe.defaults.map(\.kind.rawValue))
+    #expect(Set(kindFixture.defaults.map(\.kind)) == kinds)
+    #expect(kindFixture.defaults.count == kinds.count * Set(kindFixture.defaults.map(\.seed)).count)
+    #expect(kindFixture.defaults.allSatisfy { ($0.kind == KeyKind.age.rawValue) == ($0.postQuantum != nil) })
 }
 
 @Test func kindFixtureCoversEveryKind() {

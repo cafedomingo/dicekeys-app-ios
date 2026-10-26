@@ -38,14 +38,14 @@ enum PrintedPage {
 extension CatalogFile.KeyItem {
     /// "Passphrase · nas · Random, 24 characters", as the paper lists it.
     var printedLine: String {
-        ([recipe.kind.title, recipe.name] + [recipe.style?.summary].compactMap(\.self)).joined(separator: " · ")
+        ([recipe.kind.title, recipe.title] + [recipe.style?.summary].compactMap(\.self)).joined(separator: " · ")
     }
 }
 
 extension CatalogFile.KeyItem {
     /// "nas · Passphrase, 24 characters": the name first, short enough for the card.
     var cardLine: String {
-        "\(recipe.name) · \(recipe.kind.title)" + (recipe.style.map { ", " + $0.shortSummary } ?? "")
+        "\(recipe.title) · \(recipe.kind.title)" + (recipe.style.map { ", " + $0.shortSummary } ?? "")
     }
 }
 

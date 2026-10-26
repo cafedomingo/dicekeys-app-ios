@@ -53,9 +53,13 @@ final class KeyEntry {
         self.publicKey = publicKey
     }
 
-    /// Nil for an entry a later version wrote, with a kind or field this one can't read:
-    /// guessing would show a different key as if it were this one.
+    /// Nil for an entry this version can't read: a kind or field a later version wrote, where
+    /// guessing would show a different key as if it were this one, or a nameless recipe that
+    /// isn't a default, such as the `{"kind":"wireguard"}` test builds recorded.
     var recipe: KeyRecipe? { try? KeyRecipe(json: recipeJSON) }
+
+    /// Recorded without its public key, which its DiceKey fills in once unlocked.
+    var needsPublicKey: Bool { publicKey == nil && recipe?.kind.hasPublicKey == true }
 }
 
 enum Catalog {
@@ -84,15 +88,39 @@ extension ModelContext {
     }
 
     func entries(for diceKeyID: String) throws -> [KeyEntry] {
-        try fetch(
-            FetchDescriptor<KeyEntry>(predicate: #Predicate { $0.diceKeyID == diceKeyID })
-        ).uniqueKeys
+        try allEntries(for: diceKeyID).uniqueKeys
     }
 
-    /// Records the DiceKey on first sight.
-    func recordIfNew(_ diceKey: DiceKey) throws {
-        guard try record(for: diceKey.id) == nil else { return }
+    /// Every row, including copies two devices made before they synced.
+    private func allEntries(for diceKeyID: String) throws -> [KeyEntry] {
+        try fetch(FetchDescriptor<KeyEntry>(predicate: #Predicate { $0.diceKeyID == diceKeyID }))
+    }
+
+    /// Records the DiceKey, with its default keys, on first sight; true when it did.
+    @discardableResult
+    func recordIfNew(_ diceKey: DiceKey) throws -> Bool {
+        guard try record(for: diceKey.id) == nil else { return false }
         insert(DiceKeyRecord(diceKey: diceKey))
+        try addMissingDefaults(for: diceKey.id)
+        try save()
+        return true
+    }
+
+    /// Adds each default key the DiceKey doesn't have yet, for the caller to save, so a default
+    /// a later version adds reaches DiceKeys recorded before it. They have no public keys yet:
+    /// the seed may not be here, and `fillPublicKeys` fills them in once the DiceKey is unlocked.
+    func addMissingDefaults(for diceKeyID: String) throws {
+        let recorded = Set(try entries(for: diceKeyID).compactMap(\.recipe))
+        for recipe in KeyRecipe.defaults where !recorded.contains(recipe) {
+            insert(KeyEntry(diceKeyID: diceKeyID, recipe: recipe, publicKey: nil))
+        }
+    }
+
+    /// For DiceKeys recorded before a default existed, and records a sync brings.
+    func addMissingDefaults() throws {
+        for record in try fetch(FetchDescriptor<DiceKeyRecord>()) {
+            try addMissingDefaults(for: record.diceKeyID)
+        }
         try save()
     }
 
@@ -110,9 +138,10 @@ extension ModelContext {
         return entry
     }
 
-    /// Fills in the public keys that imported entries arrive without, from the DiceKey itself.
+    /// Fills in, from the DiceKey itself, the public keys that default and imported keys are
+    /// recorded without, in every copy a sync made.
     func fillPublicKeys(for diceKey: DiceKey) throws {
-        let missing = try entries(for: diceKey.id).filter { $0.publicKey == nil }
+        let missing = try allEntries(for: diceKey.id).filter(\.needsPublicKey)
         for entry in missing {
             guard let recipe = entry.recipe else { continue }
             entry.publicKey = DerivedKey.derive(seed: diceKey.seed, recipe: recipe).publicKey
@@ -122,8 +151,7 @@ extension ModelContext {
 
     /// Every entry for this key, including copies two devices made before they synced.
     func deleteKey(_ recipe: KeyRecipe, diceKeyID: String) throws {
-        let all = try fetch(FetchDescriptor<KeyEntry>(predicate: #Predicate { $0.diceKeyID == diceKeyID }))
-        for copy in all where copy.recipe == recipe { delete(copy) }
+        for copy in try allEntries(for: diceKeyID) where copy.recipe == recipe { delete(copy) }
         try save()
     }
 
@@ -152,16 +180,24 @@ extension DiceKeyRecord {
     fileprivate var isRenamed: Bool { name != defaultName }
 }
 
+extension KeyRecipe {
+    fileprivate var defaultRank: Int { Self.defaults.firstIndex(of: self) ?? Self.defaults.count }
+}
+
 extension [KeyEntry] {
     /// Two devices can make the same key before they sync, so entries are told apart by
     /// what they derive, not by row, and the oldest copy stands for the key. Entries this
-    /// version can't read are left out. Sorted by name, then age: the name is only in the
-    /// recipe text, which the store can't sort by.
+    /// version can't read are left out. The default keys come first, in their own order, then
+    /// the rest by name and age: the name is only in the recipe text, which the store can't
+    /// sort by.
     var uniqueKeys: [KeyEntry] {
         var seen = Set<KeyRecipe>()
         return compactMap { entry in entry.recipe.map { (entry: entry, recipe: $0) } }
             .sorted { lhs, rhs in
-                switch lhs.recipe.name.localizedStandardCompare(rhs.recipe.name) {
+                if lhs.recipe.defaultRank != rhs.recipe.defaultRank {
+                    return lhs.recipe.defaultRank < rhs.recipe.defaultRank
+                }
+                return switch (lhs.recipe.name ?? "").localizedStandardCompare(rhs.recipe.name ?? "") {
                 case .orderedAscending: true
                 case .orderedDescending: false
                 case .orderedSame: lhs.entry.created < rhs.entry.created

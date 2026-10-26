@@ -11,6 +11,8 @@ import SwiftUI
 /// key and revealing one need it unlocked.
 struct DiceKeyScreen: View {
     let record: DiceKeyRecord
+    /// Opened by the scan or typing that first recorded it.
+    let isNew: Bool
     @Binding var path: [KeySelection]
     let onScan: () -> Void
     let onForget: () -> Void
@@ -18,7 +20,6 @@ struct DiceKeyScreen: View {
 
     @Environment(UnlockedDiceKeys.self) private var unlocked
     @Environment(SavedDiceKeys.self) private var saved
-    @Environment(\.modelContext) private var context
     @Environment(\.isSceneCaptured) private var isSceneCaptured
     @Query private var entries: [KeyEntry]
     @State private var isGridShown = false
@@ -30,10 +31,11 @@ struct DiceKeyScreen: View {
     @State private var error: PresentableError?
 
     init(
-        record: DiceKeyRecord, path: Binding<[KeySelection]>, onScan: @escaping () -> Void,
+        record: DiceKeyRecord, isNew: Bool, path: Binding<[KeySelection]>, onScan: @escaping () -> Void,
         onForget: @escaping () -> Void, onDelete: @escaping (KeyEntry) -> Void
     ) {
         self.record = record
+        self.isNew = isNew
         _path = path
         self.onScan = onScan
         self.onForget = onForget
@@ -48,7 +50,7 @@ struct DiceKeyScreen: View {
         let keys = entries.uniqueKeys
         List {
             Section {
-                DiceKeyHeader(record: record, keyCount: keys.count, isUnlocked: diceKey != nil)
+                DiceKeyHeader(record: record, isNew: isNew, keyCount: keys.count, isUnlocked: diceKey != nil)
                 if let diceKey {
                     DiceKeyGrid(diceKey: diceKey, concealed: !isGridShown)
                         .frame(maxWidth: .infinity)
@@ -65,8 +67,10 @@ struct DiceKeyScreen: View {
                 ForEach(keys) { entry in
                     NavigationLink(value: KeySelection.entry(entry.persistentModelID)) { KeyRow(entry: entry) }
                         .swipeActions(allowsFullSwipe: false) {
-                            Button("Delete", systemImage: "trash") { keyToDelete = entry }
-                                .tint(Color.danger)
+                            if entry.recipe?.isDefault == false {
+                                Button("Delete", systemImage: "trash") { keyToDelete = entry }
+                                    .tint(Color.danger)
+                            }
                         }
                 }
             }
@@ -78,9 +82,6 @@ struct DiceKeyScreen: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbar { toolbar }
         .concealsWhenExposed($isGridShown)
-        .task(id: diceKey?.id) {
-            if let diceKey { try? context.fillPublicKeys(for: diceKey) }
-        }
         .alert("Rename DiceKey", isPresented: $isRenaming) {
             RenameField(record: record)
         }
@@ -177,6 +178,7 @@ struct DiceKeyHeader: View {
     private static let lineSpacing: CGFloat = 2
 
     let record: DiceKeyRecord
+    let isNew: Bool
     let keyCount: Int
     let isUnlocked: Bool
 
@@ -191,11 +193,9 @@ struct DiceKeyHeader: View {
     }
 
     private var status: AttributedString {
-        let keys =
-            keyCount == 0
-            ? AttributedString("New DiceKey · no keys yet")
-            : AttributedString(localized: "^[\(keyCount) key](inflect: true)")
-        return keys + AttributedString(isUnlocked ? " · unlocked" : " · locked")
+        AttributedString(isNew ? "New DiceKey · " : "")
+            + AttributedString(localized: "^[\(keyCount) key](inflect: true)")
+            + AttributedString(isUnlocked ? " · unlocked" : " · locked")
     }
 }
 
@@ -207,8 +207,8 @@ struct KeyRow: View {
     var body: some View {
         if let recipe = entry.recipe {
             Label {
-                Text(recipe.name).font(.headline)
-                Text(recipe.kind.title)
+                Text(recipe.title).font(.headline)
+                Text(recipe.isDefault ? "Default" : recipe.kind.title)
             } icon: {
                 Image(systemName: recipe.kind.symbol)
                     .foregroundStyle(.tint)

@@ -13,6 +13,14 @@ public enum KeyKind: String, CaseIterable, Codable, Sendable {
     case age
     case passphrase
     case wallet
+
+    /// Passphrases and wallets are a secret alone, with no public half.
+    public var hasPublicKey: Bool {
+        switch self {
+        case .ssh, .wireguard, .age: true
+        case .passphrase, .wallet: false
+        }
+    }
 }
 
 /// How a passphrase is written. The settings are part of its recipe, so part of the key.
@@ -68,15 +76,35 @@ public enum KeyRecipeError: Error, Equatable, Sendable {
 /// A kind, a name and, for a passphrase, a style, and the recipe text they make: the RFC 8785
 /// (JCS) canonical form of those fields. The text is hashed into every key as HKDF's info, so
 /// writing any field differently would change every key of that kind.
+///
+/// The `defaults` have no name, and every DiceKey has them.
 public struct KeyRecipe: Hashable, Sendable {
     public static let maximumNameLength = 64
     /// The one invisible character a name may hold: emoji sequences such as 👩‍💻 need it.
     private static let zeroWidthJoiner: Unicode.Scalar = "\u{200D}"
 
+    /// The SSH and age keys of every DiceKey. Each is its recipe text as a literal, which is
+    /// what gets hashed, so the field writer can never change a default key.
+    public static let defaults = [
+        KeyRecipe(kind: .ssh, pinnedText: #"{"kind":"ssh"}"#),
+        KeyRecipe(kind: .age, pinnedText: #"{"kind":"age"}"#)
+    ]
+
     public let kind: KeyKind
-    public let name: String
+    /// Nil only for a default.
+    public let name: String?
     /// Set for a passphrase, nil for every other kind.
     public let style: PassphraseStyle?
+    private let pinnedText: String?
+
+    public var isDefault: Bool { pinnedText != nil }
+
+    private init(kind: KeyKind, pinnedText: String) {
+        self.kind = kind
+        name = nil
+        style = nil
+        self.pinnedText = pinnedText
+    }
 
     public init(kind: KeyKind, name: String, style: PassphraseStyle = .standard) throws(KeyRecipeError) {
         self.kind = kind
@@ -87,6 +115,7 @@ public struct KeyRecipe: Hashable, Sendable {
         } else {
             self.style = nil
         }
+        pinnedText = nil
     }
 
     /// Trimmed of `White_Space` at both ends and normalized to NFC; otherwise exactly as
@@ -116,7 +145,9 @@ public struct KeyRecipe: Hashable, Sendable {
 
     /// The recipe as RFC 8785 canonical JSON, the text that is hashed.
     public var json: String {
-        CanonicalJSON.object(Dictionary(uniqueKeysWithValues: fields.members.map { ($0.key.rawValue, $0.value) }))
+        if let pinnedText { return pinnedText }
+        return CanonicalJSON.object(
+            Dictionary(uniqueKeysWithValues: fields.members.map { ($0.key.rawValue, $0.value) }))
     }
 
     /// The JSON fields this recipe writes, for a format that holds a recipe among fields of its
@@ -156,14 +187,19 @@ public struct KeyRecipe: Hashable, Sendable {
 
 /// A recipe as JSON fields: the shape of the hashed text, and of each key in the catalog
 /// and on paper. Decoding accepts a recipe only if its fields are exactly the ones its own
-/// recipe would write, the name byte for byte, so no field is read loosely. A field that
-/// isn't a recipe's is left to the format holding the recipe, which knows its own fields.
+/// recipe would write, the name byte for byte, so no field is read loosely. A recipe with no
+/// name is a default or nothing. A field that isn't a recipe's is left to the format holding
+/// the recipe, which knows its own fields.
 extension KeyRecipe: Codable {
     public init(from decoder: any Decoder) throws {
         let fields = try RecipeFields(from: decoder)
-        guard let kind = KeyKind(rawValue: fields.kind),
-            let recipe = try? KeyRecipe(kind: kind, name: fields.name, style: fields.style ?? .standard),
-            recipe.fields == fields, recipe.name.utf8.elementsEqual(fields.name.utf8)
+        if let recipe = Self.defaults.first(where: { $0.fields == fields }) {
+            self = recipe
+            return
+        }
+        guard let kind = KeyKind(rawValue: fields.kind), let name = fields.name,
+            let recipe = try? KeyRecipe(kind: kind, name: name, style: fields.style ?? .standard),
+            recipe.fields == fields, recipe.name?.utf8.elementsEqual(name.utf8) == true
         else { throw KeyRecipeError.notARecipe }
         self = recipe
     }
@@ -176,7 +212,7 @@ extension KeyRecipe: Codable {
 /// A recipe's JSON fields, in the format's spelling.
 private struct RecipeFields: Codable, Equatable {
     var kind: String
-    var name: String
+    var name: String?
     var length: Int?
     var list: String?
     var separator: String?
@@ -186,15 +222,16 @@ private struct RecipeFields: Codable, Equatable {
         case kind, name, length, list, separator, uppercase
     }
 
-    init(kind: String, name: String) {
+    init(kind: String, name: String?) {
         self.kind = kind
         self.name = name
     }
 
     /// The fields that are set, with their JSON values.
     var members: [(key: CodingKeys, value: CanonicalJSON.Value)] {
-        [(.kind, .string(kind)), (.name, .string(name))]
+        [(.kind, .string(kind))]
             + [
+                name.map { (CodingKeys.name, CanonicalJSON.Value.string($0)) },
                 length.map { (CodingKeys.length, CanonicalJSON.Value.integer($0)) },
                 list.map { (.list, .string($0)) },
                 separator.map { (.separator, .string($0)) },

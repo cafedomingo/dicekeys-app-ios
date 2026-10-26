@@ -17,7 +17,8 @@ struct KeyFileTests {
         let identity = try #require(postQuantum ? key.postQuantum?.identity : key.secret)
         let recipient = try #require(postQuantum ? key.postQuantum?.recipient : key.publicKey)
         return KeyFile(
-            ageIdentity: identity, recipient: recipient, postQuantum: postQuantum, name: key.recipe.name, created: .now)
+            ageIdentity: identity, recipient: recipient, postQuantum: postQuantum, name: key.recipe.name ?? "",
+            created: .now)
     }
 
     @Test(

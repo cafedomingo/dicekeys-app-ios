@@ -45,8 +45,28 @@ struct RecoveryCodeTests {
         let diceKey = try RecoveryCode(payload: Fixture.text("recovery-v1.txt")).restore(into: context)
         #expect(diceKey.id == DiceKey.example.id)
         #expect(try context.record(for: diceKey.id)?.name == "Example")
-        #expect(try context.entries(for: diceKey.id).count == 7)
+        #expect(try context.entries(for: diceKey.id).count == 9)
         #expect(try context.entries(for: diceKey.id).allSatisfy { $0.publicKey == nil })
+    }
+
+    @Test("restoring a DiceKey records it with the default keys")
+    func restoreAddsDefaults() throws {
+        let context = try emptyContext()
+        let diceKey = try RecoveryCode(payload: Fixture.text("recovery-v1.txt")).restore(into: context)
+        #expect(try context.entries(for: diceKey.id).compactMap(\.recipe).filter(\.isDefault) == KeyRecipe.defaults)
+    }
+
+    @Test("the code and its list leave out the default keys")
+    func codeLeavesOutDefaults() throws {
+        let context = try emptyContext()
+        try context.recordIfNew(DiceKey.example)
+        let github = try KeyRecipe(kind: .ssh, name: "github")
+        try context.addEntry(
+            for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: github), diceKeyID: DiceKey.example.id)
+        let record = try #require(try context.record(for: DiceKey.example.id))
+        let code = RecoveryCode(
+            diceKey: .example, record: record, entries: try context.entries(for: DiceKey.example.id))
+        #expect(code.catalog.keys.map(\.recipe.name) == ["github"])
     }
 
     @Test("restoring onto a device that has the DiceKey keeps its name and adds only what is missing")
@@ -60,7 +80,7 @@ struct RecoveryCodeTests {
         try RecoveryCode(payload: Fixture.text("recovery-v1.txt")).restore(into: context)
         #expect(try context.record(for: DiceKey.example.id)?.name == "Mine")
         let entries = try context.fetch(FetchDescriptor<KeyEntry>())
-        #expect(entries.count == 7)
+        #expect(entries.count == 9)
         #expect(entries.count { $0.recipe == github } == 1)
     }
 
@@ -72,7 +92,8 @@ struct RecoveryCodeTests {
         let context = try emptyContext()
         let restored = try RecoveryCode(payload: payload).restore(into: context)
         #expect(restored.id == DiceKey.example.id)
-        #expect(try context.entries(for: DiceKey.example.id).count == fixture.catalog.keys.count)
+        #expect(
+            try context.entries(for: DiceKey.example.id).count == fixture.catalog.keys.count + KeyRecipe.defaults.count)
     }
 
     @Test("a key a later version wrote still lets the sheet restore its DiceKey and the other keys")

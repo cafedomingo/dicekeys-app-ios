@@ -112,6 +112,8 @@ MAXIMUM_NAME_LENGTH = 64
 DICEKEY_ID_TYPE = "dicekey-id"
 DICEKEY_ID_LENGTH = 16
 ZERO_WIDTH_JOINER = "\u200d"
+# Every DiceKey's nameless keys: their recipe texts as literals, which is what gets hashed.
+DEFAULT_RECIPES = ['{"kind":"ssh"}', '{"kind":"age"}']
 TOOLS = ("ssh-keygen", "wg", "age", "age-keygen")
 
 NAMES = [
@@ -256,7 +258,7 @@ def ssh(seed_bytes, comment):
         + ssh_string(blob)
         + ssh_string(section)
     )
-    line = f"ssh-ed25519 {base64.b64encode(blob).decode()} {comment}"
+    line = f"ssh-ed25519 {base64.b64encode(blob).decode()}" + (f" {comment}" if comment else "")
     fingerprint = "SHA256:" + base64.b64encode(hashlib.sha256(blob).digest()).decode().rstrip("=")
     return line, fingerprint, pem("OPENSSH PRIVATE KEY", container)
 
@@ -310,30 +312,36 @@ def bip39(entropy):
     return " ".join(BIP39_WORDS[bits >> (11 * (total // 11 - 1 - i)) & 2047] for i in range(total // 11))
 
 
+def derive_key(seed, kind, recipe, style, comment):
+    """The public key, fingerprint and secret of a recipe's key; comment is an SSH key's."""
+    key = {}
+    info = TYPE_NAMES[kind].encode() + recipe.encode()
+    if kind == "ssh":
+        key["publicKey"], key["fingerprint"], key["secret"] = ssh(hkdf_sha256(seed.encode(), info, 32), comment)
+    elif kind in ("wireguard", "age"):
+        scalar = hkdf_sha256(seed.encode(), info, 32)
+        public = x25519_public(scalar)
+        if kind == "wireguard":
+            key["publicKey"] = key["fingerprint"] = base64.b64encode(public).decode()
+            key["secret"] = base64.b64encode(scalar).decode()
+        else:
+            key["publicKey"] = key["fingerprint"] = bech32("age", public)
+            key["secret"] = bech32("age-secret-key-", scalar).upper()
+            key["postQuantum"] = age_post_quantum(seed, recipe)
+    elif kind == "passphrase":
+        key["secret"] = passphrase(seed, recipe, style)
+    else:
+        key["secret"] = bip39(hkdf_sha256(seed.encode(), info, 32))
+    return key
+
+
 def derive(seed, kind, given, style):
     name = normalized_name(given)
     recipe = recipe_text(kind, name, style)
     case = {"seed": seed, "kind": kind, "input": given, "name": name, "recipe": recipe, "type": TYPE_NAMES[kind]}
     if style is not None:
         case["style"] = style
-    info = TYPE_NAMES[kind].encode() + recipe.encode()
-    if kind == "ssh":
-        case["publicKey"], case["fingerprint"], case["secret"] = ssh(hkdf_sha256(seed.encode(), info, 32), name)
-    elif kind in ("wireguard", "age"):
-        scalar = hkdf_sha256(seed.encode(), info, 32)
-        public = x25519_public(scalar)
-        if kind == "wireguard":
-            case["publicKey"] = case["fingerprint"] = base64.b64encode(public).decode()
-            case["secret"] = base64.b64encode(scalar).decode()
-        else:
-            case["publicKey"] = case["fingerprint"] = bech32("age", public)
-            case["secret"] = bech32("age-secret-key-", scalar).upper()
-            case["postQuantum"] = age_post_quantum(seed, recipe)
-    elif kind == "passphrase":
-        case["secret"] = passphrase(seed, recipe, style)
-    else:
-        case["secret"] = bip39(hkdf_sha256(seed.encode(), info, 32))
-    return case
+    return case | derive_key(seed, kind, recipe, style, name)
 
 
 def canonical_seed(text):
@@ -372,6 +380,17 @@ def cases():
     return result
 
 
+def defaults():
+    result = []
+    for seed in SEEDS:
+        for recipe in DEFAULT_RECIPES:
+            kind = json.loads(recipe)[KIND]
+            assert recipe == json.dumps({KIND: kind}, sort_keys=True, separators=(",", ":"))
+            default = {"seed": seed, "kind": kind, "recipe": recipe, "type": TYPE_NAMES[kind]}
+            result.append(default | derive_key(seed, kind, recipe, None, ""))
+    return result
+
+
 def check_age(path, key, name):
     """age-keygen reads the identity's recipient back, and the identity decrypts what age
     encrypts to that recipient."""
@@ -393,28 +412,29 @@ def check_tools(fixture):
     reference = Mnemonic("english")
     with tempfile.TemporaryDirectory() as directory:
         for case in fixture:
+            name = case.get("name", case["kind"])
             if case["kind"] == "ssh":
                 path = Path(directory) / "key"
                 path.write_text(case["secret"])
                 path.chmod(0o600)
                 derived = subprocess.run(["ssh-keygen", "-y", "-f", path], capture_output=True, text=True, check=True)
-                assert derived.stdout.strip() == case["publicKey"], case["name"]
+                assert derived.stdout.strip() == case["publicKey"], name
                 public = Path(directory) / "key.pub"
                 public.write_text(case["publicKey"] + "\n")
                 listed = subprocess.run(["ssh-keygen", "-l", "-f", public], capture_output=True, text=True, check=True)
-                assert listed.stdout.split()[1] == case["fingerprint"], case["name"]
+                assert listed.stdout.split()[1] == case["fingerprint"], name
             elif case["kind"] == "wireguard":
                 derived = subprocess.run(
                     ["wg", "pubkey"], input=case["secret"], capture_output=True, text=True, check=True
                 )
-                assert derived.stdout.strip() == case["publicKey"], case["name"]
+                assert derived.stdout.strip() == case["publicKey"], name
             elif case["kind"] == "age":
                 for key in (case, case["postQuantum"]):
-                    check_age(Path(directory) / "identity", key, case["name"])
+                    check_age(Path(directory) / "identity", key, name)
             elif case["kind"] == "wallet":
                 entropy = hkdf_sha256(case["seed"].encode(), case["type"].encode() + case["recipe"].encode(), 32)
-                assert reference.check(case["secret"]), case["name"]
-                assert bytes(reference.to_entropy(case["secret"])) == entropy, case["name"]
+                assert reference.check(case["secret"]), name
+                assert bytes(reference.to_entropy(case["secret"])) == entropy, name
     print("keys match", ", ".join(TOOLS), "and the BIP39 reference")
 
 
@@ -433,17 +453,18 @@ def main():
         ],
         "diceKeyIds": [dicekey_id(seed) for seed in SEEDS],
         "cases": cases(),
+        "defaults": defaults(),
     }
     if "--write" in sys.argv:
         FIXTURE.write_text(json.dumps(fixture, indent=1, ensure_ascii=False) + "\n")
-        print(f"wrote {len(fixture['cases'])} cases")
+        print(f"wrote {len(fixture['cases'])} cases and {len(fixture['defaults'])} defaults")
     else:
         recorded = json.loads(FIXTURE.read_text())
         if recorded != fixture:
             sys.exit("kinds.json differs from this implementation")
-        print(f"{len(fixture['cases'])} cases match")
+        print(f"{len(fixture['cases'])} cases and {len(fixture['defaults'])} defaults match")
     if "--tools" in sys.argv:
-        check_tools(fixture["cases"])
+        check_tools(fixture["cases"] + fixture["defaults"])
 
 
 if __name__ == "__main__":

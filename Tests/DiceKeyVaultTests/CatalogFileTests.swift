@@ -57,7 +57,41 @@ struct CatalogFileTests {
         #expect(try file.merge(into: context) == (diceKeys: 0, keys: 0, unreadable: 0))
         let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         #expect(try file.merge(into: empty) == (diceKeys: 1, keys: 2, unreadable: 0))
-        #expect(try empty.entries(for: DiceKey.example.id).map(\.recipe?.name) == ["github", "nas"])
+        #expect(try empty.entries(for: DiceKey.example.id).compactMap(\.recipe?.name) == ["github", "nas"])
+    }
+
+    @Test("the file and the QR code's link leave out the default keys")
+    func exportLeavesOutDefaults() throws {
+        try context.recordIfNew(DiceKey.example)
+        let github = try KeyRecipe(kind: .ssh, name: "github")
+        try context.addEntry(
+            for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: github), diceKeyID: DiceKey.example.id)
+        let file = CatalogFile(
+            records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
+            entries: try context.fetch(FetchDescriptor<KeyEntry>()))
+        #expect(file.keys.map(\.recipe.name) == ["github"])
+        #expect(try CatalogFile(importURL: try file.importURL).keys.map(\.recipe.name) == ["github"])
+    }
+
+    @Test("importing a DiceKey records it with the default keys")
+    func importAddsDefaults() throws {
+        let file = try catalogWithKeys()
+        let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
+        try file.merge(into: empty)
+        #expect(
+            try empty.entries(for: DiceKey.example.id).compactMap(\.recipe).filter(\.isDefault) == KeyRecipe.defaults)
+    }
+
+    @Test("a default in a hand-made file doesn't stand in for the other")
+    func defaultInAFileIsNotBoth() throws {
+        let id = DiceKey.example.id
+        let json = """
+            {"v":1,"diceKeys":[{"id":"\(id)","name":"Home","centerFace":"M1t"}],"keys":[
+            {"diceKey":"\(id)","kind":"ssh"}]}
+            """
+        let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
+        #expect(try CatalogFile(json: Data(json.utf8)).merge(into: empty) == (diceKeys: 1, keys: 0, unreadable: 0))
+        #expect(try empty.entries(for: id).compactMap(\.recipe) == KeyRecipe.defaults)
     }
 
     @Test("an imported public key is ignored, and filled in from the dice on unlock")
@@ -69,7 +103,7 @@ struct CatalogFileTests {
         try file.merge(into: empty)
         #expect(try empty.entries(for: DiceKey.example.id).allSatisfy { $0.publicKey == nil })
         try empty.fillPublicKeys(for: DiceKey.example)
-        #expect(try empty.entries(for: DiceKey.example.id).first?.publicKey == genuine)
+        #expect(try empty.entries(for: DiceKey.example.id).first { $0.recipe?.name == "github" }?.publicKey == genuine)
     }
 
     @Test("a passphrase without its style, a field no recipe has, or a key without its DiceKey, is skipped")
