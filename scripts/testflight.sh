@@ -1,5 +1,5 @@
 #!/bin/bash
-# Archive the iOS app and upload it to TestFlight (App Store Connect).
+# Archive the iOS and Mac apps and upload both to TestFlight (App Store Connect).
 #
 #   scripts/testflight.sh [build-number]        # build number defaults to YYYYMMDDHHMM
 #
@@ -45,8 +45,6 @@ fi
 
 BUILD_NUMBER="${1:-$(date +%Y%m%d%H%M)}"
 MARKETING_VERSION="$(date +%Y.%-m.%-d)"
-ARCHIVE="build/DiceKeyVault.xcarchive"
-EXPORT_DIR="build/export"
 
 # Expanded as ${AUTH[@]+"${AUTH[@]}"} below: macOS ships bash 3.2, where "${AUTH[@]}" on
 # an empty array is an unbound-variable error under `set -u`.
@@ -63,18 +61,7 @@ grep -q '^DEVELOPMENT_TEAM *= *[A-Z0-9]' Config/Signing.local.xcconfig 2>/dev/nu
     || { echo "Set DEVELOPMENT_TEAM in Config/Signing.local.xcconfig first (see Config/Signing.xcconfig)." >&2; exit 1; }
 
 swift run --package-path BuildTools xcodegen generate
-rm -rf "$ARCHIVE" "$EXPORT_DIR"
-
-xcodebuild archive \
-    -project DiceKeyVault.xcodeproj \
-    -scheme DiceKeyVault \
-    -destination 'generic/platform=iOS' \
-    -archivePath "$ARCHIVE" \
-    -allowProvisioningUpdates \
-    ${AUTH[@]+"${AUTH[@]}"} \
-    MARKETING_VERSION="$MARKETING_VERSION" \
-    CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
-
+rm -rf build/DiceKeyVault-*.xcarchive build/export-*
 mkdir -p build
 cat > build/ExportOptions.plist <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -89,11 +76,29 @@ cat > build/ExportOptions.plist <<'PLIST'
 </plist>
 PLIST
 
-xcodebuild -exportArchive \
-    -archivePath "$ARCHIVE" \
-    -exportOptionsPlist build/ExportOptions.plist \
-    -exportPath "$EXPORT_DIR" \
-    -allowProvisioningUpdates \
-    ${AUTH[@]+"${AUTH[@]}"}
+# The Mac app is a separate binary built against the macOS SDK, so it is archived and
+# uploaded on its own. It shares the iOS bundle id, so both land in the same app record.
+upload() {
+    local platform=$1 destination=$2
+    local archive="build/DiceKeyVault-$platform.xcarchive"
+    xcodebuild archive \
+        -project DiceKeyVault.xcodeproj \
+        -scheme DiceKeyVault \
+        -destination "$destination" \
+        -archivePath "$archive" \
+        -allowProvisioningUpdates \
+        ${AUTH[@]+"${AUTH[@]}"} \
+        MARKETING_VERSION="$MARKETING_VERSION" \
+        CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+    xcodebuild -exportArchive \
+        -archivePath "$archive" \
+        -exportOptionsPlist build/ExportOptions.plist \
+        -exportPath "build/export-$platform" \
+        -allowProvisioningUpdates \
+        ${AUTH[@]+"${AUTH[@]}"}
+}
 
-echo "Uploaded $MARKETING_VERSION ($BUILD_NUMBER); it reaches TestFlight when Apple finishes processing."
+upload ios 'generic/platform=iOS'
+upload mac 'generic/platform=macOS,variant=Mac Catalyst'
+
+echo "Uploaded $MARKETING_VERSION ($BUILD_NUMBER) for iOS and the Mac; each reaches TestFlight when Apple finishes processing."

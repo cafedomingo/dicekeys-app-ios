@@ -113,11 +113,11 @@ Everything else, the bundle identifier included, is a committed default in
 `Config/Signing.xcconfig`. The identifier is `com.cafedomingo.dicekeys`, because
 `com.dicekeys` belongs to DiceKeys, LLC and identifiers are globally unique.
 
-## Getting a build onto a phone
+## Getting a build onto a device
 
-`scripts/testflight.sh` archives and uploads. Versions are computed at upload time, so
-nothing in the repository needs bumping: the marketing version is the build date
-(`2026.9.23`) and the build number a minute-resolution timestamp.
+`scripts/testflight.sh` archives and uploads the iOS and Mac builds. Versions are computed
+at upload time, so nothing in the repository needs bumping: the marketing version is the
+build date (`2026.9.23`) and the build number a minute-resolution timestamp.
 
 This needs a **paid** Apple Developer Program membership. A free Personal Team cannot upload
 to App Store Connect at all, and can only install over a cable, or over Wi-Fi after pairing
