@@ -9,9 +9,10 @@ import SwiftUI
 /// Each die in three steps, its letter, its digit, then which way is up, so no die is left
 /// upright by default. A letter already on another die can't be typed. Once every die is in,
 /// Open DiceKey takes the keypad's place; tap a die to redo it. A hardware keyboard types the
-/// same way, with an arrow for where the top of the letter points.
+/// same way, with an arrow for where the top of the letter points. The keys keep their size, so
+/// on a short window the grid shrinks to the height the keypad leaves.
 struct TypingView: View {
-    private static let keyHeight: CGFloat = 40
+    private static let keyHeight: CGFloat = 54
     private static let keySpacing: CGFloat = 6
     private static let keyFontSize: CGFloat = 22
     private static let letterColumns = 5
@@ -35,9 +36,16 @@ struct TypingView: View {
 
     var body: some View {
         VStack(spacing: .space4) {
-            DiceKeyGrid(faces: typed.faces, concealed: isSceneCaptured, selectedIndex: typed.selectedIndex) {
-                typed.select($0)
+            GeometryReader { proxy in
+                DiceKeyGrid(
+                    faces: typed.faces, concealed: isSceneCaptured,
+                    dieSize: DiceKeyGrid.dieSize(fitting: proxy.size.height), selectedIndex: typed.selectedIndex
+                ) {
+                    typed.select($0)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(maxHeight: DiceKeyGrid.extent(dieSize: DieView.Size.grid))
             HStack {
                 Text(prompt).font(.headline)
                 Spacer()
@@ -137,9 +145,10 @@ struct TypingView: View {
         Button(action: action) {
             Text(character)
                 .font(.dice(size: fontSize))
-                .frame(maxWidth: .infinity, minHeight: height)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .buttonStyle(.bordered)
+        .frame(height: height)
     }
 
     /// A letter already on another die: struck through on no key at all, so it reads as taken

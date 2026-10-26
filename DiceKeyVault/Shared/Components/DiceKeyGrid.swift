@@ -81,6 +81,16 @@ struct DiceKeyGrid: View {
     var selectedIndex: Int?
     var onSelect: ((Int) -> Void)?
 
+    /// The grid's side, box included, in dice.
+    private static var extentInDice: CGFloat {
+        CGFloat(side) + CGFloat(side - 1) * DieView.spacing(for: 1) + 2 * boxPaddingRatio
+    }
+
+    static func extent(dieSize: CGFloat) -> CGFloat { dieSize * extentInDice }
+
+    /// The die size at which the grid, box included, is `extent` on a side.
+    static func dieSize(fitting extent: CGFloat) -> CGFloat { extent / extentInDice }
+
     var body: some View {
         let spacing = DieView.spacing(for: dieSize)
         Grid(horizontalSpacing: spacing, verticalSpacing: spacing) {

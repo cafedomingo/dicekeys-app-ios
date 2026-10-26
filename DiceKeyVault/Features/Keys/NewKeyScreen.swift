@@ -25,56 +25,64 @@ struct NewKeyScreen: View {
     @Environment(\.modelContext) private var context
 
     private static let updates = "updates as you type"
+    /// Typing scrolls this row to the top, so the preview under it clears the keyboard.
+    private static let nameRow = "name"
 
     private var recipe: KeyRecipe? { try? KeyRecipe(kind: kind, name: name, style: style) }
 
     var body: some View {
         let preview = recipe.map { DerivedKey.derive(seed: diceKey.seed, recipe: $0) }
         let existing = recipe.flatMap { try? context.entry(for: $0, diceKeyID: diceKey.id) }
-        Form {
-            Section {
-                Picker("Kind", selection: $kind) {
-                    ForEach(KeyKind.allCases, id: \.self) { kind in
-                        Label(kind.title, systemImage: kind.symbol).tag(kind)
-                    }
-                }
-                TextField("Name", text: $name, prompt: Text("github, homelab, nas"))
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-            } footer: {
-                Text("The name is part of the key. One changed letter is a different key.")
-            }
-            if let existing {
+        ScrollViewReader { proxy in
+            Form {
                 Section {
-                    Button("Open it", systemImage: "arrow.forward") { onSaved(existing) }
+                    Picker("Kind", selection: $kind) {
+                        ForEach(KeyKind.allCases, id: \.self) { kind in
+                            Label(kind.title, systemImage: kind.symbol).tag(kind)
+                        }
+                    }
+                    TextField("Name", text: $name, prompt: Text("github, homelab, nas"))
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                        .id(Self.nameRow)
+                    if let existing {
+                        Button("Open it", systemImage: "arrow.forward") { onSaved(existing) }
+                    }
                 } footer: {
-                    Text("You already have this key.")
+                    if existing == nil {
+                        Text("The name is part of the key. One changed letter is a different key.")
+                    } else {
+                        Text("You already have this key.")
+                    }
+                }
+                if let publicKey = preview?.publicKey, let postQuantum = preview?.postQuantum {
+                    PublicKeySection(
+                        publicKey: publicKey, title: "\(AgeRecipient.x25519Title) · \(Self.updates)",
+                        note: AgeRecipient.x25519Note)
+                    PublicKeySection(
+                        publicKey: postQuantum.recipient, title: AgeRecipient.postQuantumTitle,
+                        note: AgeRecipient.postQuantumNote, foldedLines: AgeRecipient.postQuantumFoldedLines)
+                } else if let publicKey = preview?.publicKey {
+                    PublicKeySection(
+                        publicKey: publicKey, fingerprint: preview?.fingerprint, title: "Public key · \(Self.updates)")
+                } else if let preview {
+                    Section("\(kind.secretTitle) · \(Self.updates)") {
+                        if isSecretShown {
+                            SecretView(kind: kind, secret: preview.secret)
+                            SecretActions(kind: kind, secret: preview.secret)
+                        }
+                        Button(isSecretShown ? "Hide" : "Show", systemImage: isSecretShown ? "eye.slash" : "eye") {
+                            isSecretShown.toggle()
+                        }
+                        .disabled(isSceneCaptured)
+                    }
+                }
+                if kind == .passphrase {
+                    PassphraseStyleSection(style: $style)
                 }
             }
-            if kind == .passphrase {
-                PassphraseStyleSection(style: $style)
-            }
-            if let publicKey = preview?.publicKey, let postQuantum = preview?.postQuantum {
-                PublicKeySection(
-                    publicKey: publicKey, title: "\(AgeRecipient.x25519Title) · \(Self.updates)",
-                    note: AgeRecipient.x25519Note)
-                PublicKeySection(
-                    publicKey: postQuantum.recipient, title: AgeRecipient.postQuantumTitle,
-                    note: AgeRecipient.postQuantumNote, foldedLines: AgeRecipient.postQuantumFoldedLines)
-            } else if let publicKey = preview?.publicKey {
-                PublicKeySection(
-                    publicKey: publicKey, fingerprint: preview?.fingerprint, title: "Public key · \(Self.updates)")
-            } else if let preview {
-                Section("\(kind.secretTitle) · \(Self.updates)") {
-                    if isSecretShown {
-                        SecretView(kind: kind, secret: preview.secret)
-                        SecretActions(kind: kind, secret: preview.secret)
-                    }
-                    Button(isSecretShown ? "Hide" : "Show", systemImage: isSecretShown ? "eye.slash" : "eye") {
-                        isSecretShown.toggle()
-                    }
-                    .disabled(isSceneCaptured)
-                }
+            .onChange(of: name) {
+                withAnimation { proxy.scrollTo(Self.nameRow, anchor: .top) }
             }
         }
         .concealsWhenExposed($isSecretShown)

@@ -13,6 +13,8 @@ import XCTest
 
 @MainActor
 final class ScreenWalk: XCTestCase {
+    private static let rowScrollLimit = 3
+
     private var app: XCUIApplication!
     private var counter = 0
 
@@ -36,8 +38,10 @@ final class ScreenWalk: XCTestCase {
         }
     }
 
+    /// XCTest's first existence check comes about 1 s after `waitForExistence` is called, even
+    /// when the element is already there, so `exists` is tried first.
     private func tap(_ element: XCUIElement, _ what: String, timeout: TimeInterval = 5) {
-        if element.waitForExistence(timeout: timeout) {
+        if element.exists || element.waitForExistence(timeout: timeout) {
             element.tap()
         } else {
             XCTFail("missing: \(what)")
@@ -60,11 +64,11 @@ final class ScreenWalk: XCTestCase {
         key.tap()
     }
 
-    /// The leftmost button in a navigation bar on screen: home's bar stays in the tree, offscreen,
-    /// while a screen is pushed over it.
+    /// The back button on screen, wherever the system puts it: on iPhone Duo, in a toolbar
+    /// beside the content rather than a navigation bar. Offscreen bars stay in the tree.
     private func back() {
-        let visible = app.navigationBars.buttons.allElementsBoundByIndex.filter { $0.exists && $0.isHittable }
-        guard let button = visible.min(by: { $0.frame.minX < $1.frame.minX }) else {
+        let backButtons = app.buttons.matching(identifier: "BackButton").allElementsBoundByIndex
+        guard let button = backButtons.first(where: { $0.exists && $0.isHittable }) else {
             XCTFail("missing: nav back")
             return
         }
@@ -74,7 +78,19 @@ final class ScreenWalk: XCTestCase {
 
     /// The toolbar's overflow menu, where secondary actions go on a phone.
     private func openMenu() {
-        tap(app.navigationBars.buttons["More"].firstMatch, "More")
+        tap(button("More"), "More")
+    }
+
+    /// A list row by its text, scrolled until all of it is in the window. A row below the fold is
+    /// absent from the accessibility tree on a window too short for the list, and present but
+    /// mostly off screen when it only just misses; `isHittable` is true for a sliver of it.
+    private func row(containing text: String) -> XCUIElement {
+        let row = app.cells.containing(.staticText, identifier: text).firstMatch
+        let window = app.windows.firstMatch
+        for _ in 0..<Self.rowScrollLimit where !(row.exists && window.frame.contains(row.frame)) {
+            app.swipeUp()
+        }
+        return row
     }
 
     /// A key with a public half previews it as you type; the others preview behind Show.
@@ -170,7 +186,7 @@ final class ScreenWalk: XCTestCase {
             XCTFail("no recovery sheet: scripts/screen-walk.sh enrolls Face ID and matches it")
         }
 
-        app.cells.containing(.staticText, identifier: "nas").firstMatch.swipeLeft()
+        row(containing: "nas").swipeLeft()
         snap("key-swiped")
         tap(button("Delete"), "Delete")
         snap("key-delete-confirm")

@@ -43,6 +43,7 @@ struct ScanDiceKeyView: View {
                 )
                 .font(.footnote)
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
             case .some(false):
                 ContentUnavailableView(
                     "Camera Access Needed",
