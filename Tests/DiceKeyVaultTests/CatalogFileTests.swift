@@ -92,6 +92,33 @@ struct CatalogFileTests {
         #expect(try empty.entries(for: id).compactMap(\.recipe) == KeyRecipe.defaults)
     }
 
+    @Test("two DiceKeys with a key of the same recipe each keep theirs in the file")
+    func sameRecipeOnTwoDiceKeys() throws {
+        let other = try DiceKey(text: "B2rA1t" + DiceKey.example.text.dropFirst(6))
+        let github = try KeyRecipe(kind: .ssh, name: "github")
+        for diceKey in [DiceKey.example, other] {
+            try context.recordIfNew(diceKey)
+            try context.addEntry(for: DerivedKey.derive(seed: diceKey.seed, recipe: github), diceKeyID: diceKey.id)
+        }
+        let file = CatalogFile(
+            records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
+            entries: try context.fetch(FetchDescriptor<KeyEntry>()))
+        #expect(Set(file.keys.map(\.diceKey)) == [DiceKey.example.id, other.id])
+        let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
+        #expect(try file.merge(into: empty) == (diceKeys: 2, keys: 2, unreadable: 0))
+    }
+
+    @Test("a DiceKey a sync recorded twice is in the file once, by the name it shows")
+    func syncedRecordsExportOnce() throws {
+        for name in [DiceKey.example.defaultName, "Home box"] {
+            let record = DiceKeyRecord(diceKey: DiceKey.example)
+            record.name = name
+            context.insert(record)
+        }
+        let file = CatalogFile(records: try context.fetch(FetchDescriptor<DiceKeyRecord>()), entries: [])
+        #expect(file.diceKeys.map(\.name) == ["Home box"])
+    }
+
     @Test("an imported public key is ignored, and filled in from the dice on unlock")
     func publicKeysComeFromTheDice() throws {
         var file = try catalogWithKeys()
