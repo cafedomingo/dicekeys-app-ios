@@ -186,12 +186,12 @@ extension KeyRecipe {
 
 extension [KeyEntry] {
     /// Two devices can make the same key before they sync, so entries are told apart by
-    /// what they derive, not by row, and the oldest copy stands for the key. Entries this
+    /// DiceKey and recipe, not by row, and the oldest copy stands for the key. Entries this
     /// version can't read are left out. The default keys come first, in their own order, then
     /// the rest by name and age: the name is only in the recipe text, which the store can't
     /// sort by.
     var uniqueKeys: [KeyEntry] {
-        var seen = Set<KeyRecipe>()
+        var seen = [String: Set<KeyRecipe>]()
         return compactMap { entry in entry.recipe.map { (entry: entry, recipe: $0) } }
             .sorted { lhs, rhs in
                 if lhs.recipe.defaultRank != rhs.recipe.defaultRank {
@@ -203,7 +203,7 @@ extension [KeyEntry] {
                 case .orderedSame: lhs.entry.created < rhs.entry.created
                 }
             }
-            .filter { seen.insert($0.recipe).inserted }
+            .filter { seen[$0.entry.diceKeyID, default: []].insert($0.recipe).inserted }
             .map(\.entry)
     }
 }

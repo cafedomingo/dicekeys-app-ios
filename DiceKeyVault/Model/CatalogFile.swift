@@ -94,7 +94,9 @@ struct CatalogFile: Codable, Equatable {
     }
 
     init(records: [DiceKeyRecord], entries: [KeyEntry]) {
-        diceKeys = records.map { DiceKeyItem(id: $0.diceKeyID, name: $0.name, centerFace: $0.centerFace) }
+        diceKeys = records.uniqueDiceKeys.map {
+            DiceKeyItem(id: $0.diceKeyID, name: $0.name, centerFace: $0.centerFace)
+        }
         keys = entries.uniqueKeys.compactMap { entry in
             guard let recipe = entry.recipe, !recipe.isDefault else { return nil }
             return KeyItem(diceKey: entry.diceKeyID, recipe: recipe, publicKey: entry.publicKey)
