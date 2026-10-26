@@ -70,6 +70,7 @@ struct TypingView: View {
             }
             .frame(height: Self.keypadHeight, alignment: .top)
         }
+        .frame(maxWidth: .contentWidth)
         .focusable()
         .focused($isFocused)
         .focusEffectDisabled()

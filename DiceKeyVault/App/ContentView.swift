@@ -43,15 +43,8 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView(preferredCompactColumn: $compactColumn) {
-            DiceKeyList(
-                selection: $sidebarSelection,
-                onScan: {
-                    sidebarSelection = .scan
-                    compactColumn = .detail
-                },
-                onDelete: delete
-            )
-            .appBackdrop(dice: sizeClass == .compact)
+            DiceKeyList(selection: $sidebarSelection, onScan: scan, onDelete: delete)
+                .appBackdrop(dice: sizeClass == .compact)
         } detail: {
             NavigationStack(path: $path) {
                 detail.navigationDestination(for: KeySelection.self, destination: pushed)
@@ -89,7 +82,7 @@ struct ContentView: View {
     private var detail: some View {
         switch sidebarSelection {
         case .scan:
-            LoadScreen(onLoaded: load, onCodeRead: read)
+            LoadScreen(isCompact: sizeClass == .compact, onLoaded: load, onCodeRead: read)
         case .diceKey(let id):
             if let record = records.uniqueDiceKeys.first(where: { $0.diceKeyID == id }) {
                 DiceKeyScreen(
@@ -107,8 +100,19 @@ struct ContentView: View {
                     .id(id)
             }
         case nil:
-            ContentUnavailableView("No DiceKey selected", systemImage: "square.grid.3x3")
-                .appBackdrop()
+            ContentUnavailableView {
+                Label("No DiceKey selected", systemImage: "square.grid.3x3")
+            } description: {
+                Text(
+                    records.isEmpty
+                        ? "Scan its 25 dice, or type them in with the keyboard button on the next screen."
+                        : "Choose one from the list.")
+            } actions: {
+                if records.isEmpty {
+                    Button("Scan your DiceKey", systemImage: "camera.viewfinder", action: scan).buttonStyle(.bordered)
+                }
+            }
+            .appBackdrop()
         }
     }
 
@@ -155,6 +159,11 @@ struct ContentView: View {
         }
     }
 
+    private func scan() {
+        sidebarSelection = .scan
+        compactColumn = .detail
+    }
+
     private func load(_ diceKey: DiceKey) {
         open(diceKey)
         if !saved.contains(id: diceKey.id) { diceKeyToKeep = diceKey }
@@ -188,10 +197,10 @@ struct ContentView: View {
         let id = entry.persistentModelID
         let diceKeyID = entry.diceKeyID
         let isOpen = path.contains(.entry(id)) || sidebarSelection == .key(id)
-        close(id)
+        close(id, returningTo: diceKeyID)
         Task {
             if isOpen { try? await Task.sleep(for: Self.backNavigationDuration) }
-            close(id)
+            close(id, returningTo: diceKeyID)
             do {
                 try context.deleteKey(recipe, diceKeyID: diceKeyID)
             } catch {
@@ -200,9 +209,11 @@ struct ContentView: View {
         }
     }
 
-    private func close(_ id: PersistentIdentifier) {
+    /// A key opened from the sidebar goes back to its DiceKey where the detail stays beside the
+    /// list, as one pushed from the DiceKey's screen does; in a compact window, back to the list.
+    private func close(_ id: PersistentIdentifier, returningTo diceKeyID: String) {
         path.removeAll { $0 == .entry(id) }
-        if sidebarSelection == .key(id) { sidebarSelection = nil }
+        if sidebarSelection == .key(id) { sidebarSelection = sizeClass == .compact ? nil : .diceKey(diceKeyID) }
     }
 
     /// Stops before touching the catalog if the device copy can't be removed, so a DiceKey
