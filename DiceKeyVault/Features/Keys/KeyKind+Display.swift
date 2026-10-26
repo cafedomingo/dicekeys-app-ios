@@ -39,3 +39,8 @@ extension KeyKind {
         }
     }
 }
+
+extension KeyRecipe {
+    /// Its name, or its kind's title for a default, which has none.
+    var title: String { name ?? kind.title }
+}

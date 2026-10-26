@@ -89,7 +89,7 @@ struct PaperTests {
     @Test("the list card's PDF names every key and never holds the faces")
     func cardHoldsNoSecret() throws {
         let text = try Self.cardText(Self.file)
-        for key in Self.file.keys { #expect(text.contains(Self.searchable(key.recipe.name))) }
+        for key in Self.file.keys { #expect(text.contains(Self.searchable(key.recipe.title))) }
         let faces = DiceKey.example.faces
         #expect(!text.contains(faces[0].text + " " + faces[1].text))
         #expect(!text.contains(faces[0].text + faces[1].text))

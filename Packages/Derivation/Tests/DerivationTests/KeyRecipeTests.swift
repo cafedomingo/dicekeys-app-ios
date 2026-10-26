@@ -106,7 +106,6 @@ func invisibleCharactersAreRejected(_ name: String) {
     #"{"kind":"ssh","name":" github"}"#,
     #"{"kind":"ssh","name":"cafe\#u{0301}"}"#,
     #"{"kind":"ssh","name":""}"#,
-    #"{"kind":"ssh"}"#,
     #"{"kind":"pgp","name":"github"}"#,
     #"{"purpose":"ssh:github"}"#,
     #"{"kind":"ssh","name":"github","type":"SigningKey"}"#,
@@ -154,4 +153,29 @@ func nonCanonicalRecipesAreRejected(_ text: String) {
     #expect(throws: KeyRecipeError.notARecipe) {
         try decoder.decode(KeyRecipe.self, from: Data(#"{"kind":"ssh","name":"cafe\#u{0301}"}"#.utf8))
     }
+}
+
+@Test func defaultRecipesArePinned() throws {
+    #expect(KeyRecipe.defaults.map(\.json) == [#"{"kind":"ssh"}"#, #"{"kind":"age"}"#])
+    for recipe in KeyRecipe.defaults {
+        #expect(recipe.isDefault && recipe.name == nil && recipe.style == nil)
+        #expect(try KeyRecipe(json: recipe.json) == recipe)
+        #expect(try JSONDecoder().decode(KeyRecipe.self, from: Data(recipe.json.utf8)) == recipe)
+        #expect(recipe.fieldNames == ["kind"])
+    }
+    #expect(try !KeyRecipe(kind: .ssh, name: "github").isDefault)
+}
+
+@Test(arguments: [
+    #"{"kind":"passphrase"}"#, #"{"kind":"wallet"}"#, #"{"kind":"wireguard"}"#, #"{"kind":"ssh","length":24}"#,
+    #"{ "kind":"ssh" }"#, #"{"kind":"ssh","name":""}"#, #"{"kind":"SSH"}"#
+])
+func namelessRecipesOtherThanDefaultsAreRejected(_ text: String) {
+    #expect(throws: KeyRecipeError.notARecipe) { try KeyRecipe(json: text) }
+}
+
+@Test func defaultSSHLineHasNoComment() {
+    let seed = "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t"
+    let line = DerivedKey.derive(seed: seed, recipe: KeyRecipe.defaults[0]).publicKey ?? ""
+    #expect(line.split(separator: " ", omittingEmptySubsequences: false).count == 2)
 }

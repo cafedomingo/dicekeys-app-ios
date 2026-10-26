@@ -59,8 +59,10 @@ struct DiceKeyList: View {
                 KeyRow(entry: entry)
                     .tag(SidebarSelection.key(entry.persistentModelID))
                     .swipeActions(allowsFullSwipe: false) {
-                        Button("Delete", systemImage: "trash") { keyToDelete = entry }
-                            .tint(Color.danger)
+                        if entry.recipe?.isDefault == false {
+                            Button("Delete", systemImage: "trash") { keyToDelete = entry }
+                                .tint(Color.danger)
+                        }
                     }
             }
             if unlocked.diceKey(id: record.diceKeyID) != nil {
@@ -110,7 +112,7 @@ private struct DiceKeyRow: View {
             return Text("Locks in \(Text(timerInterval: Date.now...max(.now, locksAt), countsDown: true))")
                 .foregroundStyle(RowAccentInk())
         }
-        let keys = keyCount == 0 ? Text("no keys yet") : Text("^[\(keyCount) key](inflect: true)")
+        let keys = Text("^[\(keyCount) key](inflect: true)")
         return Text("\(isUnlocked ? "Unlocked" : "Locked") · \(keys)").foregroundStyle(.secondary)
     }
 }

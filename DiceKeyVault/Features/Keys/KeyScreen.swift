@@ -6,6 +6,7 @@
 import CoreTransferable
 import Derivation
 import KeyFormats
+import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -32,28 +33,32 @@ struct KeyScreen: View {
         if let recipe = entry.recipe {
             Form {
                 Section {
-                    KeyHeader(name: recipe.name, kind: recipe.kind, made: entry.created)
+                    KeyHeader(recipe: recipe, made: entry.created)
                 }
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
-                if recipe.kind == .age {
-                    if let publicKey = entry.publicKey {
-                        PublicKeySection(
-                            publicKey: publicKey, title: AgeRecipient.x25519Title, note: AgeRecipient.x25519Note)
-                    }
-                    postQuantumSection
-                } else if let publicKey = entry.publicKey {
-                    PublicKeySection(publicKey: publicKey)
+                switch recipe.kind {
+                case .ssh, .wireguard:
+                    publicKeySection(entry.publicKey)
+                case .age:
+                    publicKeySection(entry.publicKey, title: AgeRecipient.x25519Title, note: AgeRecipient.x25519Note)
+                    publicKeySection(
+                        postQuantumRecipient, title: AgeRecipient.postQuantumTitle, note: AgeRecipient.postQuantumNote,
+                        foldedLines: AgeRecipient.postQuantumFoldedLines, offersUnlock: entry.publicKey != nil)
+                case .passphrase, .wallet:
+                    EmptyView()
                 }
                 secretSection(recipe)
-                Section {
-                    Button("Delete key", systemImage: "trash", role: .destructive) { entryToDelete = entry }
-                        .foregroundStyle(Color.danger)
+                if !recipe.isDefault {
+                    Section {
+                        Button("Delete key", systemImage: "trash", role: .destructive) { entryToDelete = entry }
+                            .foregroundStyle(Color.danger)
+                    }
                 }
             }
             .centeredContent()
             .appBackdrop()
-            .navigationTitle(recipe.name)
+            .navigationTitle(recipe.title)
             .toolbarTitleDisplayMode(.inline)
             .toolbar(removing: .title)
             .confirmsKeyDeletion($entryToDelete, onDelete: onDelete)
@@ -72,25 +77,27 @@ struct KeyScreen: View {
         }
     }
 
+    /// A public key, or until it is known, a note that it shows once the DiceKey is unlocked,
+    /// and Unlock for a DiceKey kept on this device unless an earlier section offers it.
     @ViewBuilder
-    private var postQuantumSection: some View {
-        if let postQuantumRecipient {
-            PublicKeySection(
-                publicKey: postQuantumRecipient, title: AgeRecipient.postQuantumTitle,
-                note: AgeRecipient.postQuantumNote,
-                foldedLines: AgeRecipient.postQuantumFoldedLines)
+    private func publicKeySection(
+        _ publicKey: String?, title: String = "Public key", note: String? = nil, foldedLines: Int? = nil,
+        offersUnlock: Bool = true
+    ) -> some View {
+        if let publicKey {
+            PublicKeySection(publicKey: publicKey, title: title, note: note, foldedLines: foldedLines)
         } else {
             Section {
                 Text("Shows once the DiceKey is unlocked.")
                     .foregroundStyle(.secondary)
-                if saved.contains(id: entry.diceKeyID) {
+                if offersUnlock && saved.contains(id: entry.diceKeyID) {
                     UnlockButton(
                         diceKeyID: entry.diceKeyID, name: (try? context.record(for: entry.diceKeyID))?.name ?? "")
                 }
             } header: {
-                Text(AgeRecipient.postQuantumTitle)
+                Text(title)
             } footer: {
-                Text(AgeRecipient.postQuantumNote)
+                if let note { Text(note) }
             }
         }
     }
@@ -108,9 +115,10 @@ struct KeyScreen: View {
         Section {
             if let revealed {
                 if let recipient = revealed.publicKey, let postQuantum = revealed.postQuantum {
-                    ageIdentity(revealed.secret, recipient: recipient, postQuantum: false, name: recipe.name)
+                    ageIdentity(revealed.secret, recipient: recipient, postQuantum: false, name: recipe.name ?? "")
                     ageIdentity(
-                        postQuantum.identity, recipient: postQuantum.recipient, postQuantum: true, name: recipe.name)
+                        postQuantum.identity, recipient: postQuantum.recipient, postQuantum: true,
+                        name: recipe.name ?? "")
                 } else {
                     SecretView(kind: recipe.kind, secret: revealed.secret)
                     SecretActions(
@@ -156,26 +164,28 @@ struct KeyScreen: View {
     }
 }
 
-/// The key's name, kind and date, centered over the key like a card's face rather than rows of
-/// a table. It stands in for the navigation title, which stays set for VoiceOver and Back.
+/// The key's name, kind and date, or for a default its kind, centered over the key like a
+/// card's face rather than rows of a table. It stands in for the navigation title, which stays
+/// set for VoiceOver and Back.
 private struct KeyHeader: View {
     private static let iconSide: CGFloat = 72
 
-    let name: String
-    let kind: KeyKind
+    let recipe: KeyRecipe
     let made: Date
 
     var body: some View {
         VStack(spacing: .space2) {
-            Image(systemName: kind.symbol)
+            Image(systemName: recipe.kind.symbol)
                 .font(.largeTitle)
                 .foregroundStyle(.tint)
                 .frame(width: Self.iconSide, height: Self.iconSide)
                 .background(Color.accentSoft, in: .rect(cornerRadius: .radiusMd))
-            Text(name)
+            Text(recipe.title)
                 .font(.title.bold())
                 .multilineTextAlignment(.center)
-            Text("\(kind.title) · Made \(made, format: .dateTime.day().month().year())")
+            (recipe.isDefault
+                ? Text("Default key")
+                : Text("\(recipe.kind.title) · Made \(made, format: .dateTime.day().month().year())"))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -199,7 +209,7 @@ enum AgeRecipient {
 struct PublicKeySection: View {
     let publicKey: String
     var fingerprint: String?
-    var title = "Public key"
+    let title: String
     /// When to use this key, under it in place of a fingerprint.
     var note: String?
     /// For a key too long to read whole: it shows this many lines until Show all. Copy and
@@ -299,7 +309,7 @@ extension View {
     /// Asks before deleting the key set in `entry`, saying how to get it back.
     func confirmsKeyDeletion(_ entry: Binding<KeyEntry?>, onDelete: @escaping (KeyEntry) -> Void) -> some View {
         alert(
-            "Delete \(entry.wrappedValue?.recipe?.name ?? "")?",
+            "Delete \(entry.wrappedValue?.recipe?.title ?? "")?",
             isPresented: Binding(get: { entry.wrappedValue != nil }, set: { if !$0 { entry.wrappedValue = nil } }),
             presenting: entry.wrappedValue
         ) { entry in
@@ -361,7 +371,7 @@ struct KeyFile: Transferable {
 
     /// The OpenSSH private key.
     init(ssh key: DerivedKey) {
-        filename = Self.filename(Self.ssh, name: key.recipe.name)
+        filename = Self.filename(Self.ssh, name: key.recipe.name ?? "")
         contents = key.secret
     }
 

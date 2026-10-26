@@ -40,6 +40,11 @@ code must hold exactly one DiceKey, whose id is the one its text derives, and on
 DiceKey's keys. A file, link or code with more than 1,000 DiceKeys and keys together is
 refused.
 
+Default keys (`derivation.md`) are in none of the forms. Every DiceKey has them and they need
+no name to come back, so the file, the link and the recovery code leave them out, and the
+list card keeps its room for named keys. Importing or restoring a DiceKey the app doesn't
+have records it, and recording a DiceKey adds its default keys.
+
 The rule: only add optional fields, kinds and values. Never rename, remove or reinterpret
 one. Raise `v` only when an older app would otherwise get something wrong; an app refuses a
 newer `v`.

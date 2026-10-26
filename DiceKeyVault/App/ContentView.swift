@@ -34,12 +34,15 @@ struct ContentView: View {
     @State private var diceKeyToKeep: DiceKey?
     @State private var catalogToImport: CatalogFile?
     @State private var codeToRestore: RecoveryCode?
+    /// The DiceKey a scan or typing just recorded for the first time, while its screen stays open.
+    @State private var newDiceKeyID: String?
     @Environment(UnlockedDiceKeys.self) private var unlocked
     @Environment(SavedDiceKeys.self) private var saved
     @Environment(\.modelContext) private var context
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Query private var records: [DiceKeyRecord]
+    @Query(filter: #Predicate<KeyEntry> { $0.publicKey == nil }) private var keysWithoutPublicKeys: [KeyEntry]
 
     var body: some View {
         NavigationSplitView(preferredCompactColumn: $compactColumn) {
@@ -54,6 +57,7 @@ struct ContentView: View {
             path = []
             compactColumn = selection == nil ? .sidebar : .detail
             if let id = diceKeyID(of: selection) { unlocked.use(id: id) }
+            if let newDiceKeyID, selection != .diceKey(newDiceKeyID) { self.newDiceKeyID = nil }
         }
         .onChange(of: isDraftLocked) { _, isLocked in
             if isLocked { closeDraft() }
@@ -74,7 +78,21 @@ struct ContentView: View {
             }
         }
         .importsCatalog($catalogToImport)
-        .restoresDiceKey($codeToRestore, onRestored: open)
+        .restoresDiceKey($codeToRestore, onRestored: { open($0) })
+        .task(id: records.count) {
+            do {
+                try context.addMissingDefaults()
+            } catch {
+                self.error = PresentableError(title: "Couldn't Add Default Keys", error: error)
+            }
+        }
+        .task(id: keysToFill) {
+            do {
+                for diceKey in unlocked.diceKeys.values { try context.fillPublicKeys(for: diceKey) }
+            } catch {
+                self.error = PresentableError(title: "Couldn't Save Public Keys", error: error)
+            }
+        }
         .errorAlert($error)
     }
 
@@ -86,7 +104,7 @@ struct ContentView: View {
         case .diceKey(let id):
             if let record = records.uniqueDiceKeys.first(where: { $0.diceKeyID == id }) {
                 DiceKeyScreen(
-                    record: record, path: $path,
+                    record: record, isNew: newDiceKeyID == id, path: $path,
                     onScan: { sidebarSelection = .scan },
                     onForget: { forget(record) }, onDelete: delete
                 )
@@ -139,6 +157,15 @@ struct ContentView: View {
         }
     }
 
+    /// What the public key fill runs on: keys that need one whose DiceKey is unlocked, rather
+    /// than the unlocked DiceKeys, so a key an import or a sync adds to an unlocked DiceKey fills
+    /// too.
+    private var keysToFill: Set<PersistentIdentifier> {
+        Set(
+            keysWithoutPublicKeys.filter { unlocked.diceKey(id: $0.diceKeyID) != nil && $0.needsPublicKey }
+                .map(\.persistentModelID))
+    }
+
     /// New key is open but its DiceKey has locked, so it has nothing to derive from.
     private var isDraftLocked: Bool {
         guard let id = diceKeyID(of: sidebarSelection), unlocked.diceKey(id: id) == nil else { return false }
@@ -165,18 +192,22 @@ struct ContentView: View {
     }
 
     private func load(_ diceKey: DiceKey) {
-        open(diceKey)
+        newDiceKeyID = open(diceKey) ? diceKey.id : nil
         if !saved.contains(id: diceKey.id) { diceKeyToKeep = diceKey }
     }
 
-    private func open(_ diceKey: DiceKey) {
+    /// True when this is the first time the DiceKey is recorded.
+    @discardableResult
+    private func open(_ diceKey: DiceKey) -> Bool {
+        var isNew = false
         do {
-            try context.recordIfNew(diceKey)
+            isNew = try context.recordIfNew(diceKey)
         } catch {
             self.error = PresentableError(title: "Couldn't Record DiceKey", error: error)
         }
         unlocked.unlock(diceKey)
         sidebarSelection = .diceKey(diceKey.id)
+        return isNew
     }
 
     private func read(_ payload: String) {

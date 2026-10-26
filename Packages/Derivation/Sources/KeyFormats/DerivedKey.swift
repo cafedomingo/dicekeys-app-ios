@@ -27,9 +27,9 @@ public struct DerivedKey: Equatable, Sendable {
             let key = Ed25519Key(seed: seed, recipe: recipe)
             return DerivedKey(
                 recipe: recipe,
-                publicKey: OpenSSH.publicKeyLine(key, comment: recipe.name),
+                publicKey: OpenSSH.publicKeyLine(key, comment: recipe.name ?? ""),
                 fingerprint: OpenSSH.fingerprint(key),
-                secret: OpenSSH.privateKeyPEM(key, comment: recipe.name))
+                secret: OpenSSH.privateKeyPEM(key, comment: recipe.name ?? ""))
         case .wireguard:
             let key = X25519KeyPair(seed: seed, recipe: recipe)
             let publicKey = WireGuard.publicKey(key)

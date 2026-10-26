@@ -20,9 +20,9 @@ public enum OpenSSH {
     private static let keyCount: UInt32 = 1
 
     /// `ssh-ed25519 <base64> <comment>`. The comment is the key's name, so `authorized_keys`
-    /// says which key a line is.
+    /// says which key a line is. A default has no name, so its line ends at the key.
     public static func publicKeyLine(_ key: Derivation.Ed25519Key, comment: String) -> String {
-        "\(keyType) " + Data(publicKeyBlob(key)).base64EncodedString() + " " + comment
+        "\(keyType) " + Data(publicKeyBlob(key)).base64EncodedString() + (comment.isEmpty ? "" : " " + comment)
     }
 
     /// `SHA256:<base64>` without padding, as `ssh-keygen -l` prints it.

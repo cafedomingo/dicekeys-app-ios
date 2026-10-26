@@ -70,10 +70,12 @@ struct CatalogFormatV1Tests {
                 == JSONSerialization.jsonObject(with: written) as? NSDictionary)
     }
 
-    @Test("merging the v1 link makes exactly these recipes")
+    @Test("merging the v1 link makes exactly these recipes, and the default keys")
     func linkMakesTheseRecipes() throws {
         let context = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         try Self.expected.merge(into: context)
-        #expect(Set(try context.entries(for: DiceKey.example.id).compactMap(\.recipe)) == Set(try Self.expectedRecipes))
+        #expect(
+            Set(try context.entries(for: DiceKey.example.id).compactMap(\.recipe))
+                == Set(try Self.expectedRecipes + KeyRecipe.defaults))
     }
 }

@@ -90,7 +90,8 @@ struct CatalogFile: Codable, Equatable {
     init(records: [DiceKeyRecord], entries: [KeyEntry]) {
         diceKeys = records.map { DiceKeyItem(id: $0.diceKeyID, name: $0.name, centerFace: $0.centerFace) }
         keys = entries.uniqueKeys.compactMap { entry in
-            entry.recipe.map { KeyItem(diceKey: entry.diceKeyID, recipe: $0, publicKey: entry.publicKey) }
+            guard let recipe = entry.recipe, !recipe.isDefault else { return nil }
+            return KeyItem(diceKey: entry.diceKeyID, recipe: recipe, publicKey: entry.publicKey)
         }
     }
 
@@ -150,6 +151,7 @@ struct CatalogFile: Codable, Equatable {
         for item in diceKeys where try context.record(for: item.id) == nil {
             let name = (try? KeyRecipe.normalizedName(item.name)) ?? DiceKey.defaultName(centerFace: item.centerFace)
             context.insert(DiceKeyRecord(diceKeyID: item.id, name: name, centerFace: item.centerFace))
+            try context.addMissingDefaults(for: item.id)
             added.diceKeys += 1
         }
         for item in keys {
