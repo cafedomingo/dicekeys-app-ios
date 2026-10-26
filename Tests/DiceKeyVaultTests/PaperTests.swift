@@ -4,6 +4,7 @@
 //
 
 import CoreImage
+import CryptoKit
 import Derivation
 import Foundation
 import KeyFormats
@@ -16,12 +17,12 @@ import Vision
 
 @MainActor
 struct PaperTests {
-    private static let file = CatalogFormatV1Tests.expected
+    private static let file = PaperFormatV2Tests.expected
     private static let readScale: CGFloat = 8
     private static let quietZone: CGFloat = 32
 
     private static func code() throws -> RecoveryCode {
-        try RecoveryCode(payload: Fixture.text("recovery-v1.txt"))
+        try RecoveryCode(payload: Fixture.text("recovery-v2.txt"))
     }
 
     /// Compatibility-mapped, since PDF text extraction returns some CJK characters as their
@@ -72,11 +73,17 @@ struct PaperTests {
             .trimmingCharacters(in: .whitespaces)
     }
 
+    /// A name DEFLATE can't shrink, up to 43 characters: repeated text would fit far more keys in a code.
+    private static func incompressibleName(_ index: Int, length: Int) -> String {
+        String(Data(SHA256.hash(data: Data("\(index)".utf8))).base64URLEncodedString.prefix(length))
+    }
+
     private static func manyKeys(_ count: Int, nameLength: Int) throws -> CatalogFile {
         var file = Self.file
         file.keys = try (0..<count).map { index in
-            let name = String(repeating: "k", count: nameLength - String(index).count) + String(index)
-            return CatalogFile.KeyItem(diceKey: file.diceKeys[0].id, recipe: try KeyRecipe(kind: .ssh, name: name))
+            CatalogFile.KeyItem(
+                diceKey: file.diceKeys[0].id,
+                recipe: try KeyRecipe(kind: .ssh, name: incompressibleName(index, length: nameLength)))
         }
         return file
     }
@@ -130,8 +137,29 @@ struct PaperTests {
 
     @Test("a crowded card lists what fits and says how many are left out")
     func crowdedCardSaysWhatIsLeftOut() throws {
-        let text = try Self.cardText(Self.manyKeys(30, nameLength: 64))
+        let text = try Self.cardText(Self.manyKeys(30, nameLength: 43))
         #expect(text.contains("more in the exported file"))
+    }
+
+    @Test("the list card's code holds forty keys")
+    func cardHoldsFortyKeys() throws {
+        let link = try Self.manyKeys(40, nameLength: 12).importURL.absoluteString
+        let image = try #require(PaperCode.image(for: link, symbology: .qr))
+        #expect(image.width <= ListCard.maximumWidth)
+        #expect(try Self.read(image, symbology: .qr) == link)
+    }
+
+    @Test("the recovery sheet's code holds eighty keys")
+    func sheetHoldsEightyKeys() throws {
+        let entries = try (0..<80).map { index in
+            KeyEntry(
+                diceKeyID: DiceKey.example.id,
+                recipe: try KeyRecipe(kind: .ssh, name: Self.incompressibleName(index, length: 12)),
+                publicKey: nil)
+        }
+        let code = RecoveryCode(diceKey: .example, record: DiceKeyRecord(diceKey: .example), entries: entries)
+        let image = try #require(PaperCode.image(for: code.payload, symbology: RecoverySheet.codeSymbology))
+        #expect(image.width <= RecoverySheet.maximumCodeWidth)
     }
 
     @Test("too many keys for a scannable code says so, and doesn't point at the code")
@@ -146,7 +174,7 @@ struct PaperTests {
         let context = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         try context.recordIfNew(DiceKey.example)
         for index in 0..<count {
-            let recipe = try KeyRecipe(kind: .ssh, name: "server \(index)")
+            let recipe = try KeyRecipe(kind: .ssh, name: incompressibleName(index, length: 12))
             try context.addEntry(
                 for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe), diceKeyID: DiceKey.example.id)
         }
@@ -168,7 +196,7 @@ struct PaperTests {
 
     @Test("a recovery sheet with too many keys for its code says so, instead of a blank code")
     func sheetTooManyKeysForTheCode() throws {
-        let text = try Self.sheetText(keys: 40)
+        let text = try Self.sheetText(keys: 300)
         #expect(text.contains("Too many keys for the code"))
         #expect(!text.contains("more in the code"))
     }

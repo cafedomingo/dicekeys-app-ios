@@ -16,7 +16,7 @@ struct RecoverySheet: View {
     static let listedKeys = 7
 
     private static let codeSide: CGFloat = 170
-    private static let maximumCodeWidth = PaperCode.maximumWidth(atSide: codeSide)
+    static let maximumCodeWidth = PaperCode.maximumWidth(atSide: codeSide)
     private static let dieSize: CGFloat = 28
     private static let spacing: CGFloat = 10
     private static let lineSpacing: CGFloat = 2

@@ -56,7 +56,8 @@ opened from a `DiceKeyScreen` pushed over it. A phone shows the same columns as 
 ```
 DiceKeyVault/
   App/        entry point, ContentView, UnlockedDiceKeys
-  Model/      DiceKey and its faces, the SwiftData catalog, CatalogFile, RecoveryCode, ScannedCode
+  Model/      DiceKey and its faces, the SwiftData catalog, CatalogFile, PaperPayload, RecoveryCode,
+              ScannedCode
   Services/   what talks to the OS: Camera, Keychain, Clipboard, DeviceOwner
   Features/   one folder per area: DiceKeys, Keys, Load (scanning and typing), Catalog
               (import, export, restore), Paper, Settings
@@ -78,7 +79,7 @@ purpose.
 | What | Pinned by |
 |---|---|
 | Derived keys, seeds and the DiceKey id (`derivation.md`) | `kinds.json`: `KindVectorTests`, `DiceKeySeedTests` |
-| Paper and exported files (`catalog-format.md`) | the v1 fixtures: `CatalogFormatV1Tests` |
+| Paper and exported files (`catalog-format.md`) | the file fixture (v1) and the paper fixtures (v2): `CatalogFormatV1Tests`, `PaperFormatV2Tests` |
 | The store, synced to devices on other versions: attributes may be added, never renamed, removed or retyped | `CompatibilityTests` |
 | The bundle identifier, store name, sync setting, URL scheme and recovery prefix | `CompatibilityTests` |
 | A saved DiceKey: its text, named by its id | `SavedDiceKeysTests` |

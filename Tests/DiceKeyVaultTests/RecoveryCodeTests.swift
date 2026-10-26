@@ -18,31 +18,30 @@ struct RecoveryCodeTests {
     }
 
     private func payload(_ edit: (inout [String: Any]) -> Void) throws -> String {
-        let fixture = try Fixture.text("recovery-v1.txt")
-        let base64 = String(fixture.dropFirst(RecoveryCode.prefix.count))
-        let data = try #require(Data(base64URLEncoded: base64))
+        let fixture = try Fixture.text("recovery-v2.txt")
+        let data = try PaperPayload.unpack(String(fixture.dropFirst(RecoveryCode.prefix.count)))
         var json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
         edit(&json)
-        return RecoveryCode.prefix + (try JSONSerialization.data(withJSONObject: json)).base64URLEncodedString
+        return RecoveryCode.prefix + (try PaperPayload.pack(JSONSerialization.data(withJSONObject: json)))
     }
 
-    @Test("the v1 recovery code decodes to the example DiceKey and its keys")
+    @Test("the v2 recovery code decodes to the example DiceKey and its keys")
     func fixtureDecodes() throws {
-        let code = try RecoveryCode(payload: Fixture.text("recovery-v1.txt"))
+        let code = try RecoveryCode(payload: Fixture.text("recovery-v2.txt"))
         #expect(code.diceKey == DiceKey.example)
-        #expect(code.catalog == CatalogFormatV1Tests.expected)
+        #expect(code.catalog == PaperFormatV2Tests.expected)
     }
 
-    @Test("today's encoder writes the v1 recovery code byte for byte")
-    func fixtureEncodes() throws {
-        let code = try RecoveryCode(payload: Fixture.text("recovery-v1.txt"))
-        #expect(try code.payload == Fixture.text("recovery-v1.txt"))
+    @Test("a recovery code reads back as the code it writes")
+    func payloadRoundTrips() throws {
+        let code = try RecoveryCode(payload: Fixture.text("recovery-v2.txt"))
+        #expect(try RecoveryCode(payload: code.payload) == code)
     }
 
     @Test("restoring adds the DiceKey and its keys, without public keys")
     func restore() throws {
         let context = try emptyContext()
-        let diceKey = try RecoveryCode(payload: Fixture.text("recovery-v1.txt")).restore(into: context)
+        let diceKey = try RecoveryCode(payload: Fixture.text("recovery-v2.txt")).restore(into: context)
         #expect(diceKey.id == DiceKey.example.id)
         #expect(try context.record(for: diceKey.id)?.name == "Example")
         #expect(try context.entries(for: diceKey.id).count == 9)
@@ -52,7 +51,7 @@ struct RecoveryCodeTests {
     @Test("restoring a DiceKey records it with the default keys")
     func restoreAddsDefaults() throws {
         let context = try emptyContext()
-        let diceKey = try RecoveryCode(payload: Fixture.text("recovery-v1.txt")).restore(into: context)
+        let diceKey = try RecoveryCode(payload: Fixture.text("recovery-v2.txt")).restore(into: context)
         #expect(try context.entries(for: diceKey.id).compactMap(\.recipe).filter(\.isDefault) == KeyRecipe.defaults)
     }
 
@@ -77,7 +76,7 @@ struct RecoveryCodeTests {
         let github = try KeyRecipe(kind: .ssh, name: "github")
         try context.addEntry(
             for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: github), diceKeyID: DiceKey.example.id)
-        try RecoveryCode(payload: Fixture.text("recovery-v1.txt")).restore(into: context)
+        try RecoveryCode(payload: Fixture.text("recovery-v2.txt")).restore(into: context)
         #expect(try context.record(for: DiceKey.example.id)?.name == "Mine")
         let entries = try context.fetch(FetchDescriptor<KeyEntry>())
         #expect(entries.count == 9)
@@ -86,7 +85,7 @@ struct RecoveryCodeTests {
 
     @Test("a code made from the DiceKey held turned restores to the same id and keys")
     func turnedDiceKeyRestoresTheSame() throws {
-        let fixture = try RecoveryCode(payload: Fixture.text("recovery-v1.txt"))
+        let fixture = try RecoveryCode(payload: Fixture.text("recovery-v2.txt"))
         let turned = DiceKey.example.turnedClockwise()
         let payload = try payload { $0["diceKey"] = turned.text }
         let context = try emptyContext()
@@ -101,7 +100,7 @@ struct RecoveryCodeTests {
         let code = try RecoveryCode(
             payload: try payload { json in
                 var keys = json["keys"] as? [[String: Any]] ?? []
-                keys.append(["diceKey": DiceKey.example.id, "kind": "pgp", "name": "mail"])
+                keys.append(["kind": "pgp", "name": "mail"])
                 json["keys"] = keys
             })
         #expect(code.diceKey == DiceKey.example)
@@ -109,21 +108,21 @@ struct RecoveryCodeTests {
         #expect(!code.catalog.keys.isEmpty)
     }
 
-    @Test("a list link, a tampered id, short faces or a newer version is refused")
+    @Test("a list link, a tampered id, missing or short faces or a newer version is refused")
     func refusals() throws {
         #expect(throws: CatalogFile.Failure.notACatalog) {
-            try RecoveryCode(payload: Fixture.text("catalog-link-v1.txt"))
+            try RecoveryCode(payload: Fixture.text("catalog-link-v2.txt"))
         }
-        let otherID = try payload {
-            $0["diceKeys"] = [["id": "AAAAAAAAAAAAAAAAAAAAAA", "name": "Example", "centerFace": "M1t"]]
-        }
+        let otherID = try payload { $0["id"] = "AAAAAAAAAAAAAAAAAAAAAA" }
         #expect(throws: CatalogFile.Failure.notACatalog) { try RecoveryCode(payload: otherID) }
+        let noFaces = try payload { $0["diceKey"] = nil }
+        #expect(throws: CatalogFile.Failure.notACatalog) { try RecoveryCode(payload: noFaces) }
         let short = try payload { $0["diceKey"] = String(DiceKey.example.text.dropLast()) }
         #expect(throws: CatalogFile.Failure.notACatalog) { try RecoveryCode(payload: short) }
-        let newer = try payload { $0["v"] = 2 }
-        #expect(throws: CatalogFile.Failure.newerVersion(2)) { try RecoveryCode(payload: newer) }
-        #expect(throws: CatalogFile.Failure.notACatalog) { try RecoveryCode(payload: "DKV1R:!!") }
-        let fixture = try Fixture.text("recovery-v1.txt")
+        let newer = try payload { $0["v"] = 3 }
+        #expect(throws: CatalogFile.Failure.newerVersion(3)) { try RecoveryCode(payload: newer) }
+        #expect(throws: CatalogFile.Failure.notACatalog) { try RecoveryCode(payload: "DKVR:!!") }
+        let fixture = try Fixture.text("recovery-v2.txt")
         #expect(throws: (any Error).self) { try CatalogFile(importURL: #require(URL(string: fixture))) }
     }
 }

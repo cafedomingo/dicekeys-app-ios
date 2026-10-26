@@ -11,7 +11,7 @@ import SwiftData
 /// needed to make each key again, and nothing that unlocks one.
 struct CatalogFile: Codable, Equatable {
     static let version = 1
-    /// The QR code carries the file in a URL the Camera app opens in this app.
+    /// The QR code carries the list in a URL the Camera app opens in this app.
     static let urlScheme = "dicekeyvault"
     private static let importHost = "import"
     private static let fileItem = "catalog"
@@ -65,7 +65,7 @@ struct CatalogFile: Codable, Equatable {
     }
 
     /// Reads each key on its own, so one this version doesn't know leaves the rest.
-    private struct Readable<Value: Decodable>: Decodable {
+    struct Readable<Value: Decodable>: Decodable {
         let value: Value?
 
         init(from decoder: any Decoder) throws {
@@ -85,6 +85,12 @@ struct CatalogFile: Codable, Equatable {
     init(diceKeys: [DiceKeyItem], keys: [KeyItem]) {
         self.diceKeys = diceKeys
         self.keys = keys
+    }
+
+    init(diceKeys: [DiceKeyItem], keys: [KeyItem], unreadableKeys: Int) {
+        self.diceKeys = diceKeys
+        self.keys = keys
+        self.unreadableKeys = unreadableKeys
     }
 
     init(records: [DiceKeyRecord], entries: [KeyEntry]) {
@@ -110,33 +116,25 @@ struct CatalogFile: Codable, Equatable {
     init(importURL url: URL) throws {
         guard url.scheme == Self.urlScheme, url.host() == Self.importHost,
             let item = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?
-                .first(where: { $0.name == Self.fileItem })?.value,
-            let json = Data(base64URLEncoded: item)
+                .first(where: { $0.name == Self.fileItem })?.value
         else { throw Failure.notACatalog }
-        try self.init(json: json)
+        self = try PaperPayload.decode(item).catalog
     }
 
-    /// Readable for a file someone keeps themselves; compact for the QR code.
-    func json(readable: Bool = true) throws -> Data {
+    /// Readable, for a file someone keeps themselves.
+    func json() throws -> Data {
         let encoder = JSONEncoder()
-        encoder.outputFormatting = readable ? [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes] : [.sortedKeys]
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         return try encoder.encode(self)
     }
 
+    /// The list card's link. Throws `Failure.notACatalog` unless the catalog holds one DiceKey.
     var importURL: URL {
         get throws {
-            var compact = self
-            compact.keys = keys.map {
-                var key = $0
-                key.publicKey = nil
-                return key
-            }
             var components = URLComponents()
             components.scheme = Self.urlScheme
             components.host = Self.importHost
-            components.queryItems = [
-                URLQueryItem(name: Self.fileItem, value: try compact.json(readable: false).base64URLEncodedString)
-            ]
+            components.queryItems = [URLQueryItem(name: Self.fileItem, value: try PaperPayload.encode(self))]
             guard let url = components.url else { throw URLError(.badURL) }
             return url
         }
@@ -175,25 +173,11 @@ extension CatalogFile.KeyItem {
         case diceKey, publicKey
     }
 
-    /// Any field that is neither the catalog's nor the recipe's, such as one a later version
-    /// adds to recipes, makes the key unreadable rather than read as a different recipe.
-    private struct AnyKey: CodingKey {
-        let stringValue: String
-        var intValue: Int? { nil }
-        init(stringValue: String) { self.stringValue = stringValue }
-        init?(intValue: Int) { nil }
-    }
-
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         diceKey = try container.decode(String.self, forKey: .diceKey)
         publicKey = try container.decodeIfPresent(String.self, forKey: .publicKey)
-        recipe = try KeyRecipe(from: decoder)
-        let catalogKeys = Set([CodingKeys.diceKey, .publicKey].map(\.stringValue))
-        let fields = try decoder.container(keyedBy: AnyKey.self).allKeys.map(\.stringValue)
-        guard Set(fields).subtracting(catalogKeys) == Set(recipe.fieldNames) else {
-            throw CatalogFile.Failure.notACatalog
-        }
+        recipe = try KeyRecipe(from: decoder, besides: Set([CodingKeys.diceKey, .publicKey].map(\.stringValue)))
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -201,5 +185,23 @@ extension CatalogFile.KeyItem {
         try container.encode(diceKey, forKey: .diceKey)
         try container.encodeIfPresent(publicKey, forKey: .publicKey)
         try recipe.encode(to: encoder)
+    }
+}
+
+private struct AnyKey: CodingKey {
+    let stringValue: String
+    var intValue: Int? { nil }
+    init(stringValue: String) { self.stringValue = stringValue }
+    init?(intValue: Int) { nil }
+}
+
+extension KeyRecipe {
+    /// A recipe whose fields sit beside the format's own fields, `others`. Any other field, such
+    /// as one a later version adds to recipes, makes the key unreadable rather than read as a
+    /// different recipe.
+    init(from decoder: any Decoder, besides others: Set<String>) throws {
+        try self.init(from: decoder)
+        let fields = try decoder.container(keyedBy: AnyKey.self).allKeys.map(\.stringValue)
+        guard Set(fields).subtracting(others) == Set(fieldNames) else { throw CatalogFile.Failure.notACatalog }
     }
 }

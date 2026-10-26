@@ -3,33 +3,17 @@
 //  DiceKeyVault
 //
 
-import Derivation
-import Foundation
 import SwiftData
 
 /// A DiceKey and its list, as the recovery sheet's code: text the app recognizes by its
 /// prefix, never a link, so the faces don't pass through link handling. The format is in
 /// `docs/catalog-format.md`.
 struct RecoveryCode: Equatable {
-    static let prefix = "DKV1R:"
+    static let prefix = "DKVR:"
 
     let diceKey: DiceKey
     /// Exactly one DiceKey, this one, and its keys without public keys.
     let catalog: CatalogFile
-
-    private struct Wire: Encodable {
-        // Read only by the synthesized encoder.
-        // swiftlint:disable:next unused_declaration
-        var v = CatalogFile.version
-        let diceKey: String
-        let diceKeys: [CatalogFile.DiceKeyItem]
-        let keys: [CatalogFile.KeyItem]
-    }
-
-    /// The faces alone; the rest reads as a catalog file, key by key.
-    private struct Faces: Decodable {
-        let diceKey: String
-    }
 
     init(diceKey: DiceKey, record: DiceKeyRecord, entries: [KeyEntry]) {
         self.diceKey = diceKey
@@ -43,25 +27,17 @@ struct RecoveryCode: Equatable {
     }
 
     init(payload: String) throws {
-        guard payload.hasPrefix(Self.prefix),
-            let json = Data(base64URLEncoded: String(payload.dropFirst(Self.prefix.count)))
-        else { throw CatalogFile.Failure.notACatalog }
-        let catalog = try CatalogFile(json: json)
-        guard let faces = try? JSONDecoder().decode(Faces.self, from: json),
-            let diceKey = try? DiceKey(text: faces.diceKey), catalog.diceKeys.count == 1,
-            catalog.diceKeys[0].id == diceKey.id, catalog.keys.allSatisfy({ $0.diceKey == diceKey.id })
-        else { throw CatalogFile.Failure.notACatalog }
+        guard payload.hasPrefix(Self.prefix) else { throw CatalogFile.Failure.notACatalog }
+        let (catalog, faces) = try PaperPayload.decode(String(payload.dropFirst(Self.prefix.count)))
+        guard let faces, let diceKey = try? DiceKey(text: faces), catalog.diceKeys[0].id == diceKey.id else {
+            throw CatalogFile.Failure.notACatalog
+        }
         self.diceKey = diceKey
         self.catalog = catalog
     }
 
     var payload: String {
-        get throws {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .sortedKeys
-            let wire = Wire(diceKey: diceKey.text, diceKeys: catalog.diceKeys, keys: catalog.keys)
-            return Self.prefix + (try encoder.encode(wire)).base64URLEncodedString
-        }
+        get throws { Self.prefix + (try PaperPayload.encode(catalog, faces: diceKey.text)) }
     }
 
     /// Merges the list, adding only what is missing, and returns the DiceKey to unlock.
