@@ -45,12 +45,16 @@ final class KeyEntry {
     var recipeJSON = ""
     /// Recorded to show and compare by eye, never checked.
     var publicKey: String?
+    /// An age key's post-quantum recipient, beside the X25519 one in `publicKey`, recorded the
+    /// same way so it shows while the DiceKey is locked. Nil for every other kind.
+    var postQuantumPublicKey: String?
     var created = Date.now
 
-    init(diceKeyID: String, recipe: KeyRecipe, publicKey: String?) {
+    init(diceKeyID: String, recipe: KeyRecipe, publicKey: String?, postQuantumPublicKey: String? = nil) {
         self.diceKeyID = diceKeyID
         recipeJSON = recipe.json
         self.publicKey = publicKey
+        self.postQuantumPublicKey = postQuantumPublicKey
     }
 
     /// Nil for an entry this version can't read: a kind or field a later version wrote, where
@@ -58,8 +62,12 @@ final class KeyEntry {
     /// isn't a default, such as the `{"kind":"wireguard"}` test builds recorded.
     var recipe: KeyRecipe? { try? KeyRecipe(json: recipeJSON) }
 
-    /// Recorded without its public key, which its DiceKey fills in once unlocked.
-    var needsPublicKey: Bool { publicKey == nil && recipe?.kind.hasPublicKey == true }
+    /// Recorded without a public key, which its DiceKey fills in once unlocked: an age key
+    /// recorded before its post-quantum recipient was lacks only that one.
+    var needsPublicKey: Bool {
+        guard let kind = recipe?.kind, kind.hasPublicKey else { return false }
+        return publicKey == nil || (kind == .age && postQuantumPublicKey == nil)
+    }
 }
 
 enum Catalog {
@@ -132,7 +140,9 @@ extension ModelContext {
     @discardableResult
     func addEntry(for key: DerivedKey, diceKeyID: String) throws -> KeyEntry {
         if let existing = try entry(for: key.recipe, diceKeyID: diceKeyID) { return existing }
-        let entry = KeyEntry(diceKeyID: diceKeyID, recipe: key.recipe, publicKey: key.publicKey)
+        let entry = KeyEntry(
+            diceKeyID: diceKeyID, recipe: key.recipe, publicKey: key.publicKey,
+            postQuantumPublicKey: key.postQuantum?.recipient)
         insert(entry)
         try save()
         return entry
@@ -144,7 +154,9 @@ extension ModelContext {
         let missing = try allEntries(for: diceKey.id).filter(\.needsPublicKey)
         for entry in missing {
             guard let recipe = entry.recipe else { continue }
-            entry.publicKey = DerivedKey.derive(seed: diceKey.seed, recipe: recipe).publicKey
+            let key = DerivedKey.derive(seed: diceKey.seed, recipe: recipe)
+            entry.publicKey = key.publicKey
+            entry.postQuantumPublicKey = key.postQuantum?.recipient
         }
         if !missing.isEmpty { try save() }
     }

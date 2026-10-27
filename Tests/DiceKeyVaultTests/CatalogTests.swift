@@ -112,6 +112,28 @@ struct CatalogTests {
         #expect(
             try context.entries(for: DiceKey.example.id).map(\.publicKey)
                 == KeyRecipe.defaults.map { DerivedKey.derive(seed: DiceKey.example.seed, recipe: $0).publicKey })
+        #expect(
+            try context.entries(for: DiceKey.example.id).map(\.postQuantumPublicKey)
+                == KeyRecipe.defaults.map {
+                    DerivedKey.derive(seed: DiceKey.example.seed, recipe: $0).postQuantum?.recipient
+                })
+    }
+
+    @Test("an age key records its post-quantum recipient when made, and one recorded without it fills it in")
+    func ageRecordsPostQuantumRecipient() throws {
+        let made = try key(.age, "backups")
+        let entry = try context.addEntry(for: made, diceKeyID: DiceKey.example.id)
+        #expect(entry.postQuantumPublicKey == made.postQuantum?.recipient)
+        #expect(!entry.needsPublicKey)
+        let recipe = try #require(KeyRecipe.defaults.first { $0.kind == .age })
+        let derived = DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe)
+        let earlier = KeyEntry(diceKeyID: DiceKey.example.id, recipe: recipe, publicKey: derived.publicKey)
+        context.insert(earlier)
+        #expect(earlier.needsPublicKey)
+        try context.fillPublicKeys(for: DiceKey.example)
+        #expect(earlier.publicKey == derived.publicKey)
+        #expect(earlier.postQuantumPublicKey == derived.postQuantum?.recipient)
+        #expect(!earlier.needsPublicKey)
     }
 
     @Test("filling in public keys fills every copy a sync made, and a passphrase never needs one")

@@ -42,7 +42,10 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Query private var records: [DiceKeyRecord]
-    @Query(filter: #Predicate<KeyEntry> { $0.publicKey == nil }) private var keysWithoutPublicKeys: [KeyEntry]
+    /// Every key but an age key lacks a post-quantum recipient, and the kind is only in the
+    /// recipe text, so `needsPublicKey` picks out the keys that need filling.
+    @Query(filter: #Predicate<KeyEntry> { $0.publicKey == nil || $0.postQuantumPublicKey == nil })
+    private var keysWithoutPublicKeys: [KeyEntry]
 
     var body: some View {
         NavigationSplitView(preferredCompactColumn: $compactColumn) {

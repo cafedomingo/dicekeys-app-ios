@@ -21,9 +21,6 @@ struct KeyScreen: View {
     let onDelete: (KeyEntry) -> Void
 
     @State private var revealed: DerivedKey?
-    /// An age key's post-quantum recipient, which the catalog doesn't hold: derived once the
-    /// DiceKey is unlocked, and kept, since it is public.
-    @State private var postQuantumRecipient: String?
     @State private var entryToDelete: KeyEntry?
     @Environment(\.isSceneCaptured) private var isSceneCaptured
     @Environment(SavedDiceKeys.self) private var saved
@@ -43,7 +40,8 @@ struct KeyScreen: View {
                 case .age:
                     publicKeySection(entry.publicKey, title: AgeRecipient.x25519Title, note: AgeRecipient.x25519Note)
                     publicKeySection(
-                        postQuantumRecipient, title: AgeRecipient.postQuantumTitle, note: AgeRecipient.postQuantumNote,
+                        entry.postQuantumPublicKey, title: AgeRecipient.postQuantumTitle,
+                        note: AgeRecipient.postQuantumNote,
                         foldedLines: AgeRecipient.postQuantumFoldedLines, offersUnlock: entry.publicKey != nil)
                 case .passphrase, .wallet:
                     EmptyView()
@@ -65,10 +63,6 @@ struct KeyScreen: View {
             .concealsWhenExposed(isRevealed)
             .onChange(of: diceKey == nil) { _, isLocked in
                 if isLocked { revealed = nil }
-            }
-            .task(id: diceKey?.id) {
-                guard recipe.kind == .age, postQuantumRecipient == nil, let diceKey else { return }
-                postQuantumRecipient = DerivedKey.derive(seed: diceKey.seed, recipe: recipe).postQuantum?.recipient
             }
         } else {
             ContentUnavailableView(
