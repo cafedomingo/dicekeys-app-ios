@@ -70,6 +70,15 @@ final class KeyEntry {
     }
 }
 
+extension KeyEntry {
+    /// Every key that may lack a public key, for the fill to watch. The kind is only in the
+    /// recipe text, so every key but an age key matches too, and `needsPublicKey` picks out
+    /// the ones to fill.
+    static var mayNeedPublicKey: Predicate<KeyEntry> {
+        #Predicate { $0.publicKey == nil || $0.postQuantumPublicKey == nil }
+    }
+}
+
 enum Catalog {
     static let syncSettingKey = "syncsCatalogWithICloud"
     /// The setting as the app launched. The store opens once per launch, because two

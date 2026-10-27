@@ -25,7 +25,8 @@ struct CompatibilityTests {
                 "diceKeyID": "String", "name": "String", "centerFace": "String", "created": "Date"
             ],
             "KeyEntry": [
-                "diceKeyID": "String", "recipeJSON": "String", "publicKey": "Optional<String>", "created": "Date"
+                "diceKeyID": "String", "recipeJSON": "String", "publicKey": "Optional<String>",
+                "postQuantumPublicKey": "Optional<String>", "created": "Date"
             ]
         ]
         let schema = try Catalog.container(syncing: false, inMemory: true).schema
