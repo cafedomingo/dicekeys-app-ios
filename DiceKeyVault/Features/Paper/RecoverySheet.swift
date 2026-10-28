@@ -106,7 +106,7 @@ struct RecoverySheet: View {
     }
 
     private func keyLines(hasCode: Bool) -> some View {
-        let keys = code.catalog.keys
+        let keys = code.catalog.namedKeys
         let shown = keys.count > Self.listedKeys ? Self.listedKeys - 1 : keys.count
         return VStack(alignment: .leading, spacing: Self.keySpacing) {
             ForEach(keys.prefix(shown), id: \.self) { key in
@@ -125,6 +125,7 @@ struct RecoverySheet: View {
     }
 
     private func publicKey(for key: CatalogFile.KeyItem) -> String? {
-        entries.first { $0.recipe == key.recipe }?.publicKey
+        guard let entry = entries.first(where: { $0.recipe == key.recipe }) else { return nil }
+        return key.recipe.kind.algorithms.first.flatMap(entry.publicKey(for:))
     }
 }

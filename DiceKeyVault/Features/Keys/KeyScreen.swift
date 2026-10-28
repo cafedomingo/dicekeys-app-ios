@@ -21,9 +21,6 @@ struct KeyScreen: View {
     let onDelete: (KeyEntry) -> Void
 
     @State private var revealed: DerivedKey?
-    /// An age key's post-quantum recipient, which the catalog doesn't hold: derived once the
-    /// DiceKey is unlocked, and kept, since it is public.
-    @State private var postQuantumRecipient: String?
     @State private var entryToDelete: KeyEntry?
     @Environment(\.isSceneCaptured) private var isSceneCaptured
     @Environment(SavedDiceKeys.self) private var saved
@@ -37,16 +34,11 @@ struct KeyScreen: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
-                switch recipe.kind {
-                case .ssh, .wireguard:
-                    publicKeySection(entry.publicKey)
-                case .age:
-                    publicKeySection(entry.publicKey, title: AgeRecipient.x25519Title, note: AgeRecipient.x25519Note)
-                    publicKeySection(
-                        postQuantumRecipient, title: AgeRecipient.postQuantumTitle, note: AgeRecipient.postQuantumNote,
-                        foldedLines: AgeRecipient.postQuantumFoldedLines, offersUnlock: entry.publicKey != nil)
-                case .passphrase, .wallet:
-                    EmptyView()
+                if recipe.kind.hasPublicKey {
+                    let firstMissing = recipe.kind.algorithms.first { entry.publicKey(for: $0) == nil }
+                    ForEach(recipe.kind.algorithms, id: \.self) { type in
+                        publicKeySection(type, of: recipe.kind, offersUnlock: type == firstMissing)
+                    }
                 }
                 secretSection(recipe)
                 if !recipe.isDefault {
@@ -66,10 +58,6 @@ struct KeyScreen: View {
             .onChange(of: diceKey == nil) { _, isLocked in
                 if isLocked { revealed = nil }
             }
-            .task(id: diceKey?.id) {
-                guard recipe.kind == .age, postQuantumRecipient == nil, let diceKey else { return }
-                postQuantumRecipient = DerivedKey.derive(seed: diceKey.seed, recipe: recipe).postQuantum?.recipient
-            }
         } else {
             ContentUnavailableView(
                 "Unknown kind", systemImage: "questionmark.key.filled",
@@ -77,15 +65,15 @@ struct KeyScreen: View {
         }
     }
 
-    /// A public key, or until it is known, a note that it shows once the DiceKey is unlocked,
-    /// and Unlock for a DiceKey kept on this device unless an earlier section offers it.
+    /// An algorithm's public key, or until it is known, a note that it shows once the DiceKey
+    /// is unlocked, and Unlock for a DiceKey kept on this device unless an earlier section
+    /// offers it.
     @ViewBuilder
-    private func publicKeySection(
-        _ publicKey: String?, title: String = "Public key", note: String? = nil, foldedLines: Int? = nil,
-        offersUnlock: Bool = true
-    ) -> some View {
-        if let publicKey {
-            PublicKeySection(publicKey: publicKey, title: title, note: note, foldedLines: foldedLines)
+    private func publicKeySection(_ type: DerivableType, of kind: KeyKind, offersUnlock: Bool) -> some View {
+        let display = kind.display(of: type)
+        if let publicKey = entry.publicKey(for: type) {
+            PublicKeySection(
+                publicKey: publicKey, title: display.title, note: display.note, foldedLines: display.foldedLines)
         } else {
             Section {
                 Text("Shows once the DiceKey is unlocked.")
@@ -95,9 +83,9 @@ struct KeyScreen: View {
                         diceKeyID: entry.diceKeyID, name: (try? context.record(for: entry.diceKeyID))?.name ?? "")
                 }
             } header: {
-                Text(title)
+                Text(display.title)
             } footer: {
-                if let note { Text(note) }
+                if let note = display.note { Text(note) }
             }
         }
     }
@@ -114,16 +102,8 @@ struct KeyScreen: View {
     private func secretSection(_ recipe: KeyRecipe) -> some View {
         Section {
             if let revealed {
-                if let recipient = revealed.publicKey, let postQuantum = revealed.postQuantum {
-                    ageIdentity(revealed.secret, recipient: recipient, postQuantum: false, name: recipe.name ?? "")
-                    ageIdentity(
-                        postQuantum.identity, recipient: postQuantum.recipient, postQuantum: true,
-                        name: recipe.name ?? "")
-                } else {
-                    SecretView(kind: recipe.kind, secret: revealed.secret)
-                    SecretActions(
-                        kind: recipe.kind, secret: revealed.secret,
-                        file: recipe.kind == .ssh ? KeyFile(ssh: revealed) : nil)
+                ForEach(revealed.algorithms, id: \.type) { algorithm in
+                    secret(of: algorithm, in: recipe, labeled: revealed.algorithms.count > 1)
                 }
                 Button("Hide", systemImage: "eye.slash") { self.revealed = nil }
             } else if let diceKey {
@@ -147,20 +127,23 @@ struct KeyScreen: View {
         }
     }
 
-    /// One of an age key's two identities, labeled as its recipient's section is.
+    /// One algorithm's secret with Copy and Share, titled as its public key's section is when
+    /// the key has several.
     @ViewBuilder
-    private func ageIdentity(_ identity: String, recipient: String, postQuantum: Bool, name: String) -> some View {
-        VStack(alignment: .leading, spacing: .space2) {
-            Text(postQuantum ? AgeRecipient.postQuantumTitle : AgeRecipient.x25519Title)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            SecretView(kind: .age, secret: identity)
+    private func secret(of algorithm: AlgorithmKey, in recipe: KeyRecipe, labeled: Bool) -> some View {
+        if labeled {
+            VStack(alignment: .leading, spacing: .space2) {
+                Text(recipe.kind.display(of: algorithm.type).title)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                SecretView(kind: recipe.kind, secret: algorithm.secret)
+            }
+        } else {
+            SecretView(kind: recipe.kind, secret: algorithm.secret)
         }
         SecretActions(
-            kind: .age, secret: identity,
-            file: KeyFile(
-                ageIdentity: identity, recipient: recipient, postQuantum: postQuantum, name: name,
-                created: entry.created))
+            kind: recipe.kind, secret: algorithm.secret,
+            file: KeyFile(kind: recipe.kind, algorithm: algorithm, name: recipe.name ?? "", created: entry.created))
     }
 }
 
@@ -192,18 +175,6 @@ private struct KeyHeader: View {
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
     }
-}
-
-/// What tells an age key's two recipients apart, on the key and while it is made.
-enum AgeRecipient {
-    static let x25519Title = "X25519"
-    static let x25519Note =
-        "For any version of age. A file can be encrypted to it alongside SSH and other X25519 recipients."
-    static let postQuantumTitle = "ML-KEM-768 + X25519 (post-quantum)"
-    static let postQuantumNote =
-        "Safe from future quantum computers. Needs age 1.3 or later, and a file encrypted to it can't also be encrypted to X25519 or SSH recipients."
-    /// About 1,950 characters, so it opens folded to this many lines.
-    static let postQuantumFoldedLines = 4
 }
 
 struct PublicKeySection: View {
@@ -358,9 +329,14 @@ extension View {
 
 /// An SSH or age identity, as the file its tool reads.
 struct KeyFile: Transferable {
-    private static let ssh = (name: "id_ed25519", separator: "_", suffix: "")
-    private static let age = (name: "age", separator: "-", suffix: ".txt")
-    private static let agePostQuantum = (name: "age-pq", separator: "-", suffix: ".txt")
+    /// A tool's usual file name, which the key's name is added to.
+    struct Name: Equatable {
+        let base: String
+        /// Between the base and the key's name.
+        let separator: String
+        let suffix: String
+    }
+
     private static let slugSeparator = "-"
     /// Go's RFC 3339, as `age-keygen` writes its `# created:` line.
     private static let createdFormat = Date.ISO8601FormatStyle(
@@ -369,26 +345,30 @@ struct KeyFile: Transferable {
     let filename: String
     let contents: String
 
-    /// The OpenSSH private key.
-    init(ssh key: DerivedKey) {
-        filename = Self.filename(Self.ssh, name: key.recipe.name ?? "")
-        contents = key.secret
-    }
-
-    /// As `age-keygen` writes it: when the key was made, its recipient, then the identity.
-    init(ageIdentity identity: String, recipient: String, postQuantum: Bool, name: String, created: Date) {
-        filename = Self.filename(postQuantum ? Self.agePostQuantum : Self.age, name: name)
-        contents = "# created: \(created.formatted(Self.createdFormat))\n# public key: \(recipient)\n\(identity)\n"
+    /// The file for one algorithm's key, or nil when no tool reads it from a file. An age
+    /// identity is written as `age-keygen` writes it: when the key was made, its recipient,
+    /// then the identity. Any other file is the secret.
+    init?(kind: KeyKind, algorithm: AlgorithmKey, name: String, created: Date) {
+        guard let file = kind.display(of: algorithm.type).file else { return nil }
+        filename = Self.filename(file, name: name)
+        switch kind {
+        case .age:
+            guard let recipient = algorithm.publicKey else { return nil }
+            let stamp = created.formatted(Self.createdFormat)
+            contents = "# created: \(stamp)\n# public key: \(recipient)\n\(algorithm.secret)\n"
+        case .ssh, .wireguard, .passphrase, .wallet:
+            contents = algorithm.secret
+        }
     }
 
     /// The tool's usual name, then the key's letters and digits with each run of anything
     /// else, emoji included, as one hyphen; just the tool's name if nothing is left.
-    private static func filename(_ file: (name: String, separator: String, suffix: String), name: String) -> String {
+    private static func filename(_ file: Name, name: String) -> String {
         let slug = name.unicodeScalars
             .split { !CharacterSet.alphanumerics.contains($0) }
             .map { String(String.UnicodeScalarView($0)) }
             .joined(separator: slugSeparator)
-        return file.name + (slug.isEmpty ? "" : file.separator + slug) + file.suffix
+        return file.base + (slug.isEmpty ? "" : file.separator + slug) + file.suffix
     }
 
     static var transferRepresentation: some TransferRepresentation {

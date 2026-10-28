@@ -50,7 +50,7 @@ A recipe says what to derive. It is JSON, and its text is what gets hashed:
 The fields are `kind` (`ssh`, `wireguard`, `age`, `passphrase` or `wallet`) and `name`, and
 for a passphrase `length` and `list`, with `separator` and `uppercase` for words (see
 Passphrases). Nothing else. Only the default keys have no `name` (see Default keys). The
-type is not in the JSON: the kind decides it.
+types are not in the JSON: the kind decides them.
 
 **One spelling.** A recipe is written as RFC 8785 (JCS) canonical JSON: keys sorted by UTF-16
 code unit, no whitespace, integers in plain decimal, non-ASCII written as raw UTF-8 (never
@@ -76,23 +76,37 @@ refuses a name; it never derives a different key.
 
 ## Kinds
 
-`KeyRecipe` builds the recipe; `DerivedKey` derives and encodes the key. The type is hashed
-in front of the recipe and names what the bytes become.
+`KeyRecipe` builds the recipe; `DerivedKey` derives and encodes the key. A kind derives an
+ordered list of algorithms from its one recipe, one key each (`KeyKind.algorithms`). An
+algorithm is a type. The type is hashed in front of the recipe and names what the bytes become.
 
-| Kind | Type | L | Key |
-|---|---|---|---|
-| ssh | `ed25519` | 32 | The bytes are the Ed25519 seed. |
-| wireguard | `x25519` | 32 | The bytes are the X25519 scalar, unclamped. |
-| age | `x25519` | 32 | The same scalar. |
-| age, post-quantum | `mlkem768x25519` | 32 | The bytes are the X-Wing seed that an age 1.3 identity holds. SHAKE256 of it gives 96 bytes: ML-KEM-768's seed (d ‖ z), then the X25519 secret. |
-| passphrase | `passphrase` | 8 per entry | See Passphrases. |
-| wallet | `bip39` | 32 | The bytes are the BIP39 entropy. |
+| Kind | Algorithms |
+|---|---|
+| ssh | `ed25519` |
+| wireguard | `x25519` |
+| age | `x25519`, `mlkem768x25519` |
+| passphrase | `passphrase` |
+| wallet | `bip39` |
 
-WireGuard and age share a type and differ by `kind` in the recipe. An age key derives both
-of its identities from its one recipe; their types keep them independent. The X25519 scalar is
-clamped by the curve library when it is used (CryptoKit, libsodium and Python's
-`cryptography` all clamp internally), so every tool agrees on the public key; a port must use
-a library that does the same.
+| Type | L | Key |
+|---|---|---|
+| `ed25519` | 32 | The bytes are the Ed25519 seed. |
+| `x25519` | 32 | The bytes are the X25519 scalar, unclamped. |
+| `mlkem768x25519` | 32 | The bytes are the X-Wing seed that an age 1.3 identity holds. SHAKE256 of it gives 96 bytes: ML-KEM-768's seed (d ‖ z), then the X25519 secret. |
+| `passphrase` | 8 per entry | See Passphrases. |
+| `bip39` | 32 | The bytes are the BIP39 entropy. |
+
+WireGuard and age share the type `x25519` and differ by `kind` in the recipe. An age key
+derives both of its identities from its one recipe; their types keep them independent. The
+X25519 scalar is clamped by the curve library when it is used (CryptoKit, libsodium and
+Python's `cryptography` all clamp internally), so every tool agrees on the public key; a port
+must use a library that does the same.
+
+The rules for algorithms:
+
+- A kind's algorithm set only grows. A released algorithm is never removed or retyped.
+- The types within a kind are distinct, because the same type would derive the same bytes.
+- The order is emphasis only, and it may change, since nothing stored depends on it.
 
 **Encodings.** These turn key bytes into the text each tool reads. They are standard formats,
 pinned by kinds.json, but they are not key material: the key would survive a change to them,
@@ -171,9 +185,10 @@ literal equals a named recipe's text, since those hold `"name"`, and each starts
 Once an App Store release has a literal, it is never edited or removed, because a default has
 no name to make its key again and synced catalogs hold its rows. The set changes only by
 adding one, and an added literal reaches every DiceKey: the app adds each default a DiceKey
-lacks. A catalog row whose recipe has no name and isn't one of these, such as
-`{"kind":"wireguard"}` from a test build, is left out like any recipe this version can't
-read, and the DiceKey's other keys load as usual.
+lacks. If a default ever stops being added to new DiceKeys, its literal stays accepted by the
+parser, so files and paper that carry it can still make the key. A catalog row whose recipe
+has no name and isn't one of these, such as `{"kind":"wireguard"}` from a test build, is left
+out like any recipe this version can't read, and the DiceKey's other keys load as usual.
 
 Without a name, the encodings that use one fall back. The SSH public key line is
 `ssh-ed25519 <base64>`, with no comment and no trailing space, and the private key's comment is
@@ -193,7 +208,7 @@ change:
 
 - the seed's text and the rotation rule;
 - the construction (HKDF-SHA256 with no salt, as above);
-- the type strings;
+- the type strings, and the types each kind derives, a set that may only grow;
 - each kind's fields: their names, their values, the list names, and when an optional field
   is written (`uppercase` only with digits, and only as `true`);
 - the default recipe texts, which are literals;
@@ -203,10 +218,10 @@ change:
 
 Every (kind, name, style) has exactly one recipe text, because names are normalized and the
 JSON is canonical, and the parser accepts nothing else. A default has exactly one too: its
-literal. The format grows by adding: a new kind, a new type, a new list or a new default
-leaves every existing string alone. A new field must never be added to an existing kind with
-a default that changes its text. A key is replaced by giving it a new name (`github 2`), so a
-default key can't be replaced; there is no other version counter.
+literal. The format grows by adding: a new kind, a new type, a new algorithm for a kind, a
+new list or a new default leaves every existing string alone. A new field must never be added
+to an existing kind with a default that changes its text. A key is replaced by giving it a new
+name (`github 2`), so a default key can't be replaced; there is no other version counter.
 
 If a test below fails, a derived byte has changed: fix the code, never the fixture.
 
@@ -238,17 +253,18 @@ If a test below fails, a derived byte has changed: fix the code, never the fixtu
   - `hkdf`: seed, type, recipe text, length and the raw output in hex;
   - `diceKeyIds`: seed and id;
   - `cases`: derivations across every kind and style, each with `seed`, `kind`, `input`
-    (the name as typed, to exercise normalization), `name`, `style`, `recipe`, `type`, and the
-    `publicKey`, `fingerprint` and `secret` its tool reads; an age case adds `postQuantum`
-    with its `type`, `publicKey` and `secret`;
-  - `defaults`: each default for each seed, with `seed`, `kind`, `recipe` (its literal),
-    `type`, and the `publicKey`, `fingerprint` and `secret` its tool reads, and for age
-    `postQuantum`.
+    (the name as typed, to exercise normalization), `name`, `style`, `recipe`, and
+    `algorithms`, one per algorithm of the kind in order, each with its `type` and the
+    `publicKey`, `fingerprint` and `secret` its tool reads (a passphrase or a wallet has no
+    `publicKey` or `fingerprint`, and age's post-quantum key has no `fingerprint`);
+  - `defaults`: each default for each seed, with `seed`, `kind`, `recipe` (its literal) and
+    `algorithms` as above.
 
-  `KindVectorTests` and `DiceKeySeedTests` check the app against it, including that every
-  recipe parses back to itself. CI runs the script with `--tools`, so `ssh-keygen`, `wg` and
-  `age-keygen` 1.3 read every key back, `age` encrypts to every age recipient and the identity
-  decrypts it, and the BIP39 reference decodes every phrase.
+  `KindVectorTests` and `DiceKeySeedTests` check the app against it, including each kind's
+  algorithms in order and that every recipe parses back to itself. CI runs the script with
+  `--tools`, so `ssh-keygen`, `wg` and `age-keygen` 1.3 read every key back, `age` encrypts to
+  every age recipient and the identity decrypts it, and the BIP39 reference decodes every
+  phrase.
 - `KeyRecipeTests`: the name rules, JCS escaping and ordering, text that isn't a canonical
   recipe, and the default literals byte for byte, with any other text that has no name
   refused.

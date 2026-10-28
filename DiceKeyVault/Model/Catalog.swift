@@ -43,14 +43,18 @@ final class KeyEntry {
     /// The recipe's canonical text, the bytes its key was derived from, so no Swift type
     /// shapes what is stored or synced.
     var recipeJSON = ""
-    /// Recorded to show and compare by eye, never checked.
-    var publicKey: String?
+    /// Each algorithm's public key, by its type's raw value: `["x25519": "age1…",
+    /// "mlkem768x25519": "age1pq1…"]`. Recorded to show and compare by eye, never checked.
+    /// Keyed by String, not `DerivableType`, so a name this version doesn't know, from a newer
+    /// version on another device, is kept when this version writes, not dropped. Never filter
+    /// on it in a `#Predicate`: SwiftData crashes.
+    var publicKeys: [String: String] = [:]
     var created = Date.now
 
-    init(diceKeyID: String, recipe: KeyRecipe, publicKey: String?) {
+    init(diceKeyID: String, recipe: KeyRecipe, publicKeys: [String: String] = [:]) {
         self.diceKeyID = diceKeyID
         recipeJSON = recipe.json
-        self.publicKey = publicKey
+        self.publicKeys = publicKeys
     }
 
     /// Nil for an entry this version can't read: a kind or field a later version wrote, where
@@ -58,8 +62,15 @@ final class KeyEntry {
     /// isn't a default, such as the `{"kind":"wireguard"}` test builds recorded.
     var recipe: KeyRecipe? { try? KeyRecipe(json: recipeJSON) }
 
-    /// Recorded without its public key, which its DiceKey fills in once unlocked.
-    var needsPublicKey: Bool { publicKey == nil && recipe?.kind.hasPublicKey == true }
+    /// The public key recorded for this algorithm, if any.
+    func publicKey(for type: DerivableType) -> String? { publicKeys[type.rawValue] }
+
+    /// Its kind has a public half and some algorithm's public key isn't recorded yet, which
+    /// its DiceKey fills in once unlocked.
+    var needsPublicKey: Bool {
+        guard let kind = recipe?.kind, kind.hasPublicKey else { return false }
+        return kind.algorithms.contains { publicKey(for: $0) == nil }
+    }
 }
 
 enum Catalog {
@@ -112,7 +123,7 @@ extension ModelContext {
     func addMissingDefaults(for diceKeyID: String) throws {
         let recorded = Set(try entries(for: diceKeyID).compactMap(\.recipe))
         for recipe in KeyRecipe.defaults where !recorded.contains(recipe) {
-            insert(KeyEntry(diceKeyID: diceKeyID, recipe: recipe, publicKey: nil))
+            insert(KeyEntry(diceKeyID: diceKeyID, recipe: recipe))
         }
     }
 
@@ -132,19 +143,24 @@ extension ModelContext {
     @discardableResult
     func addEntry(for key: DerivedKey, diceKeyID: String) throws -> KeyEntry {
         if let existing = try entry(for: key.recipe, diceKeyID: diceKeyID) { return existing }
-        let entry = KeyEntry(diceKeyID: diceKeyID, recipe: key.recipe, publicKey: key.publicKey)
+        let entry = KeyEntry(diceKeyID: diceKeyID, recipe: key.recipe, publicKeys: key.publicKeys)
         insert(entry)
         try save()
         return entry
     }
 
-    /// Fills in, from the DiceKey itself, the public keys that default and imported keys are
-    /// recorded without, in every copy a sync made.
+    /// Fills in, from the DiceKey itself, every public key a key is recorded without: a
+    /// default's, an imported key's, or one for an algorithm added since the key was recorded,
+    /// in every copy a sync made. Each missing one is set on its own, never the whole map, so a
+    /// name this version doesn't know stays.
     func fillPublicKeys(for diceKey: DiceKey) throws {
         let missing = try allEntries(for: diceKey.id).filter(\.needsPublicKey)
         for entry in missing {
             guard let recipe = entry.recipe else { continue }
-            entry.publicKey = DerivedKey.derive(seed: diceKey.seed, recipe: recipe).publicKey
+            let derived = DerivedKey.derive(seed: diceKey.seed, recipe: recipe).publicKeys
+            for type in recipe.kind.algorithms where entry.publicKey(for: type) == nil {
+                entry.publicKeys[type.rawValue] = derived[type.rawValue]
+            }
         }
         if !missing.isEmpty { try save() }
     }
@@ -185,6 +201,14 @@ extension KeyRecipe {
 }
 
 extension [KeyEntry] {
+    /// The rows the public key fill has work for: those whose DiceKey is unlocked, and that
+    /// miss a public key. Checked in code, since the map can't be filtered in the store, and
+    /// the DiceKey first, since it is cheap and nothing caps the store's rows, while
+    /// `needsPublicKey` decodes the recipe.
+    func keysToFill(isUnlocked: (String) -> Bool) -> Set<PersistentIdentifier> {
+        Set(filter { isUnlocked($0.diceKeyID) && $0.needsPublicKey }.map(\.persistentModelID))
+    }
+
     /// Two devices can make the same key before they sync, so entries are told apart by
     /// DiceKey and recipe, not by row, and the oldest copy stands for the key. Entries this
     /// version can't read are left out. The default keys come first, in their own order, then

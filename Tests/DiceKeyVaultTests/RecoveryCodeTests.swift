@@ -45,7 +45,7 @@ struct RecoveryCodeTests {
         #expect(diceKey.id == DiceKey.example.id)
         #expect(try context.record(for: diceKey.id)?.name == "Example")
         #expect(try context.entries(for: diceKey.id).count == 9)
-        #expect(try context.entries(for: diceKey.id).allSatisfy { $0.publicKey == nil })
+        #expect(try context.entries(for: diceKey.id).allSatisfy { $0.publicKeys.isEmpty })
     }
 
     @Test("restoring a DiceKey records it with the default keys")
@@ -55,8 +55,8 @@ struct RecoveryCodeTests {
         #expect(try context.entries(for: diceKey.id).compactMap(\.recipe).filter(\.isDefault) == KeyRecipe.defaults)
     }
 
-    @Test("the code and its list leave out the default keys")
-    func codeLeavesOutDefaults() throws {
+    @Test("the code and its list carry the default keys, then the named ones")
+    func codeCarriesDefaults() throws {
         let context = try emptyContext()
         try context.recordIfNew(DiceKey.example)
         let github = try KeyRecipe(kind: .ssh, name: "github")
@@ -65,7 +65,8 @@ struct RecoveryCodeTests {
         let record = try #require(try context.record(for: DiceKey.example.id))
         let code = RecoveryCode(
             diceKey: .example, record: record, entries: try context.entries(for: DiceKey.example.id))
-        #expect(code.catalog.keys.map(\.recipe.name) == ["github"])
+        #expect(code.catalog.keys.map(\.recipe) == KeyRecipe.defaults + [github])
+        #expect(try RecoveryCode(payload: code.payload) == code)
     }
 
     @Test("restoring onto a device that has the DiceKey keeps its name and adds only what is missing")
@@ -91,8 +92,7 @@ struct RecoveryCodeTests {
         let context = try emptyContext()
         let restored = try RecoveryCode(payload: payload).restore(into: context)
         #expect(restored.id == DiceKey.example.id)
-        #expect(
-            try context.entries(for: DiceKey.example.id).count == fixture.catalog.keys.count + KeyRecipe.defaults.count)
+        #expect(try context.entries(for: DiceKey.example.id).count == fixture.catalog.keys.count)
     }
 
     @Test("a key a later version wrote still lets the sheet restore its DiceKey and the other keys")

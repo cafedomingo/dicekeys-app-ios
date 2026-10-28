@@ -36,7 +36,7 @@ struct CatalogFileTests {
     @Test("the file reads back as it was written")
     func roundTrip() throws {
         let file = try catalogWithKeys()
-        #expect(file.keys.count == 2)
+        #expect(file.keys.count == 4)
         #expect(try CatalogFile(json: file.json()) == file)
         #expect(String(decoding: try file.json(), as: UTF8.self).contains("\n"))
     }
@@ -58,8 +58,16 @@ struct CatalogFileTests {
         #expect(try empty.entries(for: DiceKey.example.id).compactMap(\.recipe?.name) == ["github", "nas"])
     }
 
-    @Test("the file and the QR code's link leave out the default keys")
-    func exportLeavesOutDefaults() throws {
+    @Test("the named keys are the keys without the defaults")
+    func namedKeysLeaveOutDefaults() throws {
+        let file = try catalogWithKeys()
+        #expect(file.keys.count == KeyRecipe.defaults.count + 2)
+        #expect(file.namedKeys.map(\.recipe.name) == ["github", "nas"])
+        #expect(file.namedKeys.allSatisfy { !$0.recipe.isDefault })
+    }
+
+    @Test("the file and the QR code's link carry the default keys, then the named ones")
+    func exportCarriesDefaults() throws {
         try context.recordIfNew(DiceKey.example)
         let github = try KeyRecipe(kind: .ssh, name: "github")
         try context.addEntry(
@@ -67,8 +75,38 @@ struct CatalogFileTests {
         let file = CatalogFile(
             records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
-        #expect(file.keys.map(\.recipe.name) == ["github"])
-        #expect(try CatalogFile(importURL: try file.importURL).keys.map(\.recipe.name) == ["github"])
+        #expect(file.keys.map(\.recipe) == KeyRecipe.defaults + [github])
+        #expect(try CatalogFile(importURL: try file.importURL).keys.map(\.recipe) == KeyRecipe.defaults + [github])
+    }
+
+    @Test("the file writes every algorithm's public key by its type, for keys with a public half")
+    func exportWritesPublicKeys() throws {
+        try context.recordIfNew(DiceKey.example)
+        let recipes = [
+            try KeyRecipe(kind: .age, name: "backups"),
+            try KeyRecipe(kind: .ssh, name: "github"),
+            try KeyRecipe(kind: .passphrase, name: "nas", style: .memorable(words: 7, digitsAndUppercase: true))
+        ]
+        for recipe in recipes {
+            try context.addEntry(
+                for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe), diceKeyID: DiceKey.example.id)
+        }
+        try context.fillPublicKeys(for: DiceKey.example)
+        let file = CatalogFile(
+            records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
+            entries: try context.fetch(FetchDescriptor<KeyEntry>()))
+        #expect(file.keys.map(\.recipe) == KeyRecipe.defaults + recipes)
+        for key in file.keys {
+            let derived = DerivedKey.derive(seed: DiceKey.example.seed, recipe: key.recipe).publicKeys
+            #expect(key.publicKeys == (key.recipe.kind.hasPublicKey ? derived : nil))
+        }
+        let root = try #require(try JSONSerialization.jsonObject(with: file.json()) as? [String: Any])
+        let objects = try #require(root["keys"] as? [[String: Any]])
+        let age = try #require(objects.first { $0["kind"] as? String == "age" && $0["name"] == nil })
+        #expect(Set(try #require(age["publicKeys"] as? [String: String]).keys) == ["mlkem768x25519", "x25519"])
+        let passphrase = try #require(objects.first { $0["kind"] as? String == "passphrase" })
+        #expect(passphrase["publicKeys"] == nil)
+        #expect(try CatalogFile(json: file.json()) == file)
     }
 
     @Test("importing a DiceKey records it with the default keys")
@@ -122,13 +160,29 @@ struct CatalogFileTests {
     @Test("an imported public key is ignored, and filled in from the dice on unlock")
     func publicKeysComeFromTheDice() throws {
         var file = try catalogWithKeys()
-        let genuine = file.keys[0].publicKey
-        file.keys[0].publicKey = "ssh-ed25519 AAAAattacker github"
+        let index = try #require(file.keys.firstIndex { $0.recipe.name == "github" })
+        let genuine = try #require(file.keys[index].publicKeys?["ed25519"])
+        file.keys[index].publicKeys = ["ed25519": "ssh-ed25519 AAAAattacker github"]
         let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         try file.merge(into: empty)
-        #expect(try empty.entries(for: DiceKey.example.id).allSatisfy { $0.publicKey == nil })
+        #expect(try empty.entries(for: DiceKey.example.id).allSatisfy { $0.publicKeys.isEmpty })
         try empty.fillPublicKeys(for: DiceKey.example)
-        #expect(try empty.entries(for: DiceKey.example.id).first { $0.recipe?.name == "github" }?.publicKey == genuine)
+        let github = try empty.entries(for: DiceKey.example.id).first { $0.recipe?.name == "github" }
+        #expect(github?.publicKeys["ed25519"] == genuine)
+    }
+
+    @Test("a key whose public keys aren't a map of text is skipped and counted, and the rest still reads")
+    func malformedPublicKeysSkipsTheKey() throws {
+        let id = DiceKey.example.id
+        let json = """
+            {"v":1,"diceKeys":[{"id":"\(id)","name":"Home","centerFace":"M1t"}],"keys":[
+            {"diceKey":"\(id)","kind":"ssh","name":"w","publicKeys":"nope"},
+            {"diceKey":"\(id)","kind":"ssh","name":"github"}]}
+            """
+        let file = try CatalogFile(json: Data(json.utf8))
+        #expect(file.keys.map(\.recipe.name) == ["github"])
+        let empty = ModelContext(try Catalog.container(syncing: false, inMemory: true))
+        #expect(try file.merge(into: empty) == (diceKeys: 1, keys: 1, unreadable: 1))
     }
 
     @Test("a passphrase without its style, a field no recipe has, or a key without its DiceKey, is skipped")

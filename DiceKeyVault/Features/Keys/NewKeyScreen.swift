@@ -55,21 +55,21 @@ struct NewKeyScreen: View {
                         Text("You already have this key.")
                     }
                 }
-                if let publicKey = preview?.publicKey, let postQuantum = preview?.postQuantum {
-                    PublicKeySection(
-                        publicKey: publicKey, title: "\(AgeRecipient.x25519Title) · \(Self.updates)",
-                        note: AgeRecipient.x25519Note)
-                    PublicKeySection(
-                        publicKey: postQuantum.recipient, title: AgeRecipient.postQuantumTitle,
-                        note: AgeRecipient.postQuantumNote, foldedLines: AgeRecipient.postQuantumFoldedLines)
-                } else if let publicKey = preview?.publicKey {
-                    PublicKeySection(
-                        publicKey: publicKey, fingerprint: preview?.fingerprint, title: "Public key · \(Self.updates)")
-                } else if let preview {
+                if let preview, kind.hasPublicKey {
+                    ForEach(Array(preview.algorithms.enumerated()), id: \.element.type) { index, algorithm in
+                        if let publicKey = algorithm.publicKey {
+                            let display = kind.display(of: algorithm.type)
+                            PublicKeySection(
+                                publicKey: publicKey, fingerprint: algorithm.fingerprint,
+                                title: index == 0 ? "\(display.title) · \(Self.updates)" : display.title,
+                                note: display.note, foldedLines: display.foldedLines)
+                        }
+                    }
+                } else if let secret = preview?.algorithms.first?.secret {
                     Section("\(kind.secretTitle) · \(Self.updates)") {
                         if isSecretShown {
-                            SecretView(kind: kind, secret: preview.secret)
-                            SecretActions(kind: kind, secret: preview.secret)
+                            SecretView(kind: kind, secret: secret)
+                            SecretActions(kind: kind, secret: secret)
                         }
                         Button(isSecretShown ? "Hide" : "Show", systemImage: isSecretShown ? "eye.slash" : "eye") {
                             isSecretShown.toggle()

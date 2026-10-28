@@ -4,7 +4,8 @@
 //
 
 /// What the derived bytes become. The raw value is hashed in front of the recipe's text, so
-/// it keeps one recipe's keys apart and cannot change.
+/// it keeps one recipe's keys apart and cannot change. It is also the stored name of an
+/// algorithm of a kind (`KeyKind.algorithms`).
 public enum DerivableType: String, Sendable {
     case ed25519
     case x25519

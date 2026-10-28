@@ -78,13 +78,11 @@ struct PaperTests {
         String(Data(SHA256.hash(data: Data("\(index)".utf8))).base64URLEncodedString.prefix(length))
     }
 
+    /// The two defaults, as every list holds them, then `count` named keys.
     private static func manyKeys(_ count: Int, nameLength: Int) throws -> CatalogFile {
         var file = Self.file
-        file.keys = try (0..<count).map { index in
-            CatalogFile.KeyItem(
-                diceKey: file.diceKeys[0].id,
-                recipe: try KeyRecipe(kind: .ssh, name: incompressibleName(index, length: nameLength)))
-        }
+        let named = try (0..<count).map { try KeyRecipe(kind: .ssh, name: incompressibleName($0, length: nameLength)) }
+        file.keys = (KeyRecipe.defaults + named).map { CatalogFile.KeyItem(diceKey: file.diceKeys[0].id, recipe: $0) }
         return file
     }
 
@@ -96,7 +94,7 @@ struct PaperTests {
     @Test("the list card's PDF names every key and never holds the faces")
     func cardHoldsNoSecret() throws {
         let text = try Self.cardText(Self.file)
-        for key in Self.file.keys { #expect(text.contains(Self.searchable(key.recipe.title))) }
+        for key in Self.file.namedKeys { #expect(text.contains(Self.searchable(key.recipe.title))) }
         let faces = DiceKey.example.faces
         #expect(!text.contains(faces[0].text + " " + faces[1].text))
         #expect(!text.contains(faces[0].text + faces[1].text))
@@ -151,12 +149,8 @@ struct PaperTests {
 
     @Test("the recovery sheet's code holds eighty keys")
     func sheetHoldsEightyKeys() throws {
-        let entries = try (0..<80).map { index in
-            KeyEntry(
-                diceKeyID: DiceKey.example.id,
-                recipe: try KeyRecipe(kind: .ssh, name: Self.incompressibleName(index, length: 12)),
-                publicKey: nil)
-        }
+        let recipes = try (0..<80).map { try KeyRecipe(kind: .ssh, name: Self.incompressibleName($0, length: 12)) }
+        let entries = (KeyRecipe.defaults + recipes).map { KeyEntry(diceKeyID: DiceKey.example.id, recipe: $0) }
         let code = RecoveryCode(diceKey: .example, record: DiceKeyRecord(diceKey: .example), entries: entries)
         let image = try #require(PaperCode.image(for: code.payload, symbology: RecoverySheet.codeSymbology))
         #expect(image.width <= RecoverySheet.maximumCodeWidth)
@@ -171,10 +165,15 @@ struct PaperTests {
 
     /// A recovery sheet for `count` SSH keys, with their public keys as the app has them.
     private static func sheetText(keys count: Int) throws -> String {
+        try sheetText(
+            recipes: (0..<count).map { try KeyRecipe(kind: .ssh, name: incompressibleName($0, length: 12)) })
+    }
+
+    /// A recovery sheet for these keys, with their public keys as the app has them.
+    private static func sheetText(recipes: [KeyRecipe]) throws -> String {
         let context = ModelContext(try Catalog.container(syncing: false, inMemory: true))
         try context.recordIfNew(DiceKey.example)
-        for index in 0..<count {
-            let recipe = try KeyRecipe(kind: .ssh, name: incompressibleName(index, length: 12))
+        for recipe in recipes {
             try context.addEntry(
                 for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe), diceKeyID: DiceKey.example.id)
         }
@@ -182,6 +181,25 @@ struct PaperTests {
         let entries = try context.entries(for: DiceKey.example.id)
         let code = RecoveryCode(diceKey: .example, record: record, entries: entries)
         return try text(of: PrintedPage.pdf(of: RecoverySheet(code: code, entries: entries), size: PrintedPage.letter))
+    }
+
+    @Test("the printed lists show the named keys only, so no default prints as SSH · SSH")
+    func printedListsShowNamedKeysOnly() throws {
+        let card = try Self.cardText(Self.file)
+        #expect(!card.contains("SSH · SSH"))
+        #expect(!card.contains("age · age"))
+        let full = try Self.cardText(Self.manyKeys(ListCard.listedKeys, nameLength: 12))
+        #expect(!full.contains("more in"))
+        #expect(!(try Self.sheetText(keys: RecoverySheet.listedKeys)).contains("SSH · SSH"))
+    }
+
+    @Test("the recovery sheet prints a key's first algorithm's public key, not every one")
+    func sheetPrintsTheFirstAlgorithmsPublicKey() throws {
+        let backups = try KeyRecipe(kind: .age, name: "backups")
+        let text = try Self.sheetText(recipes: [backups])
+        let derived = DerivedKey.derive(seed: DiceKey.example.seed, recipe: backups)
+        #expect(text.contains(try #require(derived.publicKeys["x25519"])))
+        #expect(!text.contains("age1pq1"))
     }
 
     @Test("a recovery sheet with many keys and their public keys keeps its warning and instructions on the page")

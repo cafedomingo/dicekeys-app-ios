@@ -34,7 +34,7 @@ private struct RestoresDiceKey: ViewModifier {
                 Button("Cancel", role: .cancel) {}
             } message: { code in
                 Text(
-                    "Adds \(name) and its ^[\(code.catalog.keys.count) key](inflect: true) to this device, unlocked. Kept on this device, Face ID or the passcode unlocks it next time instead of this sheet."
+                    "Adds \(name) and its ^[\(code.catalog.namedKeys.count) key](inflect: true) to this device, unlocked. Kept on this device, Face ID or the passcode unlocks it next time instead of this sheet."
                 )
             }
             .errorAlert($error)

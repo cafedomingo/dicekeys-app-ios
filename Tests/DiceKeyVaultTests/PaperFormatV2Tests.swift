@@ -18,7 +18,7 @@ struct PaperFormatV2Tests {
 
     private static var expectedRecipes: [KeyRecipe] {
         get throws {
-            [
+            KeyRecipe.defaults + [
                 try KeyRecipe(kind: .ssh, name: "🧨 & 日本語"),
                 try KeyRecipe(kind: .age, name: "backups"),
                 try KeyRecipe(kind: .passphrase, name: "bank", style: .memorable(words: 6, digitsAndUppercase: true)),
@@ -40,7 +40,7 @@ struct PaperFormatV2Tests {
         let file = try CatalogFile(importURL: #require(URL(string: Fixture.text("catalog-link-v2.txt"))))
         #expect(file.diceKeys == [CatalogFile.DiceKeyItem(id: Self.id, name: "Example", centerFace: "M1t")])
         #expect(file.keys.map(\.recipe) == (try Self.expectedRecipes))
-        #expect(file.keys.allSatisfy { $0.diceKey == Self.id && $0.publicKey == nil })
+        #expect(file.keys.allSatisfy { $0.diceKey == Self.id && $0.publicKeys == nil })
         #expect(file == Self.expected)
     }
 

@@ -46,8 +46,9 @@ opened from a `DiceKeyScreen` pushed over it. A phone shows the same columns as 
   non-secret metadata, enough to derive each key again. `security.md` says what it holds;
   `catalog-format.md` defines its fields and how it travels as a file, a link and a code.
 - **`Derivation`**: `KeyRecipe` turns a kind and a name into canonical recipe JSON, and
-  reads it back only in that form; `DerivedKey` derives and encodes it. `Fixtures/kinds.json`
-  is written by `scripts/derive-kinds.py`, an independent implementation.
+  reads it back only in that form; `DerivedKey` derives it, one key for each of the kind's
+  algorithms (`KeyKind.algorithms`), and encodes each. `Fixtures/kinds.json` is written by
+  `scripts/derive-kinds.py`, an independent implementation.
 - **`ReadDiceKey`** is the scanner. `scripts/compare-upstream/compare-upstream.sh` reads its
   photo corpus with DiceKeys' own scanner too, for the comparison in `scanning.md`.
 

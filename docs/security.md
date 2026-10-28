@@ -21,7 +21,7 @@ where.
 |---|---|---|
 | The DiceKey | Memory (`UnlockedDiceKeys`) | While it is the DiceKey in use (the last opened or unlocked) and the app is open; otherwise for the lock delay, 59 seconds (`UnlockedDiceKeys.lockDelay`), after it stops being in use. After the app goes to the background, until it comes back the lock delay or more later, or iOS ends it |
 | The DiceKey, if "Keep on this device" | Keychain: `WhenUnlockedThisDeviceOnly`, `.userPresence`, not synchronizable | Until turned off or Forget |
-| Derived keys | Memory: while New key shows its draft, which derives the whole key even when only the public half shows, and while revealed on screen. An age key's screen derives the whole key once to show its post-quantum recipient, which it keeps, and drops the rest at once | Dropped on Hide, leaving New key, lock, background, screen capture or screenshot |
+| Derived keys | Memory: while New key shows its draft, which derives the whole key even when only the public half shows, and while revealed on screen. Filling in a key's public keys derives the whole key and drops the rest at once | Dropped on Hide, leaving New key, lock, background, screen capture or screenshot |
 | The catalog | SwiftData store, with iOS's default file protection (complete until the first unlock after a restart), so iOS can launch the app before then; it holds nothing secret | Until Forget |
 | A copied secret | Pasteboard, local only (no Universal Clipboard) | 60 seconds, enforced by the system |
 | A list card | Paper, kept in the box | No secret: the same fields as the catalog, without public keys |
@@ -39,10 +39,10 @@ it can't.
 
 The catalog holds what is needed to derive each key again and nothing that unlocks one: per
 DiceKey its id, name, center die and the date it was first seen, and per key its DiceKey's
-id, its recipe, its public key and the date (`catalog-format.md` has the fields). A DiceKey's
-default keys (`derivation.md`) are keys like the rest: the catalog holds their recipes, the
-same fixed texts for every DiceKey, and their public keys. For age that public key is the
-X25519 recipient; the post-quantum one is derived again each time.
+id, its recipe, each algorithm's public key and the date (`catalog-format.md` has the
+fields). A DiceKey's default keys (`derivation.md`) are keys like the rest: the catalog holds
+their recipes, the same fixed texts for every DiceKey, and their public keys. For age that is
+both recipients, X25519 and post-quantum.
 
 With Sync with iCloud on (Settings; off by default) this goes to the user's private CloudKit
 database, `iCloud.com.cafedomingo.dicekeys`, through SwiftData. That is safe because:

@@ -42,7 +42,8 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Query private var records: [DiceKeyRecord]
-    @Query(filter: #Predicate<KeyEntry> { $0.publicKey == nil }) private var keysWithoutPublicKeys: [KeyEntry]
+    /// Every row, since the public keys map can't be filtered in the store.
+    @Query private var entries: [KeyEntry]
 
     var body: some View {
         NavigationSplitView(preferredCompactColumn: $compactColumn) {
@@ -161,9 +162,7 @@ struct ContentView: View {
     /// than the unlocked DiceKeys, so a key an import or a sync adds to an unlocked DiceKey fills
     /// too.
     private var keysToFill: Set<PersistentIdentifier> {
-        Set(
-            keysWithoutPublicKeys.filter { unlocked.diceKey(id: $0.diceKeyID) != nil && $0.needsPublicKey }
-                .map(\.persistentModelID))
+        entries.keysToFill { unlocked.diceKey(id: $0) != nil }
     }
 
     /// New key is open but its DiceKey has locked, so it has nothing to derive from.
