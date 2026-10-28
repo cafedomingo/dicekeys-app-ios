@@ -22,6 +22,8 @@ extension KeyKind {
         "For any version of age. A file can be encrypted to it alongside SSH and other X25519 recipients."
     private static let postQuantumNote =
         "Safe from future quantum computers. Needs age 1.3 or later, and a file encrypted to it can't also be encrypted to X25519 or SSH recipients."
+    /// The recipient is about 1,950 characters, so it opens folded to this many lines.
+    private static let postQuantumFoldedLines = 4
 
     /// What shows for one of this kind's algorithms. Add a row here with each algorithm.
     func display(of type: DerivableType) -> AlgorithmDisplay {
@@ -34,9 +36,9 @@ extension KeyKind {
             AlgorithmDisplay(
                 title: "X25519", note: Self.x25519Note, file: .init(base: "age", separator: "-", suffix: ".txt"))
         case (.age, .mlkem768x25519):
-            // The recipient is about 1,950 characters.
             AlgorithmDisplay(
-                title: "ML-KEM-768 + X25519 (post-quantum)", note: Self.postQuantumNote, foldedLines: 4,
+                title: "ML-KEM-768 + X25519 (post-quantum)", note: Self.postQuantumNote,
+                foldedLines: Self.postQuantumFoldedLines,
                 file: .init(base: "age-pq", separator: "-", suffix: ".txt"))
         case (.passphrase, .passphrase):
             AlgorithmDisplay(title: "Passphrase")
