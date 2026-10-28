@@ -63,7 +63,7 @@ struct RecoveryCodeTests {
         try context.addEntry(
             for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: github), diceKeyID: DiceKey.example.id)
         let record = try #require(try context.record(for: DiceKey.example.id))
-        let code = RecoveryCode(
+        let code = try RecoveryCode(
             diceKey: .example, record: record, entries: try context.entries(for: DiceKey.example.id))
         #expect(code.catalog.keys.map(\.recipe) == KeyRecipe.defaults + [github])
         #expect(try RecoveryCode(payload: code.payload) == code)

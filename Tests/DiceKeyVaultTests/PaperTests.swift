@@ -151,7 +151,7 @@ struct PaperTests {
     func sheetHoldsEightyKeys() throws {
         let recipes = try (0..<80).map { try KeyRecipe(kind: .ssh, name: Self.incompressibleName($0, length: 12)) }
         let entries = (KeyRecipe.defaults + recipes).map { KeyEntry(diceKeyID: DiceKey.example.id, recipe: $0) }
-        let code = RecoveryCode(diceKey: .example, record: DiceKeyRecord(diceKey: .example), entries: entries)
+        let code = try RecoveryCode(diceKey: .example, record: DiceKeyRecord(diceKey: .example), entries: entries)
         let image = try #require(PaperCode.image(for: code.payload, symbology: RecoverySheet.codeSymbology))
         #expect(image.width <= RecoverySheet.maximumCodeWidth)
     }
@@ -179,7 +179,7 @@ struct PaperTests {
         }
         let record = try #require(try context.record(for: DiceKey.example.id))
         let entries = try context.entries(for: DiceKey.example.id)
-        let code = RecoveryCode(diceKey: .example, record: record, entries: entries)
+        let code = try RecoveryCode(diceKey: .example, record: record, entries: entries)
         return try text(of: PrintedPage.pdf(of: RecoverySheet(code: code, entries: entries), size: PrintedPage.letter))
     }
 

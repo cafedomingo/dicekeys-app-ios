@@ -30,16 +30,27 @@ struct SettingsView: View {
                 } footer: {
                     syncFooter
                 }
+                let export = Result { try CatalogFile(records: records, entries: entries) }
                 Section {
-                    let export = CatalogExport(file: CatalogFile(records: records, entries: entries))
-                    ShareLink(item: export, preview: SharePreview(CatalogExport.filename)) {
-                        Label("Export catalog", systemImage: "square.and.arrow.up")
+                    switch export {
+                    case .success(let file):
+                        ShareLink(item: CatalogExport(file: file), preview: SharePreview(CatalogExport.filename)) {
+                            Label("Export catalog", systemImage: "square.and.arrow.up")
+                        }
+                    case .failure:
+                        Button("Export catalog", systemImage: "square.and.arrow.up") {}
+                            .disabled(true)
                     }
                     Button("Import catalog", systemImage: "square.and.arrow.down") { isImporting = true }
                 } footer: {
-                    Text(
-                        "A readable file of your DiceKeys' names and the keys you made, to keep anywhere you like instead of, or as well as, iCloud. Like the catalog, it holds no secret."
-                    )
+                    VStack(alignment: .leading) {
+                        Text(
+                            "A readable file of your DiceKeys' names and the keys you made, to keep anywhere you like instead of, or as well as, iCloud. Like the catalog, it holds no secret."
+                        )
+                        if case .failure(let error) = export {
+                            Text(error.localizedDescription)
+                        }
+                    }
                 }
                 Section("About") {
                     LabeledContent("Version", value: AppInfo.version)

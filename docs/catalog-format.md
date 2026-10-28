@@ -13,6 +13,11 @@ every later version of the app, and so do exported files. There are three forms:
 The recovery prefix carries no version, so a later version's code is still recognized as
 this app's and asks for an update.
 
+A version writes a file or paper only when it can write every key in it. A synced catalog can
+hold a key a newer version made on another device, such as one of a kind or with a field this
+version doesn't know. While it does, Export asks for an update instead of leaving the key out,
+and so do the list card and the recovery sheet of that key's DiceKey.
+
 ## The file (v1)
 
 A DiceKey is `{"id","name","centerFace"}`. A key is its recipe's own fields, exactly as
