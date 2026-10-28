@@ -11,8 +11,7 @@ every later version of the app, and so do exported files. There are three forms:
   link, so the faces don't pass through iOS link handling.
 
 The recovery prefix carries no version, so a later version's code is still recognized as
-this app's and asks for an update. An earlier paper form (the file's JSON in plain base64url)
-held about 7 keys on the card. Nobody used it, so this version doesn't read it.
+this app's and asks for an update.
 
 ## The file (v1)
 
