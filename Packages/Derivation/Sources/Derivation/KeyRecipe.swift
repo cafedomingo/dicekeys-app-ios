@@ -5,8 +5,8 @@
 
 import Foundation
 
-/// What a catalog entry derives. Each kind derives one DiceKeys type; its recipe is `kind` and
-/// `name`, plus a passphrase's style.
+/// What a catalog entry derives. Each kind derives an ordered list of algorithms from its one
+/// recipe, which is `kind` and `name`, plus a passphrase's style.
 public enum KeyKind: String, CaseIterable, Codable, Sendable {
     case ssh
     case wireguard
@@ -19,6 +19,19 @@ public enum KeyKind: String, CaseIterable, Codable, Sendable {
         switch self {
         case .ssh, .wireguard, .age: true
         case .passphrase, .wallet: false
+        }
+    }
+
+    /// Every algorithm a key of this kind derives, from its one recipe, in the order shown.
+    /// Append only: an algorithm, once released, is never removed or retyped. Reordering for
+    /// emphasis is fine, since nothing stored depends on order.
+    public var algorithms: [DerivableType] {
+        switch self {
+        case .ssh: [.ed25519]
+        case .wireguard: [.x25519]
+        case .age: [.x25519, .mlkem768x25519]
+        case .passphrase: [.passphrase]
+        case .wallet: [.bip39]
         }
     }
 }

@@ -10,14 +10,34 @@
     {
       "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "ssh",
+      "publicKeys" : {
+        "ed25519" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIISUVvcKU3m1d7PsXd0pqbFWalmTT3nUPAaaidJRrL9G"
+      }
+    },
+    {
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
+      "kind" : "age",
+      "publicKeys" : {
+        "mlkem768x25519" : "age1pq152dp77h84zrrjpfgvyaf7yag29v338qrzxpyq4a3vu64rd63nxgkaw8xzwr6kfmfz4eqmavcvr54uhyhd7cunqtt7qjl3jyl2l5xqzqtcghmtrl4hj45f34fdy5z2xe65ekq2aes92468uyyeguyvz4j57ndzpk8ynxslgrz8rt8c0e8yylmgdyw5vptkxs45fzk2hanzydlzg9suyntfnr8kece56amxvlekf9tazh3z4s4wx9jxe4pf5lk3xr2upujnc4gyzufctdffjpv2rqlycmjre9638cxep2trsqt08sll2m4l9jzy5cmxdsk56wk43a0px7llyyp5evzh38gqtyhcvtlz6vkk5p9cdrptkw6jz3nscgp0y986sa7lwnsnkeqhs43dtthzsstywr2qup48d7pxt7ve8wdc3y3mdtxspejn3uce424vmf45z3wcj6y25f9z5yg99wqhznntg7ay2s02c3hav4y2j3v3z8uku5fstz93yeeyn0287yx08m4df6vq640ewp9rv8u4hfrevasuu5al3tppupu6h380pnmz0dt7dpy9cq2dtsuhzcgpagzss67adszhc5dhechvkw6gpdrq7vpv7vkx3y3e9dur6jvx2yvfpcp57xn8edtqs3ngvc4ys96spjxl2qkld3xjfjm2egnkvy04nutcypgpprgkkrpkc9pnqxkzsd9p2lg7dg4ejucqkcen5gmwnt0a97t3x264sxdqzs5rmc0gksuap3ur9f29gfs9he9zax7d3mq57te9u2wjf4jy5unf4a70fcjgnzgccql5skp04gegydqqe5s6j78r446l47rf0km0297y50j7fl9p2j0xzf6kxu43h5hp3c8r3kzy4dxk7g3dxruwldawhs40dzz3aetaz4g3kamqkhsn2mlmz97sdq9l59j4rzytt2j99tpzqr7u2uw43fj622pqte25phpvkknj0xqwnse0kpk4u3chggpxef9rd22j29k2t3gj0wcj2vyugdcc6n55ze62gdpr3u25vwx6desf2p96d9vg52pc2y3xutzmdel7326659u7c2uzqk3ewxkyjxxerr2set9e68yf5d650gsdrp0s0psx0qha4c5qltpgf8c2c5qfftzp5wxzv4ch7t9ve3w730r4zxw4ez6zys3fn2x27vwyucm4z5tvkqm5jl5ndkfvahehd4sze99xvkqe8cywmsx59qck0y4teycj7jk350r9my8exndu5w7ysma5lzmk3effy4d5e5kxygxfjgl5crrkmstwr658peuyfpz777880pryxx6vhezhyg2uzmyv0q54nzhvsvcekkxd8ef0f3jjfgdg8pu3vd5nefq9yak3drfcw3m85afc7neq65rtg7xkj4swfkrw8tvh2jkjjnhsqqgnv2q26ekav66g9e24yhu2d5cdftduwn4al4ht3peqp2dkses9zzmvpzdzqfegalnf0awy7v73wn0f7e8fqd9edhyrz7vvmf8wylsw73ynlxzuhr80x5z9t8aeycgtjdzwprp5gr2znhahrgnj64627cephjqxs7h22npx9uj7pyzjk4yk93pfmhgsfv8h3xee2e48fn3hk5hejwq9eskj2ec5yn0ljxptgrvrm0s2gdwffuh8juy5cnd4npj4anq4rldrzq3uvyzk47dmyvydyz8dje7r9j6yfmrsg3e0mqfeuwxjqcxt99g4zuj7d2lndy5zzvnqjd3c8d7stqyvtxvm97pjvj6ydgg9vxr57ywjyeuymqfyu6z59cv90lqh3q9m3zalm3vkurnsjnk5rml6qvhkd3hkr06pqlm79rgc95hl4ftlp3p6z06r7kvmswfkum7tw923v5f9y2kx2qavc82hm0pjzfv0qlkvs9qvy35mszyqjcg5waht0krdgzs3tzl",
+        "x25519" : "age1sljk47dx2ru87lnt3tqeakc67xwqchx9td53uarx56dxugspgd0smadgtx"
+      }
+    },
+    {
+      "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
+      "kind" : "ssh",
       "name" : "🧨 & 日本語",
-      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKOKw5/SUzspex/7iPIdgTo5b3gfo1jJj3mSyNgEsAsZ 🧨 & 日本語"
+      "publicKeys" : {
+        "ed25519" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKOKw5/SUzspex/7iPIdgTo5b3gfo1jJj3mSyNgEsAsZ 🧨 & 日本語"
+      }
     },
     {
       "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "age",
       "name" : "backups",
-      "publicKey" : "age16euqqdmzqq68xpnvjz20tup3hgx88psq8gm6hkcsc9n8g9resf7s3e7ech"
+      "publicKeys" : {
+        "mlkem768x25519" : "age1pq1vu7vd0gyxyme2khhm3zvteyx0kn56r2207whyepyjg4sv9ma0zwxtw0k402vv7vqjx0s2qqrkhtc89c2xlhgyd0svwg5wg24ztqhrry3xzqtvfl3hfhrwkgvdl5gq3cmrqrcj529qa9lx5j5zj43gy04ghmjxwlfkz9h4srlqrk9rugyz9jknj7hy3nxmdqctsc4w0nndx6xnnw6k352ya2jv8tc4lnyy9p6ven6k5mazkvk63g502gujtztz43tn2pq4nz5ev6vzswvpgnnvjnc6cgsjaqlv4mu9dp5nufefsk5rzcfnvrrj5wreuethren0sd6s5hc4zcrtskghw3u8cgtw2pxjf9mtu3ye834kazyexha2ljd3dy6ddu299gzutsph7kwnjm8wg6lz9zp0zntajnvwwt84p9sa92075gm8j6zlpe89v83qlm2gak36s3gtldgzh79jc7ccyrcmvxf9ejnegz5yp25k23ljkwzk5exqzgumvfnk86v8lhv8qrwgutnsxgfpe68wkwprcmsqj98g5cmfjp6vw6zgslp885ezg7nygqv75ndrw95tt4jkucjc6s7wqa874j38a2khxm52q78pqfrx2gchue2n2xzlxqngkrwst3hlqctkys8jkgh5j0k3wuutzeffskjgzwdgnvs7dtr4g4xze3cz7w4tazyxxr5xs7ts2gatw4ngurpj4za73ye46ksjv60qmhzkum5262y3mk8mqc9vf6qyr9u7jjr9fmdthun7um5j82exl8mhsscn56n9vt9syj9c6s68nepnpjp095cfkasn7dshgryqspt5q9w3d3h5fvydjv90l26gl58k99j8vmlnlpfy3rx96r3nstuysqhcv50f2xqcqg3dvx2xk0rzusdxy2020epvd992u0zqfn24rylc6m420syjtnkwlpw50l28yr2cpes46mzxgv2zcnv2pm96p7mkkdcal6esxzsnff39v7wm0rskj3dfwwvdk0t0yvscmt4kq6m5cv82pzc3p06krpzt0luzffkenywqdgc6qgnkg38zwssq9nje9nj4hps9z6hctwq5txerdqlsd4v8fak7rd3q4ydef42s2wppdruufe3qh8jrldxpdhtn37pz3jegpwxhed4hvcleg9qddx20y6qsg3gy2pkwfryygjmg8qmy5n6xqu946wxszrlhxznmvnj2wmfeyjh2urtkwnrv8prstq60dkvapwr9y6kcj9q9s7udwpgcsz6e3utfef82kdpzglnkpawzedvx2egvl2x5lwmvrwgyyzypfe0p2wtfcjq4qgd8rd2dwh345f8etq6k3s5h9vzxhlcw23v84t3epwq8uyssv3kx8gfz6td6v362t799gxqr77rcpz6qx5azj2ngcxxt7hs327qyx2c7p7vqpgu00vrc9w6jmdlnr58tjsferyr9myvn3mkwj9dq79qsxu8ygc0xq6kxpph98kgxmuncd2cde906zqqg2g8jatrcckt22klcgrh8223z9g594mzww5p7jyrfvqhkegn39get9q4rqsk9gmzqa4avtdhlnnj0v95dgt8ver8qpm2p5rvja3yyxz0x8h2as5njfu8m43h0v3uftfhgsnxwevr6qkwjweyjek2xe9ajdj6l8zy8p7w6rm45n4vh95het9x324n0devpxzvc4jq3aehvgdq92s9l2j95peql3guyjw2r9z9vc9rck6dwkuq5hqn4fvag7j78y040upu3djelnrt5h7r49j9kff06tztx6cemxmq835tgetr89t23jelafn2d8et4fe7fsgveqd40cltsduvm8f2f00v94uw2r54ug4t4qp7eck7sr07pxxvfe8sjgffjyetq4l8nht0u7r5udjpwxwsyjvqndcrxfayywmqt3r5m42hruhn35p7",
+        "x25519" : "age16euqqdmzqq68xpnvjz20tup3hgx88psq8gm6hkcsc9n8g9resf7s3e7ech"
+      }
     },
     {
       "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
@@ -37,13 +57,17 @@
       "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "ssh",
       "name" : "github",
-      "publicKey" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPV+xcT+JMIYJNO8WksFA0Pg4CmPSvmupDIVVyGbj4nR github"
+      "publicKeys" : {
+        "ed25519" : "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPV+xcT+JMIYJNO8WksFA0Pg4CmPSvmupDIVVyGbj4nR github"
+      }
     },
     {
       "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",
       "kind" : "wireguard",
       "name" : "home",
-      "publicKey" : "D8h1BtgAMqzRmUNrIjiA5nYWhkAlXgNUUztjJQrhems="
+      "publicKeys" : {
+        "x25519" : "D8h1BtgAMqzRmUNrIjiA5nYWhkAlXgNUUztjJQrhems="
+      }
     },
     {
       "diceKey" : "FDWCWOqOuLX6kRVI9K31_A",

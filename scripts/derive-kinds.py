@@ -64,16 +64,16 @@ SEEDS = [
     "F2lY4rC2bV6bX4rK1rD5lS4bG6bZ2lU4rA6tI5bB1lT3rP3lL6lH6lN2tE2rO2rW1tJ5lR1tM2b",
 ]
 
-# The type is hashed in front of the recipe: what the derived bytes become.
-TYPE_NAMES = {
-    "ssh": "ed25519",
-    "wireguard": "x25519",
-    "age": "x25519",
-    "passphrase": "passphrase",
-    "wallet": "bip39",
+# Each kind's algorithms in order, mirroring KeyKind.algorithms. An algorithm's type is hashed
+# in front of the recipe: what the derived bytes become. age's post-quantum identity is the
+# key's own recipe under its own type, whose 32 bytes are the X-Wing seed.
+KIND_ALGORITHMS = {
+    "ssh": ["ed25519"],
+    "wireguard": ["x25519"],
+    "age": ["x25519", "mlkem768x25519"],
+    "passphrase": ["passphrase"],
+    "wallet": ["bip39"],
 }
-# age's post-quantum identity: the key's own recipe, whose 32 bytes are the X-Wing seed.
-AGE_POST_QUANTUM_TYPE = "mlkem768x25519"
 MEMORABLE_WORD_LIST = "eff_large_wordlist"
 LETTERS_DIGITS = "letters-digits"
 LETTERS_DIGITS_SYMBOLS = "letters-digits-symbols"
@@ -210,8 +210,7 @@ def blocks(secret, size):
     return [divmod(int.from_bytes(secret[i : i + 8], "big"), size)[::-1] for i in range(0, len(secret) - 7, 8)]
 
 
-def passphrase(seed, recipe, style):
-    info = TYPE_NAMES["passphrase"].encode() + recipe.encode()
+def passphrase(seed, info, style):
     if "random" in style:
         chars = CHARACTERS[LETTERS_DIGITS_SYMBOLS if style["random"]["symbols"] else LETTERS_DIGITS]
         length = style["random"]["length"]
@@ -291,18 +290,14 @@ def x25519_public(scalar):
     return X25519PrivateKey.from_private_bytes(scalar).public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
 
 
-def age_post_quantum(seed, recipe):
+def age_post_quantum(secret):
     """MLKEM768-X25519 (X-Wing), as age 1.3 and filippo.io/hpke make it: the identity is the
     32-byte seed; SHAKE256 of it gives ML-KEM-768's 64-byte seed (d || z), then the X25519
     secret, and the recipient is the encapsulation key followed by the X25519 public key."""
-    secret = hkdf_sha256(seed.encode(), AGE_POST_QUANTUM_TYPE.encode() + recipe.encode(), 32)
     expanded = hashlib.shake_256(secret).digest(96)
     encapsulation_key = MLKEM768PrivateKey.from_seed_bytes(expanded[:64]).public_key().public_bytes_raw()
-    return {
-        "type": AGE_POST_QUANTUM_TYPE,
-        "publicKey": bech32("age1pq", encapsulation_key + x25519_public(expanded[64:])),
-        "secret": bech32("age-secret-key-pq-", secret).upper(),
-    }
+    public = bech32("age1pq", encapsulation_key + x25519_public(expanded[64:]))
+    return public, bech32("age-secret-key-pq-", secret).upper()
 
 
 def bip39(entropy):
@@ -312,33 +307,42 @@ def bip39(entropy):
     return " ".join(BIP39_WORDS[bits >> (11 * (total // 11 - 1 - i)) & 2047] for i in range(total // 11))
 
 
-def derive_key(seed, kind, recipe, style, comment):
-    """The public key, fingerprint and secret of a recipe's key; comment is an SSH key's."""
-    key = {}
-    info = TYPE_NAMES[kind].encode() + recipe.encode()
-    if kind == "ssh":
+def derive_algorithm(seed, kind, type_name, recipe, style, comment):
+    """One algorithm's key of a recipe: its type, the public key and fingerprint if it has
+    them, and the secret. comment is an SSH key's."""
+    key = {"type": type_name}
+    info = type_name.encode() + recipe.encode()
+    pair = (kind, type_name)
+    if pair == ("ssh", "ed25519"):
         key["publicKey"], key["fingerprint"], key["secret"] = ssh(hkdf_sha256(seed.encode(), info, 32), comment)
-    elif kind in ("wireguard", "age"):
+    elif pair == ("wireguard", "x25519"):
         scalar = hkdf_sha256(seed.encode(), info, 32)
-        public = x25519_public(scalar)
-        if kind == "wireguard":
-            key["publicKey"] = key["fingerprint"] = base64.b64encode(public).decode()
-            key["secret"] = base64.b64encode(scalar).decode()
-        else:
-            key["publicKey"] = key["fingerprint"] = bech32("age", public)
-            key["secret"] = bech32("age-secret-key-", scalar).upper()
-            key["postQuantum"] = age_post_quantum(seed, recipe)
-    elif kind == "passphrase":
-        key["secret"] = passphrase(seed, recipe, style)
-    else:
+        key["publicKey"] = key["fingerprint"] = base64.b64encode(x25519_public(scalar)).decode()
+        key["secret"] = base64.b64encode(scalar).decode()
+    elif pair == ("age", "x25519"):
+        scalar = hkdf_sha256(seed.encode(), info, 32)
+        key["publicKey"] = key["fingerprint"] = bech32("age", x25519_public(scalar))
+        key["secret"] = bech32("age-secret-key-", scalar).upper()
+    elif pair == ("age", "mlkem768x25519"):
+        key["publicKey"], key["secret"] = age_post_quantum(hkdf_sha256(seed.encode(), info, 32))
+    elif pair == ("passphrase", "passphrase"):
+        key["secret"] = passphrase(seed, info, style)
+    elif pair == ("wallet", "bip39"):
         key["secret"] = bip39(hkdf_sha256(seed.encode(), info, 32))
+    else:
+        raise AssertionError(f"no derivation for {kind} {type_name}")
     return key
+
+
+def derive_key(seed, kind, recipe, style, comment):
+    """Every algorithm of a recipe's key, in the kind's order."""
+    return {"algorithms": [derive_algorithm(seed, kind, t, recipe, style, comment) for t in KIND_ALGORITHMS[kind]]}
 
 
 def derive(seed, kind, given, style):
     name = normalized_name(given)
     recipe = recipe_text(kind, name, style)
-    case = {"seed": seed, "kind": kind, "input": given, "name": name, "recipe": recipe, "type": TYPE_NAMES[kind]}
+    case = {"seed": seed, "kind": kind, "input": given, "name": name, "recipe": recipe}
     if style is not None:
         case["style"] = style
     return case | derive_key(seed, kind, recipe, style, name)
@@ -386,7 +390,7 @@ def defaults():
         for recipe in DEFAULT_RECIPES:
             kind = json.loads(recipe)[KIND]
             assert recipe == json.dumps({KIND: kind}, sort_keys=True, separators=(",", ":"))
-            default = {"seed": seed, "kind": kind, "recipe": recipe, "type": TYPE_NAMES[kind]}
+            default = {"seed": seed, "kind": kind, "recipe": recipe}
             result.append(default | derive_key(seed, kind, recipe, None, ""))
     return result
 
@@ -413,28 +417,37 @@ def check_tools(fixture):
     with tempfile.TemporaryDirectory() as directory:
         for case in fixture:
             name = case.get("name", case["kind"])
-            if case["kind"] == "ssh":
-                path = Path(directory) / "key"
-                path.write_text(case["secret"])
-                path.chmod(0o600)
-                derived = subprocess.run(["ssh-keygen", "-y", "-f", path], capture_output=True, text=True, check=True)
-                assert derived.stdout.strip() == case["publicKey"], name
-                public = Path(directory) / "key.pub"
-                public.write_text(case["publicKey"] + "\n")
-                listed = subprocess.run(["ssh-keygen", "-l", "-f", public], capture_output=True, text=True, check=True)
-                assert listed.stdout.split()[1] == case["fingerprint"], name
-            elif case["kind"] == "wireguard":
-                derived = subprocess.run(
-                    ["wg", "pubkey"], input=case["secret"], capture_output=True, text=True, check=True
-                )
-                assert derived.stdout.strip() == case["publicKey"], name
-            elif case["kind"] == "age":
-                for key in (case, case["postQuantum"]):
+            for key in case["algorithms"]:
+                pair = (case["kind"], key["type"])
+                if pair == ("ssh", "ed25519"):
+                    path = Path(directory) / "key"
+                    path.write_text(key["secret"])
+                    path.chmod(0o600)
+                    derived = subprocess.run(
+                        ["ssh-keygen", "-y", "-f", path], capture_output=True, text=True, check=True
+                    )
+                    assert derived.stdout.strip() == key["publicKey"], name
+                    public = Path(directory) / "key.pub"
+                    public.write_text(key["publicKey"] + "\n")
+                    listed = subprocess.run(
+                        ["ssh-keygen", "-l", "-f", public], capture_output=True, text=True, check=True
+                    )
+                    assert listed.stdout.split()[1] == key["fingerprint"], name
+                elif pair == ("wireguard", "x25519"):
+                    derived = subprocess.run(
+                        ["wg", "pubkey"], input=key["secret"], capture_output=True, text=True, check=True
+                    )
+                    assert derived.stdout.strip() == key["publicKey"], name
+                elif pair in (("age", "x25519"), ("age", "mlkem768x25519")):
                     check_age(Path(directory) / "identity", key, name)
-            elif case["kind"] == "wallet":
-                entropy = hkdf_sha256(case["seed"].encode(), case["type"].encode() + case["recipe"].encode(), 32)
-                assert reference.check(case["secret"]), name
-                assert bytes(reference.to_entropy(case["secret"])) == entropy, name
+                elif pair == ("wallet", "bip39"):
+                    entropy = hkdf_sha256(case["seed"].encode(), key["type"].encode() + case["recipe"].encode(), 32)
+                    assert reference.check(key["secret"]), name
+                    assert bytes(reference.to_entropy(key["secret"])) == entropy, name
+                elif pair == ("passphrase", "passphrase"):
+                    pass  # No tool reads a passphrase.
+                else:
+                    raise AssertionError(f"no tool check for {case['kind']} {key['type']}: {name}")
     print("keys match", ", ".join(TOOLS), "and the BIP39 reference")
 
 
@@ -447,8 +460,8 @@ def main():
         "origin": "scripts/derive-kinds.py",
         "seeds": seeds,
         "hkdf": [
-            hkdf_vector(SEEDS[0], TYPE_NAMES["ssh"], recipe_text("ssh", "github", None), 32),
-            hkdf_vector(SEEDS[0], TYPE_NAMES["passphrase"], passphrase, 24 * 8),
+            hkdf_vector(SEEDS[0], KIND_ALGORITHMS["ssh"][0], recipe_text("ssh", "github", None), 32),
+            hkdf_vector(SEEDS[0], KIND_ALGORITHMS["passphrase"][0], passphrase, 24 * 8),
             hkdf_vector(SEEDS[1], DICEKEY_ID_TYPE, "", DICEKEY_ID_LENGTH),
         ],
         "diceKeyIds": [dicekey_id(seed) for seed in SEEDS],

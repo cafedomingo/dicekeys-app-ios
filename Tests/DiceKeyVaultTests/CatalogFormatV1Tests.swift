@@ -5,6 +5,7 @@
 
 import Derivation
 import Foundation
+import KeyFormats
 import Testing
 
 @testable import DiceKeyVault
@@ -18,7 +19,7 @@ struct CatalogFormatV1Tests {
 
     private static var expectedRecipes: [KeyRecipe] {
         get throws {
-            [
+            KeyRecipe.defaults + [
                 try KeyRecipe(kind: .ssh, name: "🧨 & 日本語"),
                 try KeyRecipe(kind: .age, name: "backups"),
                 try KeyRecipe(kind: .passphrase, name: "bank", style: .memorable(words: 6, digitsAndUppercase: true)),
@@ -39,11 +40,13 @@ struct CatalogFormatV1Tests {
     func fileDecodes() throws {
         var file = try CatalogFile(json: Fixture.data("catalog-v1.json"))
         #expect(file.diceKeys == Self.expected.diceKeys)
-        let withPublicKeys = file.keys.filter { $0.recipe.kind != .passphrase && $0.recipe.kind != .wallet }
-        #expect(withPublicKeys.allSatisfy { $0.publicKey != nil })
+        for key in file.keys {
+            let derived = DerivedKey.derive(seed: DiceKey.example.seed, recipe: key.recipe).publicKeys
+            #expect(key.publicKeys == (key.recipe.kind.hasPublicKey ? derived : nil))
+        }
         file.keys = file.keys.map {
             var key = $0
-            key.publicKey = nil
+            key.publicKeys = nil
             return key
         }
         #expect(file.keys == Self.expected.keys)

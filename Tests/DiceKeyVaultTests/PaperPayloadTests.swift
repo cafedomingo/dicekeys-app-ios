@@ -13,7 +13,7 @@ struct PaperPayloadTests {
     private static let item = CatalogFile.DiceKeyItem(
         id: DiceKey.example.id, name: "Example", centerFace: DiceKey.example.centerFace.text)
 
-    private static func catalog(publicKey: String? = nil) throws -> CatalogFile {
+    private static func catalog(publicKeys: [String: String]? = nil) throws -> CatalogFile {
         let recipes = [
             try KeyRecipe(kind: .ssh, name: "🧨 & 日本語"),
             try KeyRecipe(kind: .age, name: #"quote " and \ مفتاح"#),
@@ -23,7 +23,9 @@ struct PaperPayloadTests {
         ]
         return CatalogFile(
             diceKeys: [item],
-            keys: recipes.map { CatalogFile.KeyItem(diceKey: DiceKey.example.id, recipe: $0, publicKey: publicKey) })
+            keys: recipes.map {
+                CatalogFile.KeyItem(diceKey: DiceKey.example.id, recipe: $0, publicKeys: publicKeys)
+            })
     }
 
     private func payload(_ json: String) throws -> String {
@@ -57,7 +59,7 @@ struct PaperPayloadTests {
 
     @Test("the payload is compact sorted JSON of the DiceKey and each key's recipe fields alone")
     func keysCarryOnlyRecipeFields() throws {
-        let catalog = try Self.catalog(publicKey: "public")
+        let catalog = try Self.catalog(publicKeys: ["ed25519": "public"])
         let text = try PaperPayload.encode(catalog)
         let json = try PaperPayload.unpack(text)
         #expect(String(decoding: json, as: UTF8.self).hasPrefix(#"{"centerFace":"M1t","id":""#))
@@ -68,11 +70,26 @@ struct PaperPayloadTests {
         #expect(keys.count == catalog.keys.count)
         for key in keys {
             #expect(key["diceKey"] == nil)
-            #expect(key["publicKey"] == nil)
+            #expect(key["publicKeys"] == nil)
         }
         let withFaces = try PaperPayload.unpack(PaperPayload.encode(catalog, faces: DiceKey.example.text))
         let faces = try #require(try JSONSerialization.jsonObject(with: withFaces) as? [String: Any])
         #expect(Set(faces.keys) == ["centerFace", "diceKey", "id", "keys", "name", "v"])
+    }
+
+    @Test("the default keys travel as their literals, and come back as defaults")
+    func defaultsTravelAsTheirLiterals() throws {
+        let defaults = KeyRecipe.defaults.map { CatalogFile.KeyItem(diceKey: DiceKey.example.id, recipe: $0) }
+        let catalog = CatalogFile(diceKeys: [Self.item], keys: defaults + (try Self.catalog().keys))
+        let json = try PaperPayload.unpack(PaperPayload.encode(catalog))
+        let object = try #require(try JSONSerialization.jsonObject(with: json) as? [String: Any])
+        let keys = try #require(object["keys"] as? [[String: Any]])
+        #expect(keys.count == catalog.keys.count)
+        #expect(keys[0] as? [String: String] == ["kind": "ssh"])
+        #expect(keys[1] as? [String: String] == ["kind": "age"])
+        let decoded = try PaperPayload.decode(PaperPayload.encode(catalog)).catalog
+        #expect(decoded == catalog)
+        #expect(decoded.keys.map(\.recipe.isDefault).prefix(3) == [true, true, false])
     }
 
     @Test("a stream of stored blocks, with no zlib header, is read as raw DEFLATE")

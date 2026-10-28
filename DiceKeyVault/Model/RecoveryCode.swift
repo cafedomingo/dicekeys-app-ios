@@ -12,7 +12,7 @@ struct RecoveryCode: Equatable {
     static let prefix = "DKVR:"
 
     let diceKey: DiceKey
-    /// Exactly one DiceKey, this one, and its keys without public keys.
+    /// Exactly one DiceKey, this one, and its keys, the defaults included, without public keys.
     let catalog: CatalogFile
 
     init(diceKey: DiceKey, record: DiceKeyRecord, entries: [KeyEntry]) {
@@ -20,7 +20,7 @@ struct RecoveryCode: Equatable {
         var catalog = CatalogFile(records: [record], entries: entries)
         catalog.keys = catalog.keys.map {
             var key = $0
-            key.publicKey = nil
+            key.publicKeys = nil
             return key
         }
         self.catalog = catalog

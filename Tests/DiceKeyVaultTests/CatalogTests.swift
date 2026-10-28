@@ -16,20 +16,26 @@ struct CatalogTests {
     /// The nameless WireGuard recipe that TestFlight builds recorded as a default.
     private static let testBuildWireGuardDefault = #"{"kind":"wireguard"}"#
 
+    private let container: ModelContainer
     private let context: ModelContext
 
     init() throws {
-        context = ModelContext(try Catalog.container(syncing: false, inMemory: true))
+        container = try Catalog.container(syncing: false, inMemory: true)
+        context = ModelContext(container)
     }
 
     private func key(_ kind: KeyKind, _ name: String, style: PassphraseStyle = .standard) throws -> DerivedKey {
         DerivedKey.derive(seed: DiceKey.example.seed, recipe: try KeyRecipe(kind: kind, name: name, style: style))
     }
 
+    private func ageDefault() throws -> KeyRecipe {
+        try #require(KeyRecipe.defaults.first { $0.kind == .age })
+    }
+
     /// A row holding this text as its recipe, as a sync or an earlier build can leave one.
     @discardableResult
     private func insertRow(_ recipeJSON: String) -> KeyEntry {
-        let entry = KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0], publicKey: nil)
+        let entry = KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0])
         entry.recipeJSON = recipeJSON
         context.insert(entry)
         return entry
@@ -84,12 +90,12 @@ struct CatalogTests {
         #expect(try context.recordIfNew(DiceKey.example) == false)
         let entries = try context.entries(for: DiceKey.example.id)
         #expect(entries.compactMap(\.recipe) == KeyRecipe.defaults)
-        #expect(entries.allSatisfy { $0.publicKey == nil })
+        #expect(entries.allSatisfy { $0.publicKeys.isEmpty })
     }
 
     @Test("recording saves the record even when its default keys arrived from a sync before it")
     func recordingSavesWhenDefaultsAreThere() throws {
-        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0], publicKey: nil))
+        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0]))
         try context.save()
         #expect(try context.recordIfNew(DiceKey.example) == true)
         #expect(!context.hasChanges)
@@ -110,30 +116,88 @@ struct CatalogTests {
         try context.recordIfNew(DiceKey.example)
         try context.fillPublicKeys(for: DiceKey.example)
         #expect(
-            try context.entries(for: DiceKey.example.id).map(\.publicKey)
-                == KeyRecipe.defaults.map { DerivedKey.derive(seed: DiceKey.example.seed, recipe: $0).publicKey })
+            try context.entries(for: DiceKey.example.id).map(\.publicKeys)
+                == KeyRecipe.defaults.map { DerivedKey.derive(seed: DiceKey.example.seed, recipe: $0).publicKeys })
+    }
+
+    @Test(
+        "a key needs a public key until it holds one for every algorithm of its kind, and a secret never does",
+        arguments: [
+            (KeyKind.ssh, [String: String](), true),
+            (.ssh, ["ed25519": "x"], false),
+            (.age, ["x25519": "x"], true),
+            (.age, ["x25519": "x", "mlkem768x25519": "y"], false),
+            (.age, ["x25519": "x", "mlkem768x25519": "y", "future": "z"], false),
+            (.passphrase, [:], false),
+            (.wallet, [:], false)
+        ])
+    func needsPublicKey(kind: KeyKind, publicKeys: [String: String], expected: Bool) throws {
+        let entry = KeyEntry(
+            diceKeyID: DiceKey.example.id, recipe: try KeyRecipe(kind: kind, name: "test"), publicKeys: publicKeys)
+        #expect(entry.needsPublicKey == expected)
+    }
+
+    @Test("an age key is recorded with both its recipients")
+    func ageRecordsBothRecipients() throws {
+        let backups = try key(.age, "backups")
+        let entry = try context.addEntry(for: backups, diceKeyID: DiceKey.example.id)
+        #expect(entry.publicKeys == backups.publicKeys)
+        #expect(Set(entry.publicKeys.keys) == ["x25519", "mlkem768x25519"])
+        #expect(!entry.needsPublicKey)
+    }
+
+    @Test("filling in public keys keeps an algorithm this version doesn't know")
+    func fillKeepsUnknownAlgorithms() throws {
+        let recipe = try ageDefault()
+        let derived = DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe)
+        let row = KeyEntry(
+            diceKeyID: DiceKey.example.id, recipe: recipe,
+            publicKeys: ["x25519": try #require(derived.publicKeys["x25519"]), "future-algorithm": "future-key"])
+        context.insert(row)
+        try context.save()
+        try context.fillPublicKeys(for: .example)
+        let fresh = ModelContext(container)
+        let stored = try #require(try fresh.fetch(FetchDescriptor<KeyEntry>()).first)
+        let expected = derived.publicKeys.merging(["future-algorithm": "future-key"]) { first, _ in first }
+        #expect(stored.publicKeys == expected)
+    }
+
+    @Test("the fill runs for unlocked DiceKeys' rows that miss a public key, and for no other")
+    func fillTriggerPicksUnlockedRowsMissingAKey() throws {
+        let age = try ageDefault()
+        let derived = DerivedKey.derive(seed: DiceKey.example.seed, recipe: age)
+        let x25519 = try #require(derived.publicKeys["x25519"])
+        let ageRow = KeyEntry(diceKeyID: DiceKey.example.id, recipe: age, publicKeys: ["x25519": x25519])
+        let github = try key(.ssh, "github")
+        let complete = KeyEntry(diceKeyID: DiceKey.example.id, recipe: github.recipe, publicKeys: github.publicKeys)
+        let passphrase = KeyEntry(diceKeyID: DiceKey.example.id, recipe: try key(.passphrase, "bank").recipe)
+        let locked = KeyEntry(diceKeyID: "locked", recipe: KeyRecipe.defaults[0])
+        for row in [ageRow, complete, passphrase, locked] { context.insert(row) }
+        try context.save()
+        let rows = try context.fetch(FetchDescriptor<KeyEntry>())
+        #expect(rows.keysToFill { $0 == DiceKey.example.id } == [ageRow.persistentModelID])
     }
 
     @Test("filling in public keys fills every copy a sync made, and a passphrase never needs one")
     func fillCoversCopiesAndSkipsSecrets() throws {
         try context.recordIfNew(DiceKey.example)
-        let copy = KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0], publicKey: nil)
+        let copy = KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0])
         copy.created = .distantFuture
         context.insert(copy)
         let passphrase = KeyEntry(
-            diceKeyID: DiceKey.example.id, recipe: try KeyRecipe(kind: .passphrase, name: "bank"), publicKey: nil)
+            diceKeyID: DiceKey.example.id, recipe: try KeyRecipe(kind: .passphrase, name: "bank"))
         context.insert(passphrase)
         #expect(!passphrase.needsPublicKey)
         try context.fillPublicKeys(for: DiceKey.example)
         #expect(
-            copy.publicKey == DerivedKey.derive(seed: DiceKey.example.seed, recipe: KeyRecipe.defaults[0]).publicKey)
+            copy.publicKeys == DerivedKey.derive(seed: DiceKey.example.seed, recipe: KeyRecipe.defaults[0]).publicKeys)
         #expect(try context.fetch(FetchDescriptor<KeyEntry>()).filter(\.needsPublicKey).isEmpty)
     }
 
     @Test("default keys come first, in their own order even when made in another, then the named keys")
     func defaultsSortFirst() throws {
         for (index, recipe) in KeyRecipe.defaults.enumerated() {
-            let entry = KeyEntry(diceKeyID: DiceKey.example.id, recipe: recipe, publicKey: nil)
+            let entry = KeyEntry(diceKeyID: DiceKey.example.id, recipe: recipe)
             entry.created = .distantPast.addingTimeInterval(-Double(index))
             context.insert(entry)
         }
@@ -146,7 +210,7 @@ struct CatalogTests {
     @Test("default keys that two devices each added show once")
     func syncedDefaultsCollapse() throws {
         try context.recordIfNew(DiceKey.example)
-        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0], publicKey: nil))
+        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0]))
         #expect(try context.entries(for: DiceKey.example.id).count == KeyRecipe.defaults.count)
     }
 
@@ -160,14 +224,12 @@ struct CatalogTests {
         try context.fillPublicKeys(for: DiceKey.example)
         let shown = KeyRecipe.defaults + [github.recipe]
         #expect(try context.entries(for: DiceKey.example.id).map(\.recipeJSON) == shown.map(\.json))
-        #expect(leftover.publicKey == nil)
+        #expect(leftover.publicKeys.isEmpty)
         let rows = try context.fetch(FetchDescriptor<KeyEntry>())
         #expect(rows.count == shown.count + 1)
         let record = try #require(try context.record(for: DiceKey.example.id))
-        #expect(CatalogFile(records: [record], entries: rows).keys.map(\.recipe) == [github.recipe])
-        #expect(
-            RecoveryCode(diceKey: .example, record: record, entries: rows).catalog.keys.map(\.recipe)
-                == [github.recipe])
+        #expect(CatalogFile(records: [record], entries: rows).keys.map(\.recipe) == shown)
+        #expect(RecoveryCode(diceKey: .example, record: record, entries: rows).catalog.keys.map(\.recipe) == shown)
     }
 
     @Test(
@@ -191,8 +253,8 @@ struct CatalogTests {
         #expect(entries.map(\.recipe?.name) == ["github", "nas"])
         #expect(entries[1].recipeJSON == passphrase.recipe.json)
         #expect(entries[1].recipe == passphrase.recipe)
-        #expect(entries[1].publicKey == nil)
-        #expect(entries[0].publicKey?.hasPrefix("ssh-ed25519 ") == true)
+        #expect(entries[1].publicKeys.isEmpty)
+        #expect(entries[0].publicKeys["ed25519"]?.hasPrefix("ssh-ed25519 ") == true)
     }
 
     @Test("the same key saved twice, or synced from two devices, appears once")
@@ -200,7 +262,7 @@ struct CatalogTests {
         let ssh = try key(.ssh, "github")
         try context.addEntry(for: ssh, diceKeyID: DiceKey.example.id)
         try context.addEntry(for: ssh, diceKeyID: DiceKey.example.id)
-        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe, publicKey: ssh.publicKey))
+        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe, publicKeys: ssh.publicKeys))
         #expect(try context.entries(for: DiceKey.example.id).count == 1)
     }
 
@@ -216,10 +278,10 @@ struct CatalogTests {
     @Test("of two synced copies, the older stands for the key")
     func olderCopyWins() throws {
         let ssh = try key(.ssh, "github")
-        let newer = KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe, publicKey: nil)
+        let newer = KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe)
         newer.created = .now
         context.insert(newer)
-        let older = KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe, publicKey: ssh.publicKey)
+        let older = KeyEntry(diceKeyID: DiceKey.example.id, recipe: ssh.recipe, publicKeys: ssh.publicKeys)
         older.created = .distantPast
         context.insert(older)
         #expect(try context.entries(for: DiceKey.example.id).map(\.persistentModelID) == [older.persistentModelID])
@@ -235,7 +297,7 @@ struct CatalogTests {
             ""
         ])
     func unreadableRecipe(_ text: String) throws {
-        let entry = KeyEntry(diceKeyID: "x", recipe: try key(.age, "backup").recipe, publicKey: nil)
+        let entry = KeyEntry(diceKeyID: "x", recipe: try key(.age, "backup").recipe)
         entry.recipeJSON = text
         context.insert(entry)
         #expect(entry.recipe == nil)
@@ -246,7 +308,7 @@ struct CatalogTests {
     func deletingAKey() throws {
         let github = try key(.ssh, "github")
         try context.addEntry(for: github, diceKeyID: DiceKey.example.id)
-        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: github.recipe, publicKey: github.publicKey))
+        context.insert(KeyEntry(diceKeyID: DiceKey.example.id, recipe: github.recipe, publicKeys: github.publicKeys))
         try context.addEntry(for: try key(.ssh, "homelab"), diceKeyID: DiceKey.example.id)
         try context.deleteKey(github.recipe, diceKeyID: DiceKey.example.id)
         #expect(try context.fetch(FetchDescriptor<KeyEntry>()).map(\.recipe?.name) == ["homelab"])

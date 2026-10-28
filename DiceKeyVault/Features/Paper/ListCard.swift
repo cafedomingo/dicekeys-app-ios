@@ -61,7 +61,7 @@ struct ListCard: View {
     }
 
     private func keyLines(hasCode: Bool) -> some View {
-        let keys = file.keys
+        let keys = file.namedKeys
         let shown = keys.count > Self.listedKeys ? Self.listedKeys - 1 : keys.count
         return VStack(alignment: .leading, spacing: Self.lineSpacing) {
             ForEach(keys.prefix(shown), id: \.self) { key in

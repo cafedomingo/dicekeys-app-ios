@@ -22,11 +22,7 @@ struct KindVector: Codable, Sendable, CustomTestStringConvertible {
     let name: String
     let style: PassphraseStyle?
     let recipe: String
-    let type: String
-    let publicKey: String?
-    let fingerprint: String?
-    let secret: String
-    let postQuantum: PostQuantumVector?
+    let algorithms: [AlgorithmVector]
 }
 
 /// A default key, which has no name and so no input or style.
@@ -35,17 +31,14 @@ struct DefaultVector: Codable, Sendable, CustomTestStringConvertible {
     let seed: String
     let kind: String
     let recipe: String
+    let algorithms: [AlgorithmVector]
+}
+
+/// One algorithm's key, derived from the recipe under the algorithm's own type.
+struct AlgorithmVector: Codable, Sendable {
     let type: String
     let publicKey: String?
     let fingerprint: String?
-    let secret: String
-    let postQuantum: PostQuantumVector?
-}
-
-/// An age key's post-quantum identity, derived from the key's own recipe as a Secret.
-struct PostQuantumVector: Codable, Sendable {
-    let type: String
-    let publicKey: String
     let secret: String
 }
 
@@ -88,43 +81,55 @@ func kindVector(_ vector: KindVector) throws {
     #expect(recipe.name?.utf8.elementsEqual(vector.name.utf8) == true)
     #expect(recipe.json.utf8.elementsEqual(vector.recipe.utf8))
     #expect(try KeyRecipe(json: vector.recipe) == recipe)
-    let key = DerivedKey.derive(seed: vector.seed, recipe: recipe)
-    #expect(key.publicKey == vector.publicKey)
-    #expect(kind.hasPublicKey == (vector.publicKey != nil))
-    #expect(key.fingerprint == vector.fingerprint)
-    #expect(key.secret == vector.secret)
-    #expect(key.postQuantum?.recipient == vector.postQuantum?.publicKey)
-    #expect(key.postQuantum?.identity == vector.postQuantum?.secret)
-    if let postQuantum = vector.postQuantum {
-        #expect(postQuantum.type == DerivableType.mlkem768x25519.rawValue)
-    }
+    try expectAlgorithms(vector.algorithms, of: kind, seed: vector.seed, recipe: recipe)
 }
 
 @Test(arguments: kindFixture.defaults)
 func defaultVector(_ vector: DefaultVector) throws {
     let recipe = try #require(KeyRecipe.defaults.first { $0.kind.rawValue == vector.kind })
     #expect(recipe.json.utf8.elementsEqual(vector.recipe.utf8))
-    let key = DerivedKey.derive(seed: vector.seed, recipe: recipe)
-    #expect(key.publicKey == vector.publicKey)
-    #expect(key.fingerprint == vector.fingerprint)
-    #expect(key.secret == vector.secret)
-    #expect(key.postQuantum?.recipient == vector.postQuantum?.publicKey)
-    #expect(key.postQuantum?.identity == vector.postQuantum?.secret)
-    if let postQuantum = vector.postQuantum {
-        #expect(postQuantum.type == DerivableType.mlkem768x25519.rawValue)
+    try expectAlgorithms(vector.algorithms, of: recipe.kind, seed: vector.seed, recipe: recipe)
+}
+
+/// The kind's algorithms are the vector's, matched by type, and each key holds the vector's
+/// values. Order is emphasis only and may change (`derivation.md`), so it is not checked
+/// here; `eachKindsAlgorithmsInOrder` holds this app's.
+private func expectAlgorithms(
+    _ expected: [AlgorithmVector], of kind: KeyKind, seed: String, recipe: KeyRecipe
+) throws {
+    let key = DerivedKey.derive(seed: seed, recipe: recipe)
+    let types = Set(expected.map(\.type))
+    #expect(types.count == expected.count)
+    #expect(Set(kind.algorithms.map(\.rawValue)) == types)
+    #expect(kind.algorithms.count == expected.count)
+    #expect(Set(key.algorithms.map(\.type.rawValue)) == types)
+    #expect(key.algorithms.count == expected.count)
+    for vector in expected {
+        let derived = try #require(key.algorithms.first { $0.type.rawValue == vector.type }, "\(vector.type)")
+        #expect(derived.publicKey == vector.publicKey, "\(vector.type)")
+        #expect(derived.fingerprint == vector.fingerprint, "\(vector.type)")
+        #expect(derived.secret == vector.secret, "\(vector.type)")
     }
+    let publicKeys = expected.compactMap { a in a.publicKey.map { (a.type, $0) } }
+    #expect(key.publicKeys == Dictionary(uniqueKeysWithValues: publicKeys))
+    #expect(expected.allSatisfy { ($0.publicKey != nil) == kind.hasPublicKey })
+}
+
+@Test func eachKindsAlgorithmsInOrder() {
+    #expect(
+        KeyKind.allCases.map(\.algorithms)
+            == [[.ed25519], [.x25519], [.x25519, .mlkem768x25519], [.passphrase], [.bip39]])
+    #expect(KeyKind.allCases.allSatisfy { Set($0.algorithms).count == $0.algorithms.count })
 }
 
 @Test func defaultFixtureCoversEveryDefault() {
     let kinds = Set(KeyRecipe.defaults.map(\.kind.rawValue))
     #expect(Set(kindFixture.defaults.map(\.kind)) == kinds)
     #expect(kindFixture.defaults.count == kinds.count * Set(kindFixture.defaults.map(\.seed)).count)
-    #expect(kindFixture.defaults.allSatisfy { ($0.kind == KeyKind.age.rawValue) == ($0.postQuantum != nil) })
 }
 
 @Test func kindFixtureCoversEveryKind() {
     #expect(Set(kindCases.map(\.kind)) == Set(KeyKind.allCases.map(\.rawValue)))
-    #expect(kindCases.allSatisfy { ($0.kind == KeyKind.age.rawValue) == ($0.postQuantum != nil) })
 }
 
 /// The example identity and recipient in the age specification (https://c2sp.org/age), a pair
@@ -136,8 +141,10 @@ func defaultVector(_ vector: DefaultVector) throws {
     let lines = try String(contentsOf: url, encoding: .utf8).split(separator: "\n").map(String.init)
     let seed = try #require(Data(hexString: "31bda90fbf9fccdde5cfc0ed5a0378c5ea67ea193d7938b03b8c5dabb9a67de3"))
     let key = try Age.postQuantum(seed: seed)
-    #expect(key.identity == lines[0])
-    #expect(key.recipient == lines[1])
+    #expect(key.type == .mlkem768x25519)
+    #expect(key.secret == lines[0])
+    #expect(key.publicKey == lines[1])
+    #expect(key.fingerprint == nil)
 }
 
 @Test(arguments: kindFixture.hkdf)

@@ -27,14 +27,15 @@ struct CatalogFile: Codable, Equatable {
     struct KeyItem: Codable, Hashable {
         let diceKey: String
         let recipe: KeyRecipe
-        /// For reading in the file. Never imported: a file could carry anyone's key, so an
-        /// entry's public key only ever comes from deriving it here.
-        var publicKey: String?
+        /// Each algorithm's public key by its type, for reading in the file. Never imported: a
+        /// file could carry anyone's key, so an entry's public keys only ever come from deriving
+        /// them here. Nil for paper, and for a key with no public half or none recorded yet.
+        var publicKeys: [String: String]?
 
-        init(diceKey: String, recipe: KeyRecipe, publicKey: String? = nil) {
+        init(diceKey: String, recipe: KeyRecipe, publicKeys: [String: String]? = nil) {
             self.diceKey = diceKey
             self.recipe = recipe
-            self.publicKey = publicKey
+            self.publicKeys = publicKeys
         }
     }
 
@@ -59,6 +60,10 @@ struct CatalogFile: Codable, Equatable {
     /// Keys in the file this version can't read, such as a kind a later version added: each
     /// is left out rather than refusing paper that holds the rest.
     private(set) var unreadableKeys = 0
+
+    /// The keys without the defaults: what the printed lists show, and the counts shown before
+    /// an import or restore, since a default is not one the person made.
+    var namedKeys: [KeyItem] { keys.filter { !$0.recipe.isDefault } }
 
     private enum CodingKeys: CodingKey {
         case v, diceKeys, keys
@@ -98,8 +103,8 @@ struct CatalogFile: Codable, Equatable {
             DiceKeyItem(id: $0.diceKeyID, name: $0.name, centerFace: $0.centerFace)
         }
         keys = entries.uniqueKeys.compactMap { entry in
-            guard let recipe = entry.recipe, !recipe.isDefault else { return nil }
-            return KeyItem(diceKey: entry.diceKeyID, recipe: recipe, publicKey: entry.publicKey)
+            let publicKeys = entry.publicKeys.isEmpty ? nil : entry.publicKeys
+            return entry.recipe.map { KeyItem(diceKey: entry.diceKeyID, recipe: $0, publicKeys: publicKeys) }
         }
     }
 
@@ -162,7 +167,7 @@ struct CatalogFile: Codable, Equatable {
             guard try !context.entries(for: item.diceKey).contains(where: { $0.recipe == item.recipe }) else {
                 continue
             }
-            context.insert(KeyEntry(diceKeyID: item.diceKey, recipe: item.recipe, publicKey: nil))
+            context.insert(KeyEntry(diceKeyID: item.diceKey, recipe: item.recipe))
             added.keys += 1
         }
         try context.save()
@@ -172,20 +177,20 @@ struct CatalogFile: Codable, Equatable {
 
 extension CatalogFile.KeyItem {
     private enum CodingKeys: String, CodingKey {
-        case diceKey, publicKey
+        case diceKey, publicKeys
     }
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         diceKey = try container.decode(String.self, forKey: .diceKey)
-        publicKey = try container.decodeIfPresent(String.self, forKey: .publicKey)
-        recipe = try KeyRecipe(from: decoder, besides: Set([CodingKeys.diceKey, .publicKey].map(\.stringValue)))
+        publicKeys = try container.decodeIfPresent([String: String].self, forKey: .publicKeys)
+        recipe = try KeyRecipe(from: decoder, besides: Set([CodingKeys.diceKey, .publicKeys].map(\.stringValue)))
     }
 
     func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(diceKey, forKey: .diceKey)
-        try container.encodeIfPresent(publicKey, forKey: .publicKey)
+        try container.encodeIfPresent(publicKeys, forKey: .publicKeys)
         try recipe.encode(to: encoder)
     }
 }

@@ -12,7 +12,10 @@ have not.
 
 It is built (Settings, Sync with iCloud) and signed for the container, but has only been
 opened, never synced between devices. Before shipping, deploy the CloudKit schema to
-production in the CloudKit console.
+production in the CloudKit console. The development schema gains a field only once a development
+build syncs a record that has it, so first run a build from Xcode with sync on and unlock a
+DiceKey, then check that `CD_KeyEntry` has `CD_publicKeys`. On the second device, a key made on
+the first should show both age recipients while its DiceKey is locked there.
 
 ## Names typed with smart punctuation
 

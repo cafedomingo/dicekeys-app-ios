@@ -176,6 +176,6 @@ func namelessRecipesOtherThanDefaultsAreRejected(_ text: String) {
 
 @Test func defaultSSHLineHasNoComment() {
     let seed = "A1tB2rC3bD4lE5tF6rG1bH2lI3tJ4rK5bL6lM1tN2rO3bP4lR5tS6rT1bU2lV3tW4rX5bY6lZ1t"
-    let line = DerivedKey.derive(seed: seed, recipe: KeyRecipe.defaults[0]).publicKey ?? ""
+    let line = DerivedKey.derive(seed: seed, recipe: KeyRecipe.defaults[0]).algorithms[0].publicKey ?? ""
     #expect(line.split(separator: " ", omittingEmptySubsequences: false).count == 2)
 }

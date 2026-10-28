@@ -11,24 +11,18 @@
 import CryptoKit
 import Foundation
 
-/// age's post-quantum hybrid identity and the recipient files are encrypted to.
-public struct AgePostQuantumKey: Equatable, Sendable {
-    /// `age1pq1…`, about 1,950 characters.
-    public let recipient: String
-    /// `AGE-SECRET-KEY-PQ-1…`.
-    public let identity: String
-}
-
 extension Age {
     private static let postQuantumIdentityPrefix = "age-secret-key-pq-"
     private static let postQuantumRecipientPrefix = "age1pq"
 
     /// The identity is Bech32 over the lower case form, then upper-cased, as `age-keygen -pq`
-    /// writes it.
-    public static func postQuantum(seed: Data) throws -> AgePostQuantumKey {
+    /// writes it. It has no fingerprint.
+    public static func postQuantum(seed: Data) throws -> AlgorithmKey {
         let key = try XWingMLKEM768X25519.PrivateKey(seedRepresentation: seed, publicKey: nil)
-        return AgePostQuantumKey(
-            recipient: Bech32.encode(hrp: postQuantumRecipientPrefix, bytes: Array(key.publicKey.rawRepresentation)),
-            identity: Bech32.encode(hrp: postQuantumIdentityPrefix, bytes: Array(seed)).uppercased())
+        return AlgorithmKey(
+            type: .mlkem768x25519,
+            publicKey: Bech32.encode(hrp: postQuantumRecipientPrefix, bytes: Array(key.publicKey.rawRepresentation)),
+            fingerprint: nil,
+            secret: Bech32.encode(hrp: postQuantumIdentityPrefix, bytes: Array(seed)).uppercased())
     }
 }
