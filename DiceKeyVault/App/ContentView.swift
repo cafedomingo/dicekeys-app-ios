@@ -14,10 +14,12 @@ enum SidebarSelection: Hashable {
     case newKey(String)
 }
 
-/// A screen pushed over a DiceKey's screen in the detail column.
+/// A screen pushed in the detail column: a key or New key over its DiceKey's screen, or the
+/// camera over whatever the column shows beside home.
 enum KeySelection: Hashable {
     case entry(PersistentIdentifier)
     case new
+    case scan
 }
 
 /// Home, with every DiceKey and its keys, then whichever of them is selected. One split view
@@ -60,6 +62,7 @@ struct ContentView: View {
             if let id = diceKeyID(of: selection) { unlocked.use(id: id) }
             if let newDiceKeyID, selection != .diceKey(newDiceKeyID) { self.newDiceKeyID = nil }
         }
+        .onChange(of: sizeClass) { _, size in fitScanner(to: size) }
         .onChange(of: isDraftLocked) { _, isLocked in
             if isLocked { closeDraft() }
         }
@@ -106,7 +109,7 @@ struct ContentView: View {
             if let record = records.uniqueDiceKeys.first(where: { $0.diceKeyID == id }) {
                 DiceKeyScreen(
                     record: record, isNew: newDiceKeyID == id, path: $path,
-                    onScan: { sidebarSelection = .scan },
+                    onScan: scan,
                     onForget: { forget(record) }, onDelete: delete
                 )
                 .id(id)
@@ -144,6 +147,8 @@ struct ContentView: View {
             }
         case .entry(let id):
             keyScreen(id)
+        case .scan:
+            LoadScreen(isCompact: sizeClass == .compact, onLoaded: load, onCodeRead: read)
         }
     }
 
@@ -151,8 +156,7 @@ struct ContentView: View {
     private func keyScreen(_ id: PersistentIdentifier) -> some View {
         if let entry = context.model(for: id) as? KeyEntry {
             KeyScreen(
-                entry: entry, diceKey: unlocked.diceKey(id: entry.diceKeyID), onScan: { sidebarSelection = .scan },
-                onDelete: delete
+                entry: entry, diceKey: unlocked.diceKey(id: entry.diceKeyID), onScan: scan, onDelete: delete
             )
             .id(id)
         }
@@ -185,9 +189,26 @@ struct ContentView: View {
         }
     }
 
+    /// A phone shows the camera in place of home. Beside home it is pushed over the detail column,
+    /// so Back returns to whatever that showed.
     private func scan() {
-        sidebarSelection = .scan
-        compactColumn = .detail
+        if sizeClass == .compact {
+            sidebarSelection = .scan
+            compactColumn = .detail
+        } else if sidebarSelection != .scan, path.last != .scan {
+            path.append(.scan)
+        }
+    }
+
+    /// A phone selects the camera and a wider window pushes it, so a resize moves it to the form
+    /// its new width uses. Widening closes it to the empty detail, since a push made here would be
+    /// cleared along with the selection.
+    private func fitScanner(to size: UserInterfaceSizeClass?) {
+        if size == .compact, sidebarSelection == nil, path.last == .scan {
+            sidebarSelection = .scan
+        } else if size != .compact, sidebarSelection == .scan {
+            sidebarSelection = nil
+        }
     }
 
     private func load(_ diceKey: DiceKey) {
@@ -195,7 +216,8 @@ struct ContentView: View {
         if !saved.contains(id: diceKey.id) { diceKeyToKeep = diceKey }
     }
 
-    /// True when this is the first time the DiceKey is recorded.
+    /// True when this is the first time the DiceKey is recorded. Clears the pushed screens too, since
+    /// scanning the DiceKey that is already open leaves the selection as it was.
     @discardableResult
     private func open(_ diceKey: DiceKey) -> Bool {
         var isNew = false
@@ -206,6 +228,7 @@ struct ContentView: View {
         }
         unlocked.unlock(diceKey)
         sidebarSelection = .diceKey(diceKey.id)
+        path = []
         return isNew
     }
 
