@@ -57,9 +57,8 @@ final class KeyEntry {
         self.publicKeys = publicKeys
     }
 
-    /// Nil for an entry this version can't read: a kind or field a later version wrote, where
-    /// guessing would show a different key as if it were this one, or a nameless recipe that
-    /// isn't a default, such as the `{"kind":"wireguard"}` test builds recorded.
+    /// Nil for an entry this version can't read, such as a kind or field a later version wrote,
+    /// where guessing would show a different key as if it were this one.
     var recipe: KeyRecipe? { try? KeyRecipe(json: recipeJSON) }
 
     /// The public key recorded for this algorithm, if any.
@@ -183,10 +182,12 @@ extension ModelContext {
 extension [DiceKeyRecord] {
     /// Two devices that each scan a DiceKey before they sync make a record each. One stands
     /// for the DiceKey: a renamed one over one still named for its center die, then the
-    /// oldest, so the choice is the same on every device. Order is kept.
+    /// oldest, then by name, so the choice is the same on every device. Order is kept.
     var uniqueDiceKeys: [DiceKeyRecord] {
         let chosen = Dictionary(grouping: self, by: \.diceKeyID).compactMapValues { copies in
-            copies.min { ($0.isRenamed ? 0 : 1, $0.created) < ($1.isRenamed ? 0 : 1, $1.created) }
+            copies.min {
+                ($0.isRenamed ? 0 : 1, $0.created, $0.name) < ($1.isRenamed ? 0 : 1, $1.created, $1.name)
+            }
         }
         return filter { chosen[$0.diceKeyID] === $0 }
     }

@@ -72,8 +72,9 @@ Changes from other devices can arrive any time after the device's first unlock.
 
 Two devices that each scan a DiceKey before they sync make a record each. One stands for the
 DiceKey everywhere, the same one on every device: a renamed one over one still named for its
-center die, then the oldest. Forget removes them all. Keys need no such step: they are told
-apart by what they derive, so copies of one key show once, default keys included.
+center die, then the oldest, then by name. Forget removes them all. Keys need no such step:
+they are told apart by what they derive, so copies of one key show once, default keys
+included.
 
 ## The recovery sheet
 

@@ -26,8 +26,8 @@ struct DiceKeyScreen: View {
     @State private var isRenaming = false
     @State private var isConfirmingForget = false
     @State private var keyToDelete: KeyEntry?
-    @State private var isShowingListCard = false
-    @State private var isShowingRecoverySheet = false
+    @State private var listCard: CatalogFile?
+    @State private var recoveryCode: RecoveryCode?
     @State private var error: PresentableError?
 
     init(
@@ -91,32 +91,43 @@ struct DiceKeyScreen: View {
             Text("The keys can be made again from the dice, if you remember their names.")
         }
         .confirmsKeyDeletion($keyToDelete, onDelete: onDelete)
-        .sheet(isPresented: $isShowingListCard) {
-            PaperPreview(title: "List card", filename: "\(record.name) list card", isSecret: false) { _ in
-                ListCardPage(file: CatalogFile(records: [record], entries: entries))
+        .sheet(isPresented: Binding(get: { listCard != nil }, set: { if !$0 { listCard = nil } })) {
+            if let listCard {
+                PaperPreview(title: "List card", filename: "\(record.name) list card", isSecret: false) { _ in
+                    ListCardPage(file: listCard)
+                }
             }
         }
-        .sheet(isPresented: $isShowingRecoverySheet) {
-            if let diceKey {
+        .sheet(isPresented: Binding(get: { recoveryCode != nil }, set: { if !$0 { recoveryCode = nil } })) {
+            if let recoveryCode {
                 PaperPreview(title: "Recovery sheet", filename: "\(record.name) recovery sheet", isSecret: true) {
-                    RecoverySheet(
-                        code: RecoveryCode(diceKey: diceKey, record: record, entries: entries), entries: keys,
-                        concealed: $0)
+                    RecoverySheet(code: recoveryCode, entries: keys, concealed: $0)
                 }
             }
         }
         .onChange(of: diceKey == nil) { _, isLocked in
-            if isLocked { isShowingRecoverySheet = false }
+            if isLocked { recoveryCode = nil }
         }
         .errorAlert($error)
     }
 
-    /// Asks for Face ID or the passcode again first: the sheet is the DiceKey itself.
+    private func makeListCard() {
+        do {
+            listCard = try CatalogFile(records: [record], entries: entries)
+        } catch {
+            self.error = PresentableError(title: "Couldn't Make the List Card", error: error)
+        }
+    }
+
+    /// Asks for Face ID or the passcode again first: the sheet is the DiceKey itself. Opens
+    /// only if the DiceKey is still unlocked once that's done.
     private func makeRecoverySheet() {
+        guard let diceKey else { return }
         Task {
             do {
+                let code = try RecoveryCode(diceKey: diceKey, record: record, entries: entries)
                 _ = try await DeviceOwner.authenticate(reason: "Make a recovery sheet for \(record.name)")
-                isShowingRecoverySheet = true
+                if self.diceKey != nil { recoveryCode = code }
             } catch  where !error.isAuthenticationCancellation {
                 self.error = PresentableError(title: "Couldn't Make the Recovery Sheet", error: error)
             } catch {}
@@ -151,7 +162,7 @@ struct DiceKeyScreen: View {
                 Toggle("Keep on this device", systemImage: "faceid", isOn: keepsOnDevice(diceKey))
                 Button("Lock", systemImage: "lock") { unlocked.lock(id: record.diceKeyID) }
             }
-            Button("List card", systemImage: "printer") { isShowingListCard = true }
+            Button("List card", systemImage: "printer", action: makeListCard)
             if diceKey != nil {
                 Button("Recovery sheet", systemImage: "exclamationmark.lock", action: makeRecoverySheet)
             }

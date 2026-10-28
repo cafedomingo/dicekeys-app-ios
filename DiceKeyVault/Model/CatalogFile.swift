@@ -45,11 +45,14 @@ struct CatalogFile: Codable, Equatable {
     enum Failure: LocalizedError, Equatable {
         case notACatalog
         case newerVersion(Int)
+        case newerKeys
 
         var errorDescription: String? {
             switch self {
             case .notACatalog: "This isn't a list of \(AppInfo.name) keys, or part of it is missing."
             case .newerVersion: "This was made by a newer version of \(AppInfo.name). Update the app to read it."
+            case .newerKeys:
+                "A newer version of \(AppInfo.name) made some of these keys, and this version would leave them out. Update the app to include them."
             }
         }
     }
@@ -98,7 +101,9 @@ struct CatalogFile: Codable, Equatable {
         self.unreadableKeys = unreadableKeys
     }
 
-    init(records: [DiceKeyRecord], entries: [KeyEntry]) {
+    /// Throws `Failure.newerKeys` rather than leave out a key this version can't read.
+    init(records: [DiceKeyRecord], entries: [KeyEntry]) throws {
+        guard entries.allSatisfy({ $0.recipe != nil }) else { throw Failure.newerKeys }
         diceKeys = records.uniqueDiceKeys.map {
             DiceKeyItem(id: $0.diceKeyID, name: $0.name, centerFace: $0.centerFace)
         }

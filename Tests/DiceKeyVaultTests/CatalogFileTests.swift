@@ -28,7 +28,7 @@ struct CatalogFileTests {
             try context.addEntry(
                 for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe), diceKeyID: DiceKey.example.id)
         }
-        return CatalogFile(
+        return try CatalogFile(
             records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
     }
@@ -72,7 +72,7 @@ struct CatalogFileTests {
         let github = try KeyRecipe(kind: .ssh, name: "github")
         try context.addEntry(
             for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: github), diceKeyID: DiceKey.example.id)
-        let file = CatalogFile(
+        let file = try CatalogFile(
             records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
         #expect(file.keys.map(\.recipe) == KeyRecipe.defaults + [github])
@@ -92,7 +92,7 @@ struct CatalogFileTests {
                 for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe), diceKeyID: DiceKey.example.id)
         }
         try context.fillPublicKeys(for: DiceKey.example)
-        let file = CatalogFile(
+        let file = try CatalogFile(
             records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
         #expect(file.keys.map(\.recipe) == KeyRecipe.defaults + recipes)
@@ -138,7 +138,7 @@ struct CatalogFileTests {
             try context.recordIfNew(diceKey)
             try context.addEntry(for: DerivedKey.derive(seed: diceKey.seed, recipe: github), diceKeyID: diceKey.id)
         }
-        let file = CatalogFile(
+        let file = try CatalogFile(
             records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
         #expect(Set(file.keys.map(\.diceKey)) == [DiceKey.example.id, other.id])
@@ -153,7 +153,7 @@ struct CatalogFileTests {
             record.name = name
             context.insert(record)
         }
-        let file = CatalogFile(records: try context.fetch(FetchDescriptor<DiceKeyRecord>()), entries: [])
+        let file = try CatalogFile(records: try context.fetch(FetchDescriptor<DiceKeyRecord>()), entries: [])
         #expect(file.diceKeys.map(\.name) == ["Home box"])
     }
 
@@ -234,7 +234,7 @@ struct CatalogFileTests {
             try context.addEntry(
                 for: DerivedKey.derive(seed: DiceKey.example.seed, recipe: recipe), diceKeyID: DiceKey.example.id)
         }
-        let file = CatalogFile(
+        let file = try CatalogFile(
             records: try context.fetch(FetchDescriptor<DiceKeyRecord>()),
             entries: try context.fetch(FetchDescriptor<KeyEntry>()))
         #expect(try CatalogFile(json: file.json()) == file)

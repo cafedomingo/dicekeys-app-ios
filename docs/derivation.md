@@ -187,8 +187,8 @@ no name to make its key again and synced catalogs hold its rows. The set changes
 adding one, and an added literal reaches every DiceKey: the app adds each default a DiceKey
 lacks. If a default ever stops being added to new DiceKeys, its literal stays accepted by the
 parser, so files and paper that carry it can still make the key. A catalog row whose recipe
-has no name and isn't one of these, such as `{"kind":"wireguard"}` from a test build, is left
-out like any recipe this version can't read, and the DiceKey's other keys load as usual.
+has no name and isn't one of these is left out like any recipe this version can't read, and
+the DiceKey's other keys load as usual.
 
 Without a name, the encodings that use one fall back. The SSH public key line is
 `ssh-ed25519 <base64>`, with no comment and no trailing space, and the private key's comment is

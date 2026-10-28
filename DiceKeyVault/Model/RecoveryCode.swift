@@ -15,9 +15,9 @@ struct RecoveryCode: Equatable {
     /// Exactly one DiceKey, this one, and its keys, the defaults included, without public keys.
     let catalog: CatalogFile
 
-    init(diceKey: DiceKey, record: DiceKeyRecord, entries: [KeyEntry]) {
+    init(diceKey: DiceKey, record: DiceKeyRecord, entries: [KeyEntry]) throws {
         self.diceKey = diceKey
-        var catalog = CatalogFile(records: [record], entries: entries)
+        var catalog = try CatalogFile(records: [record], entries: entries)
         catalog.keys = catalog.keys.map {
             var key = $0
             key.publicKeys = nil

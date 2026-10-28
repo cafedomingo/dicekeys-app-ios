@@ -13,9 +13,6 @@ import Testing
 
 @MainActor
 struct CatalogTests {
-    /// The nameless WireGuard recipe that TestFlight builds recorded as a default.
-    private static let testBuildWireGuardDefault = #"{"kind":"wireguard"}"#
-
     private let container: ModelContainer
     private let context: ModelContext
 
@@ -32,7 +29,7 @@ struct CatalogTests {
         try #require(KeyRecipe.defaults.first { $0.kind == .age })
     }
 
-    /// A row holding this text as its recipe, as a sync or an earlier build can leave one.
+    /// A row holding this text as its recipe, as a sync can leave one.
     @discardableResult
     private func insertRow(_ recipeJSON: String) -> KeyEntry {
         let entry = KeyEntry(diceKeyID: DiceKey.example.id, recipe: KeyRecipe.defaults[0])
@@ -64,6 +61,15 @@ struct CatalogTests {
         _ = syncedDuplicate(named: "Office", created: .now)
         _ = syncedDuplicate(named: "Home box", created: .distantPast)
         #expect(try context.record(for: DiceKey.example.id)?.name == "Home box")
+    }
+
+    @Test("with both renamed and recorded at the same moment, the choice doesn't depend on the order they're read in")
+    func sameMomentRenamesPickOne() throws {
+        let created = Date.now
+        let office = syncedDuplicate(named: "Office", created: created)
+        let home = syncedDuplicate(named: "Home box", created: created)
+        #expect([office, home].uniqueDiceKeys.map(\.name) == ["Home box"])
+        #expect([home, office].uniqueDiceKeys.map(\.name) == ["Home box"])
     }
 
     @Test("Forget removes every copy of the record, so none is left behind")
@@ -214,33 +220,33 @@ struct CatalogTests {
         #expect(try context.entries(for: DiceKey.example.id).count == KeyRecipe.defaults.count)
     }
 
-    @Test("a WireGuard default a test build recorded is kept but left out of lists, counts, export and paper")
-    func testBuildWireGuardDefaultIsLeftOut() throws {
+    @Test(
+        "a key a newer version made, a kind or field this one doesn't know, is kept but left out of lists, and stops the file and paper",
+        arguments: [#"{"kind":"totp","name":"github"}"#, #"{"kind":"ssh","name":"github","size":4096}"#])
+    func newerKeyIsKeptAndStopsFileAndPaper(_ recipeJSON: String) throws {
         try context.recordIfNew(DiceKey.example)
-        let github = try key(.ssh, "github")
-        try context.addEntry(for: github, diceKeyID: DiceKey.example.id)
-        let leftover = insertRow(Self.testBuildWireGuardDefault)
-        try context.addMissingDefaults()
+        let newer = insertRow(recipeJSON)
         try context.fillPublicKeys(for: DiceKey.example)
-        let shown = KeyRecipe.defaults + [github.recipe]
-        #expect(try context.entries(for: DiceKey.example.id).map(\.recipeJSON) == shown.map(\.json))
-        #expect(leftover.publicKeys.isEmpty)
+        #expect(try context.entries(for: DiceKey.example.id).map(\.recipeJSON) == KeyRecipe.defaults.map(\.json))
+        #expect(newer.publicKeys.isEmpty)
         let rows = try context.fetch(FetchDescriptor<KeyEntry>())
-        #expect(rows.count == shown.count + 1)
+        #expect(rows.count == KeyRecipe.defaults.count + 1)
         let record = try #require(try context.record(for: DiceKey.example.id))
-        #expect(CatalogFile(records: [record], entries: rows).keys.map(\.recipe) == shown)
-        #expect(RecoveryCode(diceKey: .example, record: record, entries: rows).catalog.keys.map(\.recipe) == shown)
+        #expect(throws: CatalogFile.Failure.newerKeys) { try CatalogFile(records: [record], entries: rows) }
+        #expect(throws: CatalogFile.Failure.newerKeys) {
+            try RecoveryCode(diceKey: .example, record: record, entries: rows)
+        }
     }
 
     @Test(
-        "the backfill adds each default a DiceKey lacks, and a test build's WireGuard default isn't one",
+        "the backfill adds each default a DiceKey lacks",
         arguments: [[], [KeyRecipe.defaults[0].json]])
     func backfillAddsEachMissingDefault(_ synced: [String]) throws {
         context.insert(DiceKeyRecord(diceKey: DiceKey.example))
-        for text in [Self.testBuildWireGuardDefault] + synced { insertRow(text) }
+        for text in synced { insertRow(text) }
         try context.addMissingDefaults()
         #expect(try context.entries(for: DiceKey.example.id).map(\.recipeJSON) == KeyRecipe.defaults.map(\.json))
-        #expect(try context.fetchCount(FetchDescriptor<KeyEntry>()) == KeyRecipe.defaults.count + 1)
+        #expect(try context.fetchCount(FetchDescriptor<KeyEntry>()) == KeyRecipe.defaults.count)
     }
 
     @Test("an entry stores the recipe's canonical text and rebuilds it, sorted by name")
