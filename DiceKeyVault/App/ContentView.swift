@@ -30,7 +30,8 @@ struct ContentView: View {
     @State private var sidebarSelection: SidebarSelection?
     @State private var path: [KeySelection] = []
     /// Set alongside the selection, since a phone pushes only for a sidebar list's selection
-    /// and home before the first DiceKey has no list. The split view sets it back on Back.
+    /// and home before the first DiceKey has no list. The split view sets it back on Back, which
+    /// clears the scanner's selection there too.
     @State private var compactColumn = NavigationSplitViewColumn.sidebar
     @State private var error: PresentableError?
     @State private var diceKeyToKeep: DiceKey?
@@ -38,6 +39,13 @@ struct ContentView: View {
     @State private var codeToRestore: RecoveryCode?
     /// The DiceKey a scan or typing just recorded for the first time, while its screen stays open.
     @State private var newDiceKeyID: String?
+    /// The scanner's typing, kept here through a resize that moves the scanner between the
+    /// selection and a push. Dropped when the scanner closes, and once the app has been in the
+    /// background as long as an unlocked DiceKey may be, since half a DiceKey is still most of a
+    /// secret.
+    @State private var isTyping = false
+    @State private var typed = TypedDiceKey()
+    @State private var backgroundedAt: Date?
     @Environment(UnlockedDiceKeys.self) private var unlocked
     @Environment(SavedDiceKeys.self) private var saved
     @Environment(\.modelContext) private var context
@@ -56,20 +64,30 @@ struct ContentView: View {
                 detail.navigationDestination(for: KeySelection.self, destination: pushed)
             }
         }
-        .onChange(of: sidebarSelection) { _, selection in
-            path = []
-            compactColumn = selection == nil ? .sidebar : .detail
-            if let id = diceKeyID(of: selection) { unlocked.use(id: id) }
-            if let newDiceKeyID, selection != .diceKey(newDiceKeyID) { self.newDiceKeyID = nil }
+        .onChange(of: sidebarSelection, selectionChanged)
+        .onChange(of: compactColumn) { _, column in
+            if column == .sidebar, sidebarSelection == .scan { sidebarSelection = nil }
         }
         .onChange(of: sizeClass) { _, size in fitScanner(to: size) }
+        .onChange(of: isScanning) { _, isScanning in
+            if !isScanning {
+                isTyping = false
+                typed = TypedDiceKey()
+            }
+        }
         .onChange(of: isDraftLocked) { _, isLocked in
             if isLocked { closeDraft() }
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
-            case .background: unlocked.appWentToBackground()
-            case .inactive, .active: unlocked.appReturned()
+            case .background:
+                unlocked.appWentToBackground()
+                backgroundedAt = backgroundedAt ?? .now
+            case .inactive:
+                unlocked.appReturned()
+            case .active:
+                unlocked.appReturned()
+                expireTyping()
             @unknown default: break
             }
         }
@@ -104,7 +122,7 @@ struct ContentView: View {
     private var detail: some View {
         switch sidebarSelection {
         case .scan:
-            LoadScreen(isCompact: sizeClass == .compact, onLoaded: load, onCodeRead: read)
+            loadScreen
         case .diceKey(let id):
             if let record = records.uniqueDiceKeys.first(where: { $0.diceKeyID == id }) {
                 DiceKeyScreen(
@@ -148,8 +166,14 @@ struct ContentView: View {
         case .entry(let id):
             keyScreen(id)
         case .scan:
-            LoadScreen(isCompact: sizeClass == .compact, onLoaded: load, onCodeRead: read)
+            loadScreen
         }
+    }
+
+    private var loadScreen: some View {
+        LoadScreen(
+            isCompact: sizeClass == .compact, isTyping: $isTyping, typed: typed, onLoaded: load,
+            onCodeRead: read)
     }
 
     @ViewBuilder
@@ -200,14 +224,34 @@ struct ContentView: View {
         }
     }
 
+    private var isScanning: Bool {
+        sidebarSelection == .scan || path.contains(.scan)
+    }
+
+    /// Clears the pushed screens, which belong to the old selection, except when widening has just
+    /// moved the camera from the selection to a push.
+    private func selectionChanged(from old: SidebarSelection?, to selection: SidebarSelection?) {
+        if old != .scan || selection != nil { path = [] }
+        compactColumn = selection == nil ? .sidebar : .detail
+        if let id = diceKeyID(of: selection) { unlocked.use(id: id) }
+        if let newDiceKeyID, selection != .diceKey(newDiceKeyID) { self.newDiceKeyID = nil }
+    }
+
+    private func expireTyping() {
+        if let backgroundedAt, Date.now.timeIntervalSince(backgroundedAt) >= UnlockedDiceKeys.lockDelay {
+            typed = TypedDiceKey()
+        }
+        backgroundedAt = nil
+    }
+
     /// A phone selects the camera and a wider window pushes it, so a resize moves it to the form
-    /// its new width uses. Widening closes it to the empty detail, since a push made here would be
-    /// cleared along with the selection.
+    /// its new width uses.
     private func fitScanner(to size: UserInterfaceSizeClass?) {
         if size == .compact, sidebarSelection == nil, path.last == .scan {
             sidebarSelection = .scan
         } else if size != .compact, sidebarSelection == .scan {
             sidebarSelection = nil
+            path = [.scan]
         }
     }
 

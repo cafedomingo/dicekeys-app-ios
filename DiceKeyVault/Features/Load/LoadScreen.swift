@@ -11,23 +11,19 @@ import SwiftUI
 struct LoadScreen: View {
     /// The window's size class, not this column's, which can report its own.
     let isCompact: Bool
+    /// This and `typed` are held by the caller, since a resize can move this screen and start a
+    /// new one.
+    @Binding var isTyping: Bool
+    let typed: TypedDiceKey
     let onLoaded: (DiceKey) -> Void
     let onCodeRead: (String) -> Void
-
-    @State private var isTyping = false
-    /// Kept across switching to the camera and back, and dropped once loaded or when the app
-    /// has been in the background as long as an unlocked DiceKey may be, since half a DiceKey
-    /// is still most of a secret.
-    @State private var typed = TypedDiceKey()
-    @State private var backgroundedAt: Date?
-    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
             if isTyping {
-                TypingView(typed: typed, onDone: load)
+                TypingView(typed: typed, onDone: onLoaded)
             } else {
-                ScanDiceKeyView(onDiceKeyRead: load, onCodeRead: onCodeRead)
+                ScanDiceKeyView(onDiceKeyRead: onLoaded, onCodeRead: onCodeRead)
             }
         }
         .padding()
@@ -43,23 +39,5 @@ struct LoadScreen: View {
                 ) { isTyping.toggle() }
             }
         }
-        .onChange(of: scenePhase) { _, phase in
-            switch phase {
-            case .background:
-                backgroundedAt = backgroundedAt ?? .now
-            case .active:
-                if let backgroundedAt, Date.now.timeIntervalSince(backgroundedAt) >= UnlockedDiceKeys.lockDelay {
-                    typed = TypedDiceKey()
-                }
-                backgroundedAt = nil
-            default:
-                break
-            }
-        }
-    }
-
-    private func load(_ diceKey: DiceKey) {
-        typed = TypedDiceKey()
-        onLoaded(diceKey)
     }
 }
